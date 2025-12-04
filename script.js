@@ -149,8 +149,88 @@ createApp({
             }
         },
         
+        // Новая функция для генерации "обманчивых" вариантов ответа
+        generateDeceptiveOption(num1, num2, isAddition) {
+            if (isAddition) {
+                // Для сложения создаем вариант с неправильным разложением
+                const result = num1 + num2;
+                
+                // Генерируем разложение, которое выглядит правильно, но дает неверный результат
+                if (num2 <= 9) {
+                    // Для однозначного числа
+                    const lastDigit = num1 % 10;
+                    const neededForRound = 10 - lastDigit;
+                    
+                    if (num2 >= neededForRound && neededForRound > 1) {
+                        // Создаем неправильное разложение для дополнения до круглого десятка
+                        const wrongPart1 = neededForRound - 1; // Ошибка на 1
+                        const wrongPart2 = num2 - wrongPart1;
+                        return `${num1} + ${wrongPart1} + ${wrongPart2}`;
+                    } else {
+                        // Создаем неправильное разложение с ошибкой в 1
+                        const wrongPart1 = Math.max(1, Math.floor(num2 / 2) - 1);
+                        const wrongPart2 = num2 - wrongPart1 + 1; // Компенсируем, чтобы сумма выглядела правильной
+                        return `${num1} + ${wrongPart1} + ${wrongPart2}`;
+                    }
+                } else {
+                    // Для двузначного числа
+                    const tens = Math.floor(num2 / 10) * 10;
+                    const remainder = num2 - tens;
+                    
+                    if (remainder > 1) {
+                        // Создаем неправильное разложение с ошибкой в остатке
+                        return `${num1} + ${tens} + ${remainder - 1} + 1`;
+                    } else {
+                        // Создаем неправильное разложение с ошибкой в десятках
+                        return `${num1} + ${tens - 1} + ${remainder + 1}`;
+                    }
+                }
+            } else {
+                // Для вычитания создаем вариант с неправильным разложением
+                const result = num1 - num2;
+                
+                if (num2 <= 9) {
+                    // Для однозначного числа
+                    const lastDigit = num1 % 10;
+                    
+                    if (num2 > lastDigit && lastDigit > 1) {
+                        // Создаем неправильное разложение с ошибкой в первой части
+                        const wrongPart1 = lastDigit - 1;
+                        const wrongPart2 = num2 - wrongPart1 + 1;
+                        return `${num1} - ${wrongPart1} - ${wrongPart2}`;
+                    } else {
+                        // Создаем неправильное разложение с ошибкой
+                        return `${num1} - ${Math.max(1, num2 - 1)} - 1`;
+                    }
+                } else {
+                    // Для двузначного числа
+                    const tens = Math.floor(num2 / 10) * 10;
+                    const remainder = num2 - tens;
+                    
+                    if (remainder > 1) {
+                        // Создаем неправильное разложение с ошибкой в остатке
+                        return `${num1} - ${tens} - ${remainder - 1} - 1`;
+                    } else if (tens > 10) {
+                        // Создаем неправильное разложение с ошибкой в десятках
+                        return `${num1} - ${tens - 10} - ${remainder + 10}`;
+                    } else {
+                        // Создаем неправильное разложение с ошибкой в распределении
+                        return `${num1} - ${Math.max(1, tens - 1)} - ${remainder + 1}`;
+                    }
+                }
+            }
+        },
+        
         generateWrongAdditionOptions(num1, num2, correctOption) {
             const wrongOptions = [];
+            
+            // Добавляем "обманчивый" вариант с неправильным разложением (30% шанс)
+            if (Math.random() < 0.3) {
+                const deceptiveOption = this.generateDeceptiveOption(num1, num2, true);
+                if (deceptiveOption !== correctOption) {
+                    wrongOptions.push(deceptiveOption);
+                }
+            }
             
             // Разбираем правильный вариант
             const parts = correctOption.split(' + ');
@@ -189,6 +269,14 @@ createApp({
         
         generateWrongSubtractionOptions(num1, num2, correctOption) {
             const wrongOptions = [];
+            
+            // Добавляем "обманчивый" вариант с неправильным разложением (30% шанс)
+            if (Math.random() < 0.3) {
+                const deceptiveOption = this.generateDeceptiveOption(num1, num2, false);
+                if (deceptiveOption !== correctOption) {
+                    wrongOptions.push(deceptiveOption);
+                }
+            }
             
             if (correctOption.split(' - ').length === 3) {
                 // Разбираем правильный вариант с разложением
