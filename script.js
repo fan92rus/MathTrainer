@@ -81,22 +81,34 @@ createApp({
         },
         
         generateAdditionOption(num1, num2) {
-            // Для сложения раскладываем ВТОРОЕ число для удобного счета
+            // Для сложения раскладываем ВТОРОЕ число для удобного счета на 2 числа
             if (num2 <= 9) {
                 // Однозначное число - раскладываем чтобы дополнить до круглого десятка
                 const lastDigit = num1 % 10;
                 const neededForRound = 10 - lastDigit;
                 
-                if (num2 >= neededForRound) {
+                if (num2 >= neededForRound && neededForRound > 0) {
                     // Раскладываем, чтобы дополнить до круглого десятка
                     const part1 = neededForRound;
                     const part2 = num2 - neededForRound;
-                    return `${num1} + ${part1} + ${part2}`;
+                    
+                    // Проверяем, не равен ли part2 нулю
+                    if (part2 === 0) {
+                        return `${num1} + ${part1}`;
+                    } else {
+                        return `${num1} + ${part1} + ${part2}`;
+                    }
                 } else {
                     // Просто раскладываем на удобные слагаемые
                     const part1 = Math.floor(Math.random() * (num2 - 1)) + 1;
                     const part2 = num2 - part1;
-                    return `${num1} + ${part1} + ${part2}`;
+                    
+                    // Проверяем, не равен ли part2 нулю
+                    if (part2 === 0) {
+                        return `${num1} + ${part1}`;
+                    } else {
+                        return `${num1} + ${part1} + ${part2}`;
+                    }
                 }
             } else {
                 // Двузначное число - раскладываем на десятки и единицы
@@ -125,18 +137,18 @@ createApp({
                     // Если второе число ≤ последней цифры первого - не раскладываем
                     return `${num1} - ${num2}`;
                 } else {
-                    // Раскладываем второе число для удобства
+                    // Раскладываем второе число для удобства на 2 числа
                     const roundPart = lastDigit;
                     const remainder = num2 - roundPart;
                     
-                    // Проверяем, чтобы не было отрицательных чисел
+                    // Проверяем, чтобы не было отрицательных чисел или нуля
                     if (remainder <= 0) {
                         return `${num1} - ${num2}`;
                     }
                     return `${num1} - ${roundPart} - ${remainder}`;
                 }
             } else {
-                // Двузначное второе число - ВСЕГДА раскладываем второе число
+                // Двузначное второе число - ВСЕГДА раскладываем второе число на 2 числа
                 const tens = Math.floor(num2 / 10) * 10;
                 const remainder = num2 - tens;
                 
@@ -152,7 +164,7 @@ createApp({
         // Новая функция для генерации "обманчивых" вариантов ответа
         generateDeceptiveOption(num1, num2, isAddition) {
             if (isAddition) {
-                // Для сложения создаем вариант с неправильным разложением
+                // Для сложения создаем вариант с неправильным разложением на 2 числа
                 const result = num1 + num2;
                 
                 // Генерируем разложение, которое выглядит правильно, но дает неверный результат
@@ -163,14 +175,16 @@ createApp({
                     
                     if (num2 >= neededForRound && neededForRound > 1) {
                         // Создаем неправильное разложение для дополнения до круглого десятка
-                        const wrongPart1 = neededForRound - 1; // Ошибка на 1
-                        const wrongPart2 = num2 - wrongPart1;
-                        return `${num1} + ${wrongPart1} + ${wrongPart2}`;
+                        const wrongPart = neededForRound - 1; // Ошибка на 1
+                        const adjustedNum2 = num2 + 1; // Компенсируем, чтобы сохранить сумму
+                        
+                        return `${num1} + ${wrongPart} + ${adjustedNum2}`;
                     } else {
                         // Создаем неправильное разложение с ошибкой в 1
-                        const wrongPart1 = Math.max(1, Math.floor(num2 / 2) - 1);
-                        const wrongPart2 = num2 - wrongPart1 + 1; // Компенсируем, чтобы сумма выглядела правильной
-                        return `${num1} + ${wrongPart1} + ${wrongPart2}`;
+                        const wrongPart = Math.max(1, Math.floor(num2 / 2) - 1);
+                        const adjustedNum2 = num2 + 1; // Компенсируем, чтобы сохранить сумму
+                        
+                        return `${num1} + ${wrongPart} + ${adjustedNum2}`;
                     }
                 } else {
                     // Для двузначного числа
@@ -186,7 +200,7 @@ createApp({
                     }
                 }
             } else {
-                // Для вычитания создаем вариант с неправильным разложением
+                // Для вычитания создаем вариант с неправильным разложением на 2 числа
                 const result = num1 - num2;
                 
                 if (num2 <= 9) {
@@ -195,9 +209,10 @@ createApp({
                     
                     if (num2 > lastDigit && lastDigit > 1) {
                         // Создаем неправильное разложение с ошибкой в первой части
-                        const wrongPart1 = lastDigit - 1;
-                        const wrongPart2 = num2 - wrongPart1 + 1;
-                        return `${num1} - ${wrongPart1} - ${wrongPart2}`;
+                        const wrongPart = lastDigit - 1;
+                        const adjustedNum2 = num2 + 1; // Компенсируем, чтобы сохранить разность
+                        
+                        return `${num1} - ${wrongPart} - ${adjustedNum2}`;
                     } else {
                         // Создаем неправильное разложение с ошибкой
                         return `${num1} - ${Math.max(1, num2 - 1)} - 1`;
@@ -237,30 +252,45 @@ createApp({
             const mainNum = parseInt(parts[0]);
             
             if (parts.length === 2) {
-                // Простое сложение - создаем варианты с разложением
-                wrongOptions.push(`${mainNum} + ${Math.floor(num2 / 2)} + ${Math.ceil(num2 / 2)}`);
-                wrongOptions.push(`${mainNum} + ${num2 - 1} + 1`);
+                // Простое сложение - создаем варианты с разложением на 2 числа
+                const half1 = Math.floor(num2 / 2);
+                const half2 = Math.ceil(num2 / 2);
+                
+                // Вариант с разложением на 2 числа, дающий правильную сумму
+                if (half1 !== 0 && half2 !== 0) {
+                    wrongOptions.push(`${mainNum} + ${half1} + ${half2}`);
+                }
+                
+                // Вариант с разложением на 2 числа, дающий правильную сумму
+                if (num2 - 1 !== 0) {
+                    wrongOptions.push(`${mainNum} + ${num2 - 1} + 1`);
+                }
+                
+                // Вариант с измененным вторым числом
                 wrongOptions.push(`${mainNum} + ${num2 + 1}`);
             } else {
-                // Разложенное сложение
+                // Разложенное сложение - создаем варианты с разложением на 2 числа
                 const part1 = parseInt(parts[1]);
                 const part2 = parseInt(parts[2]);
                 
-                // Вариант 1: меняем первое слагаемое на 1
-                if (part1 + 1 !== num2) {
-                    wrongOptions.push(`${mainNum} + ${part1 + 1} + ${part2}`);
+                // Вариант 1: объединяем части и меняем на другое разложение
+                const combined = part1 + part2;
+                if (combined > 2) {
+                    const newPart1 = Math.floor(combined / 2);
+                    const newPart2 = combined - newPart1;
+                    if (newPart1 !== part1 && newPart2 !== part2) {
+                        wrongOptions.push(`${mainNum} + ${newPart1} + ${newPart2}`);
+                    }
                 }
                 
-                // Вариант 2: меняем второе слагаемое на 1
-                if (part2 + 1 !== num2) {
-                    wrongOptions.push(`${mainNum} + ${part1} + ${part2 + 1}`);
-                }
-                
-                // Вариант 3: немного изменяем оба слагаемых
-                if (part1 > 2 && part2 > 2) {
+                // Вариант 2: меняем первое слагаемое и компенсируем во втором
+                if (part1 > 1) {
                     wrongOptions.push(`${mainNum} + ${part1 - 1} + ${part2 + 1}`);
-                } else {
-                    wrongOptions.push(`${mainNum} + ${part1 + 2} + ${part2}`);
+                }
+                
+                // Вариант 3: меняем второе слагаемое и компенсируем в первом
+                if (part2 > 1) {
+                    wrongOptions.push(`${mainNum} + ${part1 + 1} + ${part2 - 1}`);
                 }
             }
             
@@ -285,7 +315,7 @@ createApp({
                 const part1 = parseInt(parts[1]);
                 const part2 = parseInt(parts[2]);
                 
-                // Неправильные варианты для разложенного вычитания
+                // Неправильные варианты для разложенного вычитания с 2 числами
                 if (part2 + 1 > 0) {
                     wrongOptions.push(`${mainNum} - ${part1} - ${part2 + 1}`);
                 }
@@ -298,7 +328,13 @@ createApp({
                     // Для однозначного - создаем вариант с другим разложением
                     const lastDigit = num1 % 10;
                     if (lastDigit > 1 && num2 - lastDigit + 1 > 0) {
-                        wrongOptions.push(`${mainNum} - ${lastDigit - 1} - ${num2 - lastDigit + 1}`);
+                        const remainder = num2 - lastDigit + 1;
+                        // Проверяем, не равен ли remainder нулю
+                        if (remainder !== 0) {
+                            wrongOptions.push(`${mainNum} - ${lastDigit - 1} - ${remainder}`);
+                        } else {
+                            wrongOptions.push(`${mainNum} - ${lastDigit - 1}`);
+                        }
                     } else {
                         wrongOptions.push(`${mainNum} - ${num2 + 1}`);
                     }
@@ -314,12 +350,24 @@ createApp({
                 // Неправильные варианты для простого вычитания
                 const lastDigit = num1 % 10;
                 
-                // Создаем варианты с неправильным разложением
+                // Создаем варианты с разложением на 2 числа, дающие правильную разность
                 if (lastDigit > 0 && num2 - lastDigit > 0 && num1 % 10 !== 0) {
-                    wrongOptions.push(`${num1} - ${lastDigit} - ${num2 - lastDigit}`);
+                    const remainder = num2 - lastDigit;
+                    // Проверяем, не равен ли remainder нулю
+                    if (remainder !== 0) {
+                        wrongOptions.push(`${num1} - ${lastDigit} - ${remainder}`);
+                    } else {
+                        wrongOptions.push(`${num1} - ${lastDigit}`);
+                    }
                 }
                 if (lastDigit > 1 && num2 - lastDigit - 1 > 0 && num1 % 10 !== 0) {
-                    wrongOptions.push(`${num1} - ${lastDigit + 1} - ${num2 - lastDigit - 1}`);
+                    const remainder = num2 - lastDigit - 1;
+                    // Проверяем, не равен ли remainder нулю
+                    if (remainder !== 0) {
+                        wrongOptions.push(`${num1} - ${lastDigit + 1} - ${remainder}`);
+                    } else {
+                        wrongOptions.push(`${num1} - ${lastDigit + 1}`);
+                    }
                 }
                 wrongOptions.push(`${num1} - ${num2 + 1}`);
             }
