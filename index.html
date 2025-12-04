@@ -1,0 +1,791 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Математический тренажер для детей - Vue.js</title>
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Rubik:wght@400;500;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Rubik', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 0;
+            overflow: hidden;
+        }
+
+        .app-container {
+            width: 100vw;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 10px;
+        }
+
+        .game-container {
+            background-color: #ffffff;
+            border-radius: 20px;
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.15);
+            padding: 20px;
+            position: relative;
+            overflow: hidden;
+            width: 100%;
+            max-width: 900px;
+            max-height: 95vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .game-container::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 6px;
+            background: linear-gradient(90deg, #FF9A8B, #FF6A88, #FF99AC);
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 15px;
+            flex-shrink: 0;
+        }
+
+        .title {
+            font-size: clamp(22px, 5vw, 32px);
+            font-weight: 700;
+            color: #333;
+            margin-bottom: 10px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .level-indicator {
+            display: inline-block;
+            padding: 6px 15px;
+            background-color: #f0f4ff;
+            border-radius: 15px;
+            font-size: clamp(12px, 2.5vw, 14px);
+            color: #667eea;
+            font-weight: 500;
+        }
+
+        .stats-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin: 15px 0;
+            padding: 10px;
+            background-color: #f8f9ff;
+            border-radius: 12px;
+            flex-shrink: 0;
+        }
+
+        .score-display {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .score-icon {
+            width: clamp(28px, 5vw, 32px);
+            height: clamp(28px, 5vw, 32px);
+            background: linear-gradient(135deg, #ffd700, #ffb700);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: clamp(14px, 3vw, 16px);
+            box-shadow: 0 3px 6px rgba(255, 183, 0, 0.3);
+        }
+
+        .score-text {
+            font-size: clamp(20px, 4.5vw, 24px);
+            font-weight: 700;
+            color: #333;
+        }
+
+        .progress-info {
+            font-size: clamp(12px, 2.5vw, 14px);
+            color: #666;
+        }
+
+        .math-expression {
+            font-size: clamp(28px, 7vw, 42px);
+            font-weight: 700;
+            color: #5c6bc0;
+            margin: 15px 0;
+            padding: 15px;
+            background: linear-gradient(135deg, #f5f7ff, #e8ecff);
+            border-radius: 15px;
+            text-align: center;
+            box-shadow: 0 6px 12px rgba(92, 107, 192, 0.1);
+            position: relative;
+            overflow: hidden;
+            flex-shrink: 0;
+        }
+
+        .math-expression::after {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255,255,255,0.3) 0%, transparent 70%);
+            animation: shimmer 3s infinite;
+        }
+
+        @keyframes shimmer {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .progress-bar {
+            height: 8px;
+            background-color: #e0e0e0;
+            border-radius: 4px;
+            margin: 15px 0;
+            overflow: hidden;
+            position: relative;
+            flex-shrink: 0;
+        }
+
+        .progress {
+            height: 100%;
+            background: linear-gradient(90deg, #667eea, #764ba2);
+            width: 0%;
+            transition: width 0.5s ease;
+            border-radius: 4px;
+            position: relative;
+        }
+
+        .progress::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+            animation: progress-shine 2s infinite;
+        }
+
+        @keyframes progress-shine {
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(100%); }
+        }
+
+        .stars-container {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin: 15px 0;
+            flex-shrink: 0;
+        }
+
+        .star {
+            font-size: clamp(24px, 5vw, 36px);
+            color: #ddd;
+            transition: all 0.3s ease;
+            filter: grayscale(1);
+        }
+
+        .star.filled {
+            color: #ffd700;
+            filter: grayscale(0);
+            animation: star-pop 0.5s ease;
+        }
+
+        @keyframes star-pop {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.3); }
+            100% { transform: scale(1); }
+        }
+
+        .options-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+            margin: 20px 0;
+            flex: 1;
+            min-height: 0;
+        }
+
+        .option-card {
+            padding: 12px;
+            background: linear-gradient(135deg, #ffffff, #f8f9ff);
+            border: 2px solid #e0e6ff;
+            border-radius: 12px;
+            font-size: clamp(16px, 4vw, 22px);
+            font-weight: 500;
+            color: #333;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 60px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .option-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(102, 126, 234, 0.1), transparent);
+            transition: left 0.5s ease;
+        }
+
+        .option-card:hover:not(.disabled) {
+            transform: translateY(-3px) scale(1.02);
+            box-shadow: 0 6px 12px rgba(102, 126, 234, 0.2);
+            border-color: #667eea;
+        }
+
+        .option-card:hover:not(.disabled)::before {
+            left: 100%;
+        }
+
+        .option-card.correct {
+            background: linear-gradient(135deg, #e8f5e9, #c8e6c9);
+            border-color: #4caf50;
+            animation: correct-pulse 0.6s ease;
+        }
+
+        .option-card.incorrect {
+            background: linear-gradient(135deg, #ffebee, #ffcdd2);
+            border-color: #f44336;
+            animation: incorrect-shake 0.6s ease;
+        }
+
+        .option-card.disabled {
+            pointer-events: none;
+            opacity: 0.8;
+        }
+
+        @keyframes correct-pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+
+        @keyframes incorrect-shake {
+            0%, 100% { transform: translateX(0); }
+            20% { transform: translateX(-6px); }
+            40% { transform: translateX(6px); }
+            60% { transform: translateX(-3px); }
+            80% { transform: translateX(3px); }
+        }
+
+        .btn {
+            padding: 12px 20px;
+            border: none;
+            border-radius: 40px;
+            font-size: clamp(14px, 3vw, 16px);
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+
+        .game-over {
+            text-align: center;
+            padding: 25px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            flex: 1;
+        }
+
+        .game-over h1 {
+            font-size: clamp(26px, 5vw, 40px);
+            margin-bottom: 20px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .final-score {
+            font-size: clamp(20px, 3.5vw, 28px);
+            margin: 20px 0;
+            color: #333;
+        }
+
+        .final-score-number {
+            font-size: clamp(32px, 6vw, 48px);
+            font-weight: 700;
+            color: #667eea;
+        }
+
+        .achievement {
+            display: inline-block;
+            padding: 8px 16px;
+            background: linear-gradient(135deg, #ffd700, #ffb300);
+            color: white;
+            border-radius: 20px;
+            font-weight: 600;
+            margin: 8px 4px;
+            box-shadow: 0 3px 6px rgba(255, 179, 0, 0.3);
+            font-size: clamp(14px, 2.5vw, 16px);
+        }
+
+        /* Адаптация для телефонов */
+        @media (max-width: 768px) {
+            .app-container {
+                padding: 5px;
+            }
+            
+            .game-container {
+                padding: 15px;
+                border-radius: 15px;
+                max-height: 98vh;
+            }
+            
+            /* Скрываем заголовок на телефонах */
+            .title {
+                display: none;
+            }
+            
+            /* Скрываем разделительную черту на телефонах */
+            .game-container::before {
+                display: none;
+            }
+            
+            .options-grid {
+                gap: 8px;
+                margin: 15px 0;
+            }
+            
+            
+            .option-card {
+                min-height: 65px;
+            }
+        }
+
+        /* Для очень маленьких экранов */
+        @media (max-width: 480px) {
+            .options-grid {
+                grid-template-columns: 1fr;
+                gap: 6px;
+            }
+            
+            .option-card {
+                min-height: 55px;
+            }
+        }
+
+        /* Для очень широких экранов */
+        @media (min-width: 1200px) {
+            .game-container {
+                max-width: 1000px;
+            }
+            
+            .options-grid {
+                grid-template-columns: repeat(3, 1fr);
+                gap: 15px;
+            }
+        }
+
+        /* Для планшетов в альбомной ориентации */
+        @media (max-height: 600px) and (orientation: landscape) {
+            .game-container {
+                padding: 10px;
+            }
+            
+            .header {
+                margin-bottom: 10px;
+            }
+            
+            .math-expression {
+                margin: 10px 0;
+                padding: 10px;
+            }
+            
+            .progress-bar {
+                margin: 10px 0;
+            }
+            
+            .stars-container {
+                margin: 10px 0;
+            }
+            
+            .options-grid {
+                margin: 15px 0;
+            }
+            
+        }
+    </style>
+</head>
+<body>
+    <div id="app">
+        <div class="app-container">
+            <div v-if="!gameOver" class="game-container">
+                <div class="header">
+                    <h1 class="title">Выбери вариант разложения</h1>
+                    <span class="level-indicator">Уровень {{ currentLevel }}</span>
+                </div>
+                
+                <div class="stats-bar">
+                    <div class="score-display">
+                        <div class="score-icon">⭐</div>
+                        <div class="score-text">{{ score }}</div>
+                    </div>
+                    <div class="progress-info">
+                        Вопрос {{ currentQuestion + 1 }} из {{ totalQuestions }}
+                    </div>
+                </div>
+                
+                <div class="math-expression">
+                    {{ currentProblem.expression }}
+                </div>
+                
+                <div class="progress-bar">
+                    <div class="progress" :style="{ width: progressPercent + '%' }"></div>
+                </div>
+                
+                <div class="stars-container">
+                    <span v-for="n in 3" :key="n" class="star" :class="{ filled: score >= n * 20 }">★</span>
+                </div>
+                
+                <div class="options-grid">
+                    <div 
+                        v-for="(option, index) in currentProblem.options" 
+                        :key="index"
+                        class="option-card"
+                        :class="{ 
+                            correct: answered && index === currentProblem.correctIndex,
+                            incorrect: answered && index === selectedIndex && index !== currentProblem.correctIndex,
+                            disabled: answered
+                        }"
+                        @click="selectAnswer(index)"
+                    >
+                        {{ option }}
+                    </div>
+                </div>
+                
+            </div>
+            
+            <div v-else class="game-container game-over">
+                <h1>🎉 Игра окончена! 🎉</h1>
+                <div class="final-score">
+                    Твой счет: <span class="final-score-number">{{ score }}</span>
+                </div>
+                <div class="stars-container">
+                    <span v-for="n in 3" :key="n" class="star" :class="{ filled: score >= n * 20 }">★</span>
+                </div>
+                <div>
+                    <div v-if="score >= 60" class="achievement">🏆 Математический гений!</div>
+                    <div v-else-if="score >= 40" class="achievement">🥈 Отличный результат!</div>
+                    <div v-else-if="score >= 20" class="achievement">🥉 Хорошая работа!</div>
+                    <div v-else class="achievement">💪 Продолжай учиться!</div>
+                </div>
+                <button class="btn" style="margin-top: 20px; background: linear-gradient(135deg, #667eea, #764ba2); color: white;" @click="restartGame">
+                    Играть снова
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const { createApp } = Vue;
+
+        createApp({
+            data() {
+                return {
+                    score: 0,
+                    currentQuestion: 0,
+                    totalQuestions: 10,
+                    answered: false,
+                    selectedIndex: null,
+                    gameOver: false,
+                    currentLevel: 1,
+                    problems: []
+                }
+            },
+            computed: {
+                currentProblem() {
+                    return this.problems[this.currentQuestion] || this.generateProblem();
+                },
+                progressPercent() {
+                    return (this.currentQuestion / this.totalQuestions) * 100;
+                }
+            },
+            methods: {
+                generateProblem() {
+                    // Генерируем два числа, большее всегда слева
+                    let num1 = Math.floor(Math.random() * 50) + 20;
+                    let num2 = Math.floor(Math.random() * 30) + 5;
+                    
+                    if (num2 > num1) {
+                        [num1, num2] = [num2, num1];
+                    }
+                    
+                    // Выбираем операцию
+                    const isAddition = Math.random() > 0.5;
+                    
+                    let correctOption, wrongOptions = [];
+                    
+                    if (isAddition) {
+                        // Сложение
+                        correctOption = this.generateAdditionOption(num1, num2);
+                        wrongOptions = this.generateWrongAdditionOptions(num1, num2, correctOption);
+                    } else {
+                        // Вычитание
+                        correctOption = this.generateSubtractionOption(num1, num2);
+                        wrongOptions = this.generateWrongSubtractionOptions(num1, num2, correctOption);
+                    }
+                    
+                    // Собираем все варианты и перемешиваем
+                    const allOptions = [correctOption, ...wrongOptions];
+                    const shuffled = this.shuffleArray(allOptions);
+                    const correctIndex = shuffled.indexOf(correctOption);
+                    
+                    return {
+                        expression: isAddition ? `${num1} + ${num2}` : `${num1} - ${num2}`,
+                        options: shuffled,
+                        correctIndex: correctIndex
+                    };
+                },
+                
+                generateAdditionOption(num1, num2) {
+                    // Для сложения раскладываем ВТОРОЕ число для удобного счета
+                    if (num2 <= 9) {
+                        // Однозначное число - раскладываем чтобы дополнить до круглого десятка
+                        const lastDigit = num1 % 10;
+                        const neededForRound = 10 - lastDigit;
+                        
+                        if (num2 >= neededForRound) {
+                            // Раскладываем, чтобы дополнить до круглого десятка
+                            const part1 = neededForRound;
+                            const part2 = num2 - neededForRound;
+                            return `${num1} + ${part1} + ${part2}`;
+                        } else {
+                            // Просто раскладываем на удобные слагаемые
+                            const part1 = Math.floor(Math.random() * (num2 - 1)) + 1;
+                            const part2 = num2 - part1;
+                            return `${num1} + ${part1} + ${part2}`;
+                        }
+                    } else {
+                        // Двузначное число - раскладываем на десятки и единицы
+                        const tens = Math.floor(num2 / 10) * 10;
+                        const remainder = num2 - tens;
+                        
+                        // Если остаток 0, не раскладываем вообще
+                        if (remainder === 0) {
+                            return `${num1} + ${num2}`;
+                        } else {
+                            return `${num1} + ${tens} + ${remainder}`;
+                        }
+                    }
+                },
+                
+                generateSubtractionOption(num1, num2) {
+                    if (num2 <= 9) {
+                        // Однозначное второе число
+                        const isFirstRound = num1 % 10 === 0;
+                        const lastDigit = num1 % 10;
+                        
+                        if (isFirstRound) {
+                            // Если первое число круглое - не раскладываем
+                            return `${num1} - ${num2}`;
+                        } else if (num2 <= lastDigit) {
+                            // Если второе число ≤ последней цифры первого - не раскладываем
+                            return `${num1} - ${num2}`;
+                        } else {
+                            // Раскладываем второе число для удобства
+                            const roundPart = lastDigit;
+                            const remainder = num2 - roundPart;
+                            
+                            // Проверяем, чтобы не было отрицательных чисел
+                            if (remainder <= 0) {
+                                return `${num1} - ${num2}`;
+                            }
+                            return `${num1} - ${roundPart} - ${remainder}`;
+                        }
+                    } else {
+                        // Двузначное второе число - ВСЕГДА раскладываем второе число
+                        const tens = Math.floor(num2 / 10) * 10;
+                        const remainder = num2 - tens;
+                        
+                        if (remainder === 0) {
+                            // Если остаток 0, не включаем его в выражение
+                            return `${num1} - ${tens}`;
+                        } else {
+                            return `${num1} - ${tens} - ${remainder}`;
+                        }
+                    }
+                },
+                
+                generateWrongAdditionOptions(num1, num2, correctOption) {
+                    const wrongOptions = [];
+                    
+                    // Разбираем правильный вариант
+                    const parts = correctOption.split(' + ');
+                    const mainNum = parseInt(parts[0]);
+                    
+                    if (parts.length === 2) {
+                        // Простое сложение - создаем варианты с разложением
+                        wrongOptions.push(`${mainNum} + ${Math.floor(num2 / 2)} + ${Math.ceil(num2 / 2)}`);
+                        wrongOptions.push(`${mainNum} + ${num2 - 1} + 1`);
+                        wrongOptions.push(`${mainNum} + ${num2 + 1}`);
+                    } else {
+                        // Разложенное сложение
+                        const part1 = parseInt(parts[1]);
+                        const part2 = parseInt(parts[2]);
+                        
+                        // Вариант 1: меняем первое слагаемое на 1
+                        if (part1 + 1 !== num2) {
+                            wrongOptions.push(`${mainNum} + ${part1 + 1} + ${part2}`);
+                        }
+                        
+                        // Вариант 2: меняем второе слагаемое на 1
+                        if (part2 + 1 !== num2) {
+                            wrongOptions.push(`${mainNum} + ${part1} + ${part2 + 1}`);
+                        }
+                        
+                        // Вариант 3: немного изменяем оба слагаемых
+                        if (part1 > 2 && part2 > 2) {
+                            wrongOptions.push(`${mainNum} + ${part1 - 1} + ${part2 + 1}`);
+                        } else {
+                            wrongOptions.push(`${mainNum} + ${part1 + 2} + ${part2}`);
+                        }
+                    }
+                    
+                    return this.shuffleArray(wrongOptions).slice(0, 3);
+                },
+                
+                generateWrongSubtractionOptions(num1, num2, correctOption) {
+                    const wrongOptions = [];
+                    
+                    if (correctOption.split(' - ').length === 3) {
+                        // Разбираем правильный вариант с разложением
+                        const parts = correctOption.split(' - ');
+                        const mainNum = parseInt(parts[0]);
+                        const part1 = parseInt(parts[1]);
+                        const part2 = parseInt(parts[2]);
+                        
+                        // Неправильные варианты для разложенного вычитания
+                        if (part2 + 1 > 0) {
+                            wrongOptions.push(`${mainNum} - ${part1} - ${part2 + 1}`);
+                        }
+                        if (part1 + 1 < num2) {
+                            wrongOptions.push(`${mainNum} - ${part1 + 1} - ${part2}`);
+                        }
+                        
+                        // Третий вариант зависит от типа разложения
+                        if (num2 <= 9) {
+                            // Для однозначного - создаем вариант с другим разложением
+                            const lastDigit = num1 % 10;
+                            if (lastDigit > 1 && num2 - lastDigit + 1 > 0) {
+                                wrongOptions.push(`${mainNum} - ${lastDigit - 1} - ${num2 - lastDigit + 1}`);
+                            } else {
+                                wrongOptions.push(`${mainNum} - ${num2 + 1}`);
+                            }
+                        } else {
+                            // Для двузначного - меняем десятки и единицы
+                            if (part1 - 10 > 0 && part2 + 10 < num2) {
+                                wrongOptions.push(`${mainNum} - ${part1 - 10} - ${part2 + 10}`);
+                            } else {
+                                wrongOptions.push(`${mainNum} - ${num2 + 1}`);
+                            }
+                        }
+                    } else {
+                        // Неправильные варианты для простого вычитания
+                        const lastDigit = num1 % 10;
+                        
+                        // Создаем варианты с неправильным разложением
+                        if (lastDigit > 0 && num2 - lastDigit > 0 && num1 % 10 !== 0) {
+                            wrongOptions.push(`${num1} - ${lastDigit} - ${num2 - lastDigit}`);
+                        }
+                        if (lastDigit > 1 && num2 - lastDigit - 1 > 0 && num1 % 10 !== 0) {
+                            wrongOptions.push(`${num1} - ${lastDigit + 1} - ${num2 - lastDigit - 1}`);
+                        }
+                        wrongOptions.push(`${num1} - ${num2 + 1}`);
+                    }
+                    
+                    return this.shuffleArray(wrongOptions).slice(0, 3);
+                },
+                
+                shuffleArray(array) {
+                    const newArray = [...array];
+                    for (let i = newArray.length - 1; i > 0; i--) {
+                        const j = Math.floor(Math.random() * (i + 1));
+                        [newArray[i], newArray[j]] = [newArray[j], newArray[i]];
+                    }
+                    return newArray;
+                },
+                
+                selectAnswer(index) {
+                    if (this.answered) return;
+                    
+                    this.answered = true;
+                    this.selectedIndex = index;
+                    
+                    if (index === this.currentProblem.correctIndex) {
+                        this.score += 10;
+                    }
+                    
+                    setTimeout(() => {
+                        this.nextQuestion();
+                    }, 1500);
+                },
+                
+                nextQuestion() {
+                    this.currentQuestion++;
+                    this.answered = false;
+                    this.selectedIndex = null;
+                    
+                    if (this.currentQuestion >= this.totalQuestions) {
+                        this.gameOver = true;
+                    } else {
+                        // Увеличиваем уровень каждые 3 вопроса
+                        if (this.currentQuestion % 3 === 0) {
+                            this.currentLevel++;
+                        }
+                    }
+                },
+                
+                restartGame() {
+                    this.score = 0;
+                    this.currentQuestion = 0;
+                    this.answered = false;
+                    this.selectedIndex = null;
+                    this.gameOver = false;
+                    this.currentLevel = 1;
+                    this.problems = [];
+                }
+            },
+            mounted() {
+                // Генерируем все проблемы заранее
+                for (let i = 0; i < this.totalQuestions; i++) {
+                    this.problems.push(this.generateProblem());
+                }
+            }
+        }).mount('#app');
+    </script>
+</body>
+</html>
