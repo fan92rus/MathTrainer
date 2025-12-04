@@ -425,6 +425,11 @@ createApp({
             this.currentLevel = 1;
             this.problems = [];
             // Не сбрасываем totalScore здесь, так как они должны копиться
+        },
+        
+        // Переход на главную страницу
+        goToMain() {
+            window.location.href = 'index.html';
         }
     },
     mounted() {

@@ -307,6 +307,39 @@ body {
     letter-spacing: 0.5px;
 }
 
+.back-button {
+    padding: 8px 15px;
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    color: white;
+    border: none;
+    border-radius: 20px;
+    font-size: clamp(12px, 2.5vw, 14px);
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 3px 6px rgba(102, 126, 234, 0.3);
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.back-button:hover {
+    transform: scale(1.05);
+    box-shadow: 0 5px 10px rgba(102, 126, 234, 0.4);
+}
+
+.back-button:disabled {
+    background: linear-gradient(135deg, #cccccc, #999999);
+    cursor: not-allowed;
+    opacity: 0.6;
+    box-shadow: none;
+}
+
+.back-button:disabled:hover {
+    transform: none;
+    box-shadow: none;
+}
+
 
 .game-over {
     text-align: center;
