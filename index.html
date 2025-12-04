@@ -97,26 +97,33 @@
 
         .score-display {
             display: flex;
-            align-items: center;
-            gap: 8px;
+            gap: 15px;
         }
 
-        .score-icon {
-            width: clamp(28px, 5vw, 32px);
-            height: clamp(28px, 5vw, 32px);
-            background: linear-gradient(135deg, #ffd700, #ffb700);
-            border-radius: 50%;
+        .score-item {
             display: flex;
+            flex-direction: column;
             align-items: center;
-            justify-content: center;
-            font-size: clamp(14px, 3vw, 16px);
-            box-shadow: 0 3px 6px rgba(255, 183, 0, 0.3);
+            padding: 5px 10px;
+            background-color: #f8f9ff;
+            border-radius: 10px;
+            min-width: 80px;
         }
 
-        .score-text {
-            font-size: clamp(20px, 4.5vw, 24px);
+        .score-label {
+            font-size: clamp(10px, 2vw, 12px);
+            color: #666;
+            margin-bottom: 2px;
+        }
+
+        .score-value {
+            font-size: clamp(18px, 4vw, 22px);
             font-weight: 700;
             color: #333;
+        }
+
+        .total-score-value {
+            color: #667eea;
         }
 
         .progress-info {
@@ -341,6 +348,27 @@
             color: #667eea;
         }
 
+        .total-score-number {
+            color: #ff6b6b;
+        }
+
+        .score-summary {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+            margin: 20px 0;
+        }
+
+        .score-item-final {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 10px 20px;
+            background-color: #f8f9ff;
+            border-radius: 15px;
+            min-width: 120px;
+        }
+
         .achievement {
             display: inline-block;
             padding: 8px 16px;
@@ -380,6 +408,23 @@
                 margin: 15px 0;
             }
             
+            .score-display {
+                gap: 8px;
+            }
+            
+            .score-item {
+                min-width: 65px;
+                padding: 3px 6px;
+            }
+            
+            .score-summary {
+                gap: 10px;
+            }
+            
+            .score-item-final {
+                min-width: 90px;
+                padding: 8px 12px;
+            }
             
             .option-card {
                 min-height: 65px;
@@ -451,8 +496,14 @@
                 
                 <div class="stats-bar">
                     <div class="score-display">
-                        <div class="score-icon">⭐</div>
-                        <div class="score-text">{{ score }}</div>
+                        <div class="score-item">
+                            <div class="score-label">Текущие</div>
+                            <div class="score-value">⭐ {{ score }}</div>
+                        </div>
+                        <div class="score-item">
+                            <div class="score-label">Всего</div>
+                            <div class="score-value total-score-value">⭐ {{ totalScore }}</div>
+                        </div>
                     </div>
                     <div class="progress-info">
                         Вопрос {{ currentQuestion + 1 }} из {{ totalQuestions }}
@@ -491,8 +542,15 @@
             
             <div v-else class="game-container game-over">
                 <h1>🎉 Игра окончена! 🎉</h1>
-                <div class="final-score">
-                    Твой счет: <span class="final-score-number">{{ score }}</span>
+                <div class="score-summary">
+                    <div class="score-item-final">
+                        <div class="score-label">За эту игру</div>
+                        <div class="final-score-number">{{ score }}</div>
+                    </div>
+                    <div class="score-item-final">
+                        <div class="score-label">Всего накоплено</div>
+                        <div class="final-score-number total-score-number">{{ totalScore }}</div>
+                    </div>
                 </div>
                 <div class="stars-container">
                     <span v-for="n in 3" :key="n" class="star" :class="{ filled: score >= n * 20 }">★</span>
@@ -503,9 +561,14 @@
                     <div v-else-if="score >= 20" class="achievement">🥉 Хорошая работа!</div>
                     <div v-else class="achievement">💪 Продолжай учиться!</div>
                 </div>
-                <button class="btn" style="margin-top: 20px; background: linear-gradient(135deg, #667eea, #764ba2); color: white;" @click="restartGame">
-                    Играть снова
-                </button>
+                <div style="margin-top: 20px; display: flex; gap: 10px; justify-content: center;">
+                    <button class="btn" style="background: linear-gradient(135deg, #667eea, #764ba2); color: white;" @click="restartGame">
+                        Играть снова
+                    </button>
+                    <button class="btn" style="background: linear-gradient(135deg, #ff6b6b, #ee5a24); color: white;" @click="resetTotalScore">
+                        Сбросить очки
+                    </button>
+                </div>
             </div>
         </div>
     </div>
@@ -517,6 +580,7 @@
             data() {
                 return {
                     score: 0,
+                    totalScore: 0, // Суммарные очки, которые копятся между играми
                     currentQuestion: 0,
                     totalQuestions: 10,
                     answered: false,
@@ -535,6 +599,27 @@
                 }
             },
             methods: {
+                // Загрузка суммарных очков из localStorage
+                loadTotalScore() {
+                    const saved = localStorage.getItem('mathTrainerTotalScore');
+                    if (saved !== null) {
+                        this.totalScore = parseInt(saved, 10);
+                    }
+                },
+                
+                // Сохранение суммарных очков в localStorage
+                saveTotalScore() {
+                    localStorage.setItem('mathTrainerTotalScore', this.totalScore.toString());
+                },
+                
+                // Сброс суммарных очков
+                resetTotalScore() {
+                    if (confirm('Вы уверены, что хотите сбросить все накопленные очки?')) {
+                        this.totalScore = 0;
+                        this.saveTotalScore();
+                    }
+                },
+                
                 generateProblem() {
                     // Генерируем два числа, большее всегда слева
                     let num1 = Math.floor(Math.random() * 50) + 20;
@@ -747,6 +832,8 @@
                     
                     if (index === this.currentProblem.correctIndex) {
                         this.score += 10;
+                        this.totalScore += 10; // Добавляем очки к суммарным
+                        this.saveTotalScore(); // Сохраняем в localStorage
                     }
                     
                     setTimeout(() => {
@@ -777,9 +864,13 @@
                     this.gameOver = false;
                     this.currentLevel = 1;
                     this.problems = [];
+                    // Не сбрасываем totalScore здесь, так как они должны копиться
                 }
             },
             mounted() {
+                // Загружаем суммарные очки из localStorage
+                this.loadTotalScore();
+                
                 // Генерируем все проблемы заранее
                 for (let i = 0; i < this.totalQuestions; i++) {
                     this.problems.push(this.generateProblem());
