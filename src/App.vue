@@ -1,5 +1,5 @@
 <template>
-  <div id="app">
+  <div class="app-container">
     <router-view />
     <GradeSelection
       v-if="showGradeSelection"
@@ -46,7 +46,7 @@ export default {
 </script>
 
 <style>
-#app {
+.app-container {
   font-family: 'Rubik', sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
