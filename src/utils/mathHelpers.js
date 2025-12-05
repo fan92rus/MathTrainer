@@ -284,14 +284,17 @@ export function generateDecompositionProblem(maxNumber = null) {
 }
 
 function generateAdditionOption(num1, num2) {
-  // Для сложения раскладываем ВТОРОЕ число для удобного счета на 2 числа
-  if (num2 <= 9) {
-    // Однозначное число - раскладываем чтобы дополнить до круглого десятка
-    const lastDigit = num1 % 10
-    const neededForRound = 10 - lastDigit
-    
-    // Проверяем, что neededForRound положительное и не превышает num2
-    if (neededForRound > 0 && neededForRound <= num2) {
+  // Раскладываем только если есть переход через десяток
+  const lastDigit1 = num1 % 10
+  const lastDigit2 = num2 % 10
+  
+  // Проверяем, есть ли переход через десяток (сумма единиц >= 10)
+  if (lastDigit1 + lastDigit2 >= 10) {
+    // Есть переход через десяток - раскладываем
+    if (num2 <= 9) {
+      // Однозначное число - раскладываем чтобы дополнить до круглого десятка
+      const neededForRound = 10 - lastDigit1
+      
       // Раскладываем, чтобы дополнить до круглого десятка
       const part1 = neededForRound
       const part2 = num2 - neededForRound
@@ -303,46 +306,34 @@ function generateAdditionOption(num1, num2) {
         return `${num1} + ${part1} + ${part2}`
       }
     } else {
-      // Просто раскладываем на удобные слагаемые
-      const part1 = Math.floor(Math.random() * (num2 - 1)) + 1
-      const part2 = num2 - part1
+      // Двузначное число - раскладываем на десятки и единицы
+      const tens = Math.floor(num2 / 10) * 10
+      const remainder = num2 - tens
       
-      // Проверяем, не равен ли part2 нулю
-      if (part2 === 0) {
-        return `${num1} + ${part1}`
+      // Если остаток 0, не раскладываем вообще
+      if (remainder === 0) {
+        return `${num1} + ${num2}`
       } else {
-        return `${num1} + ${part1} + ${part2}`
+        return `${num1} + ${tens} + ${remainder}`
       }
     }
   } else {
-    // Двузначное число - раскладываем на десятки и единицы
-    const tens = Math.floor(num2 / 10) * 10
-    const remainder = num2 - tens
-    
-    // Если остаток 0, не раскладываем вообще
-    if (remainder === 0) {
-      return `${num1} + ${num2}`
-    } else {
-      return `${num1} + ${tens} + ${remainder}`
-    }
+    // Нет перехода через десяток - не раскладываем
+    return `${num1} + ${num2}`
   }
 }
 
 function generateSubtractionOption(num1, num2) {
-  if (num2 <= 9) {
-    // Однозначное второе число
-    const isFirstRound = num1 % 10 === 0
-    const lastDigit = num1 % 10
-    
-    if (isFirstRound) {
-      // Если первое число круглое - не раскладываем
-      return `${num1} - ${num2}`
-    } else if (num2 <= lastDigit) {
-      // Если второе число ≤ последней цифры первого - не раскладываем
-      return `${num1} - ${num2}`
-    } else {
-      // Раскладываем второе число для удобства на 2 числа
-      const roundPart = lastDigit
+  // Раскладываем только если есть переход через десяток
+  const lastDigit1 = num1 % 10
+  const lastDigit2 = num2 % 10
+  
+  // Проверяем, есть ли переход через десяток (единицы второго числа больше единиц первого)
+  if (lastDigit2 > lastDigit1) {
+    // Есть переход через десяток - раскладываем
+    if (num2 <= 9) {
+      // Однозначное второе число
+      const roundPart = lastDigit1
       const remainder = num2 - roundPart
       
       // Проверяем, чтобы не было отрицательных чисел или нуля
@@ -350,18 +341,21 @@ function generateSubtractionOption(num1, num2) {
         return `${num1} - ${num2}`
       }
       return `${num1} - ${roundPart} - ${remainder}`
+    } else {
+      // Двузначное второе число - раскладываем на десятки и единицы
+      const tens = Math.floor(num2 / 10) * 10
+      const remainder = num2 - tens
+      
+      if (remainder === 0) {
+        // Если остаток 0, не включаем его в выражение
+        return `${num1} - ${tens}`
+      } else {
+        return `${num1} - ${tens} - ${remainder}`
+      }
     }
   } else {
-    // Двузначное второе число - ВСЕГДА раскладываем второе число на 2 числа
-    const tens = Math.floor(num2 / 10) * 10
-    const remainder = num2 - tens
-    
-    if (remainder === 0) {
-      // Если остаток 0, не включаем его в выражение
-      return `${num1} - ${tens}`
-    } else {
-      return `${num1} - ${tens} - ${remainder}`
-    }
+    // Нет перехода через десяток - не раскладываем
+    return `${num1} - ${num2}`
   }
 }
 
