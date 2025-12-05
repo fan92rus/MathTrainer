@@ -20,25 +20,41 @@
         </div>
 
         <div class="games-container">
-          <div class="game-card" @click="goToFirstGradeDecomposition">
+          <div
+            v-if="availableExercises.firstGradeDecomposition.available"
+            class="game-card"
+            @click="goToFirstGradeDecomposition"
+          >
             <div class="game-icon">🔢</div>
-            <div class="game-title">Разложение чисел (1 класс)</div>
-            <div class="game-description">Изучи состав чисел до 10</div>
+            <div class="game-title">{{ availableExercises.firstGradeDecomposition.title }}</div>
+            <div class="game-description">{{ availableExercises.firstGradeDecomposition.description }}</div>
           </div>
-          <div class="game-card" @click="goToDecomposition">
+          <div
+            v-if="availableExercises.decomposition.available"
+            class="game-card"
+            @click="goToDecomposition"
+          >
             <div class="game-icon">➕</div>
-            <div class="game-title">Разложение чисел</div>
-            <div class="game-description">Выбирай правильный способ разложения чисел</div>
+            <div class="game-title">{{ availableExercises.decomposition.title }}</div>
+            <div class="game-description">{{ availableExercises.decomposition.description }}</div>
           </div>
-          <div class="game-card" @click="goToCounting">
+          <div
+            v-if="availableExercises.counting.available"
+            class="game-card"
+            @click="goToCounting"
+          >
             <div class="game-icon">🔢</div>
-            <div class="game-title">Тренажер счета</div>
-            <div class="game-description">Решай примеры на сложение и вычитание</div>
+            <div class="game-title">{{ availableExercises.counting.title }}</div>
+            <div class="game-description">{{ availableExercises.counting.description }}</div>
           </div>
-          <div class="game-card" @click="goToMultiplication">
+          <div
+            v-if="availableExercises.multiplication.available"
+            class="game-card"
+            @click="goToMultiplication"
+          >
             <div class="game-icon">✖️</div>
-            <div class="game-title">Таблица умножения</div>
-            <div class="game-description">Изучай таблицу умножения постепенно</div>
+            <div class="game-title">{{ availableExercises.multiplication.title }}</div>
+            <div class="game-description">{{ availableExercises.multiplication.description }}</div>
           </div>
         </div>
 
@@ -55,7 +71,7 @@ import { computed, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { useScoresStore } from '../store/scores'
 import { useSettingsStore } from '../store/settings'
-import { getGradeName, getQuarterName } from '../utils/gradeHelpers'
+import { getGradeName, getQuarterName, getCurrentQuarter, getAvailableExercises } from '../utils/gradeHelpers'
 
 export default {
   name: 'HomeView',
@@ -75,10 +91,25 @@ export default {
     const multiplicationScore = computed(() => scoresStore.multiplicationScore)
     const isGradeSelected = computed(() => settingsStore.isGradeSelected)
     const selectedGrade = computed(() => settingsStore.selectedGrade)
-    const currentQuarter = computed(() => settingsStore.currentQuarter)
     const gradeName = computed(() => getGradeName(selectedGrade.value))
-    const quarterName = computed(() => getQuarterName(currentQuarter.value))
     const difficultySettings = computed(() => settingsStore.difficultySettings)
+    
+    // Получаем текущую четверть напрямую, а не из хранилища
+    const currentQuarter = computed(() => getCurrentQuarter())
+    const quarterName = computed(() => getQuarterName(currentQuarter.value))
+    
+    // Получаем доступные упражнения для текущего класса и четверти
+    const availableExercises = computed(() => {
+      if (!selectedGrade.value) {
+        return {
+          counting: { available: true, title: 'Тренажер счета', description: 'Решай примеры на сложение и вычитание' },
+          firstGradeDecomposition: { available: false, title: 'Разложение чисел (1 класс)', description: 'Изучи состав чисел до 10' },
+          decomposition: { available: false, title: 'Разложение чисел', description: 'Выбирай правильный способ разложения чисел' },
+          multiplication: { available: false, title: 'Таблица умножения', description: 'Изучай таблицу умножения постепенно' }
+        }
+      }
+      return getAvailableExercises(selectedGrade.value, currentQuarter.value)
+    })
     
     // Методы
     const goToCounting = () => {
@@ -119,6 +150,7 @@ export default {
       isGradeSelected,
       gradeName,
       quarterName,
+      availableExercises,
       goToCounting,
       goToDecomposition,
       goToFirstGradeDecomposition,

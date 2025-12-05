@@ -5,6 +5,7 @@ import DecompositionView from '../views/DecompositionView.vue'
 import FirstGradeDecompositionView from '../views/FirstGradeDecompositionView.vue'
 import MultiplicationView from '../views/MultiplicationView.vue'
 import { useSettingsStore } from '../store/settings'
+import { getAvailableExercises } from '../utils/gradeHelpers'
 
 const routes = [
   {
@@ -15,22 +16,26 @@ const routes = [
   {
     path: '/counting',
     name: 'counting',
-    component: CountingView
+    component: CountingView,
+    meta: { exerciseType: 'counting' }
   },
   {
     path: '/decomposition',
     name: 'decomposition',
-    component: DecompositionView
+    component: DecompositionView,
+    meta: { exerciseType: 'decomposition' }
   },
   {
     path: '/first-grade-decomposition',
     name: 'first-grade-decomposition',
-    component: FirstGradeDecompositionView
+    component: FirstGradeDecompositionView,
+    meta: { exerciseType: 'firstGradeDecomposition' }
   },
   {
     path: '/multiplication',
     name: 'multiplication',
-    component: MultiplicationView
+    component: MultiplicationView,
+    meta: { exerciseType: 'multiplication' }
   }
 ]
 
@@ -41,8 +46,31 @@ const router = createRouter({
 
 // Навигационные guard'ы для проверки доступа
 router.beforeEach((to, from, next) => {
-  // Доступ разрешен для всех пользователей
-  next()
+  // Проверяем, есть ли у маршрута мета-информация о типе упражнения
+  if (to.meta.exerciseType) {
+    const settingsStore = useSettingsStore()
+    
+    // Если класс не выбран, разрешаем доступ (будет показан выбор класса)
+    if (!settingsStore.isGradeSelected) {
+      next()
+      return
+    }
+    
+    // Получаем доступные упражнения для текущего класса и четверти
+    const availableExercises = getAvailableExercises(settingsStore.selectedGrade, settingsStore.currentQuarter)
+    
+    // Проверяем, доступно ли упражнение для текущего класса и четверти
+    if (availableExercises[to.meta.exerciseType] && availableExercises[to.meta.exerciseType].available) {
+      next() // Упражнение доступно, разрешаем переход
+    } else {
+      // Упражнение недоступно, перенаправляем на главную страницу
+      alert('Это упражнение пока недоступно для вашего класса или четверти')
+      next('/')
+    }
+  } else {
+    // Для маршрутов без мета-информации (например, главная страница) разрешаем доступ
+    next()
+  }
 })
 
 export default router

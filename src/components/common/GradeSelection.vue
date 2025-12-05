@@ -7,35 +7,24 @@
       </div>
       
       <div class="grade-options">
-        <div 
-          v-for="grade in availableGrades" 
+        <div
+          v-for="grade in availableGrades"
           :key="grade.value"
           class="grade-card"
-          :class="{ 'selected': selectedGrade === grade.value }"
-          @click="selectGrade(grade.value)"
+          @click="confirmGradeSelection(grade.value)"
         >
           <div class="grade-icon">{{ grade.icon }}</div>
           <div class="grade-name">{{ grade.name }}</div>
         </div>
-      </div>
-      
-      <div class="grade-selection-footer">
-        <button 
-          class="continue-button" 
-          :disabled="!selectedGrade"
-          @click="confirmSelection"
-        >
-          Продолжить
-        </button>
       </div>
     </div>
   </div>
 </template>
 
 <script>
-import { ref } from 'vue'
+import { ref, computed } from 'vue'
 import { useSettingsStore } from '../../store/settings'
-import { getGradeName, getCurrentQuarter, getQuarterName } from '../../utils/gradeHelpers'
+import { getGradeName, getCurrentQuarter, getQuarterName, getAvailableExercises } from '../../utils/gradeHelpers'
 
 export default {
   name: 'GradeSelection',
@@ -52,25 +41,29 @@ export default {
       { value: 4, name: '4 класс', icon: '📝' }
     ]
     
-    // Выбор класса
-    const selectGrade = (grade) => {
-      selectedGrade.value = grade
-    }
+    // Получаем доступные упражнения для выбранного класса
+    const availableExercises = computed(() => {
+      if (!selectedGrade.value) return null
+      
+      const currentQuarter = getCurrentQuarter()
+      return getAvailableExercises(selectedGrade.value, currentQuarter)
+    })
     
-    // Подтверждение выбора
-    const confirmSelection = () => {
-      if (selectedGrade.value) {
-        settingsStore.setGrade(selectedGrade.value)
-        // Генерируем событие для уведомления родительского компонента
-        emit('grade-selected', selectedGrade.value)
-      }
+    // Получаем название текущей четверти
+    const currentQuarterName = computed(() => {
+      return getQuarterName(getCurrentQuarter())
+    })
+    
+    // Подтверждение выбора класса
+    const confirmGradeSelection = (grade) => {
+      settingsStore.setGrade(grade)
+      // Генерируем событие для уведомления родительского компонента
+      emit('grade-selected', grade)
     }
     
     return {
-      selectedGrade,
       availableGrades,
-      selectGrade,
-      confirmSelection
+      confirmGradeSelection
     }
   }
 }
@@ -263,6 +256,104 @@ export default {
   .continue-button {
     padding: 10px 25px;
     font-size: 14px;
+  }
+}
+
+.exercises-info {
+  margin: 20px 0;
+  padding: 15px;
+  background: rgba(102, 126, 234, 0.05);
+  border-radius: 15px;
+  border: 1px solid rgba(102, 126, 234, 0.1);
+}
+
+.exercises-title {
+  font-size: clamp(16px, 3vw, 18px);
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 15px;
+  text-align: center;
+}
+
+.exercises-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.exercise-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 10px;
+  background: rgba(255, 255, 255, 0.7);
+  border-radius: 10px;
+  transition: all 0.3s ease;
+}
+
+.exercise-item:hover {
+  background: rgba(255, 255, 255, 0.9);
+  transform: translateY(-2px);
+}
+
+.exercise-icon {
+  font-size: 18px;
+  color: #4CAF50;
+  font-weight: bold;
+  margin-top: 2px;
+}
+
+.exercise-info {
+  flex: 1;
+}
+
+.exercise-name {
+  font-size: clamp(14px, 2.5vw, 16px);
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 5px;
+}
+
+.exercise-description {
+  font-size: clamp(12px, 2vw, 14px);
+  color: #666;
+  line-height: 1.4;
+}
+
+@media (max-width: 768px) {
+  .exercises-info {
+    margin: 15px 0;
+    padding: 12px;
+  }
+  
+  .exercises-title {
+    font-size: 16px;
+    margin-bottom: 12px;
+  }
+  
+  .exercise-item {
+    padding: 8px;
+  }
+}
+
+@media (max-width: 480px) {
+  .exercises-info {
+    margin: 10px 0;
+    padding: 10px;
+  }
+  
+  .exercises-title {
+    font-size: 14px;
+    margin-bottom: 10px;
+  }
+  
+  .exercise-item {
+    padding: 6px;
+    gap: 8px;
+  }
+  
+  .exercise-icon {
+    font-size: 16px;
   }
 }
 

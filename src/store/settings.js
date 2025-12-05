@@ -56,6 +56,8 @@ export const useSettingsStore = defineStore('settings', {
     setGrade(grade) {
       this.selectedGrade = grade
       this.isFirstTime = false
+      // Обновляем текущую четверть при смене класса
+      this.currentQuarter = getCurrentQuarter()
       this.saveGrade()
     },
     

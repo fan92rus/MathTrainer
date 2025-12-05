@@ -147,3 +147,31 @@ export function getQuarterName(quarter) {
   
   return quarterNames[quarter] || 'Неизвестная четверть'
 }
+
+// Функция для определения доступности упражнений в зависимости от класса и четверти
+export function getAvailableExercises(grade, quarter) {
+  const exercises = {
+    counting: {
+      available: true, // Счет доступен с 1 класса с 1 четверти
+      title: 'Тренажер счета',
+      description: 'Решай примеры на сложение и вычитание'
+    },
+    firstGradeDecomposition: {
+      available: grade === 1 && quarter >= 2, // Разложение чисел (1 класс) только для 1 класса со 2 четверти
+      title: 'Разложение чисел (1 класс)',
+      description: 'Изучи состав чисел до 10'
+    },
+    decomposition: {
+      available: grade >= 2, // Разложение чисел доступно со 2 класса
+      title: 'Разложение чисел',
+      description: 'Выбирай правильный способ разложения чисел'
+    },
+    multiplication: {
+      available: (grade === 2 && quarter >= 3) || grade > 2, // Умножение доступно постоянно начиная с 3 четверти 2 класса и далее
+      title: 'Таблица умножения',
+      description: 'Изучай таблицу умножения постепенно'
+    }
+  }
+  
+  return exercises
+}
