@@ -285,11 +285,13 @@ export function generateDecompositionProblem(maxNumber = null) {
 
 function generateAdditionOption(num1, num2) {
   // Раскладываем только если есть переход через десяток
-  const lastDigit1 = num1 % 10
-  const lastDigit2 = num2 % 10
+  // Проверяем, будет ли переход через десяток при сложении
+  const sum = num1 + num2
+  const tensBefore = Math.floor(num1 / 10)
+  const tensAfter = Math.floor(sum / 10)
   
-  // Проверяем, есть ли переход через десяток (сумма единиц >= 10)
-  if (lastDigit1 + lastDigit2 >= 10) {
+  // Если количество десятков изменилось, значит был переход через десяток
+  if (tensAfter > tensBefore) {
     // Есть переход через десяток - раскладываем
     if (num2 <= 9) {
       // Однозначное число - раскладываем чтобы дополнить до круглого десятка
@@ -325,11 +327,13 @@ function generateAdditionOption(num1, num2) {
 
 function generateSubtractionOption(num1, num2) {
   // Раскладываем только если есть переход через десяток
-  const lastDigit1 = num1 % 10
-  const lastDigit2 = num2 % 10
+  // Проверяем, будет ли переход через десяток при вычитании
+  const difference = num1 - num2
+  const tensBefore = Math.floor(num1 / 10)
+  const tensAfter = Math.floor(difference / 10)
   
-  // Проверяем, есть ли переход через десяток (единицы второго числа больше единиц первого)
-  if (lastDigit2 > lastDigit1) {
+  // Если количество десятков изменилось, значит был переход через десяток
+  if (tensAfter < tensBefore) {
     // Есть переход через десяток - раскладываем
     if (num2 <= 9) {
       // Однозначное второе число
@@ -342,7 +346,7 @@ function generateSubtractionOption(num1, num2) {
       }
       return `${num1} - ${roundPart} - ${remainder}`
     } else {
-      // Двузначное второе число - раскладываем на десятки и единицы
+      // Двузначное второе число - раскладываем на десятки и единицы (сначала вычитаем десятки, потом единицы)
       const tens = Math.floor(num2 / 10) * 10
       const remainder = num2 - tens
       
