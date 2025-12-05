@@ -290,7 +290,8 @@ function generateAdditionOption(num1, num2) {
     const lastDigit = num1 % 10
     const neededForRound = 10 - lastDigit
     
-    if (num2 >= neededForRound && neededForRound > 0) {
+    // Проверяем, что neededForRound положительное и не превышает num2
+    if (neededForRound > 0 && neededForRound <= num2) {
       // Раскладываем, чтобы дополнить до круглого десятка
       const part1 = neededForRound
       const part2 = num2 - neededForRound
