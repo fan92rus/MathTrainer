@@ -1,13 +1,13 @@
 <template>
   <div class="options-grid">
-    <div 
-      v-for="(option, index) in options" 
+    <div
+      v-for="(option, index) in options"
       :key="index"
       class="option-card"
-      :class="{ 
+      :class="{
         correct: answered && index === correctIndex,
-        incorrect: answered && index === selectedIndex && index !== correctIndex,
-        disabled: answered
+        incorrect: index === selectedIndex && index !== correctIndex,
+        disabled: answered && index === correctIndex
       }"
       @click="selectAnswer(index)"
     >

@@ -35,21 +35,29 @@ export function useGameLogic(totalQuestions = 10) {
   }
   
   const selectAnswer = (index, correctIndex, onCorrect) => {
-    if (answered.value) return
+    // Блокируем, если уже выбран правильный ответ
+    if (answered.value && selectedIndex.value === correctIndex) return
     
-    answered.value = true
+    // Считаем общий ответ только при первом выборе
+    if (!answered.value) {
+      totalAnswers.value++
+    }
+    
     selectedIndex.value = index
-    totalAnswers.value++
     
+    // Если ответ правильный
     if (index === correctIndex) {
+      answered.value = true
       score.value += 10
       correctAnswers.value++
       if (onCorrect) onCorrect()
+      
+      // Автоматический переход к следующему вопросу через 1.5 секунды
+      setTimeout(() => {
+        nextQuestion()
+      }, 1500)
     }
-    
-    setTimeout(() => {
-      nextQuestion()
-    }, 1500)
+    // Если ответ неправильный, просто подсвечиваем его, но не переходим дальше
   }
   
   const nextQuestion = () => {
