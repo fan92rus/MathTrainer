@@ -11,14 +11,6 @@
             Изменить класс
           </button>
         </div>
-
-        <div class="scores-container">
-          <div class="score-card-title">счет - ⭐ {{ countingScore }}</div>
-          <div class="score-card-title">состав числа - ⭐ {{ decompositionScore }}</div>
-          <div class="score-card-title">состав числа (1 кл) - ⭐ {{ firstGradeDecompositionScore }}</div>
-          <div class="score-card-title">умножение - ⭐ {{ multiplicationScore }}</div>
-        </div>
-
         <div class="games-container">
           <div
             v-if="availableExercises.firstGradeDecomposition.available"
@@ -28,6 +20,7 @@
             <div class="game-icon">🔢</div>
             <div class="game-title">{{ availableExercises.firstGradeDecomposition.title }}</div>
             <div class="game-description">{{ availableExercises.firstGradeDecomposition.description }}</div>
+            <div class="game-score">⭐ {{ firstGradeDecompositionScore }}</div>
           </div>
           <div
             v-if="availableExercises.decomposition.available"
@@ -37,6 +30,7 @@
             <div class="game-icon">➕</div>
             <div class="game-title">{{ availableExercises.decomposition.title }}</div>
             <div class="game-description">{{ availableExercises.decomposition.description }}</div>
+            <div class="game-score">⭐ {{ decompositionScore }}</div>
           </div>
           <div
             v-if="availableExercises.counting.available"
@@ -46,6 +40,7 @@
             <div class="game-icon">🔢</div>
             <div class="game-title">{{ availableExercises.counting.title }}</div>
             <div class="game-description">{{ availableExercises.counting.description }}</div>
+            <div class="game-score">⭐ {{ countingScore }}</div>
           </div>
           <div
             v-if="availableExercises.multiplication.available"
@@ -55,6 +50,7 @@
             <div class="game-icon">✖️</div>
             <div class="game-title">{{ availableExercises.multiplication.title }}</div>
             <div class="game-description">{{ availableExercises.multiplication.description }}</div>
+            <div class="game-score">⭐ {{ multiplicationScore }}</div>
           </div>
         </div>
 
@@ -296,6 +292,9 @@ export default {
   min-width: 200px;
   position: relative;
   overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }
 
 .game-card::before {
@@ -328,7 +327,18 @@ export default {
 .game-description {
   font-size: clamp(14px, 2.5vw, 16px);
   color: #666;
-  margin-bottom: 20px;
+  margin-bottom: 10px;
+}
+
+.game-score {
+  font-size: clamp(16px, 3vw, 20px);
+  font-weight: 700;
+  color: #ff9800;
+  margin-top: auto;
+  background: rgba(255, 152, 0, 0.1);
+  border-radius: 15px;
+  padding: 8px 15px;
+  display: inline-block;
 }
 
 .reset-button {
@@ -402,7 +412,12 @@ export default {
 
   .game-description {
     font-size: 13px;
-    margin-bottom: 15px;
+    margin-bottom: 8px;
+  }
+
+  .game-score {
+    font-size: 14px;
+    padding: 6px 12px;
   }
 
   .reset-button {
@@ -469,7 +484,12 @@ export default {
 
   .game-description {
     font-size: 12px;
-    margin-bottom: 10px;
+    margin-bottom: 6px;
+  }
+
+  .game-score {
+    font-size: 12px;
+    padding: 4px 8px;
   }
 
   .reset-button {
