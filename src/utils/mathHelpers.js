@@ -19,7 +19,7 @@ export function generateFirstGradeDecompositionProblem() {
   const correctIndex = shuffled.indexOf(correctOption)
   
   return {
-    expression: `${targetNumber} это ? и ?`,
+    expression: `${targetNumber} это `,
     options: shuffled,
     correctIndex: correctIndex,
     targetNumber: targetNumber,

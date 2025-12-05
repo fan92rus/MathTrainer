@@ -4,9 +4,12 @@
       <div v-if="!gameOver" class="game-container-inner">
         <div class="header">
           <div style="display: flex; justify-content: space-between; align-items: center;">
+            <button class="back-button" @click="goToMain">
+              ← Назад
+            </button>
             <span class="level-indicator">Уровень {{ currentLevel }}</span>
           </div>
-          <h1 class="title">Выбери правильное разложение</h1>
+          <h1 class="title">Выбери правильный состав числа</h1>
         </div>
         
         <ScoreDisplay 
@@ -142,6 +145,23 @@ export default {
 </script>
 
 <style scoped>
+.back-button {
+  background: linear-gradient(135deg, #667eea, #764ba2);
+  color: white;
+  border: none;
+  border-radius: 20px;
+  padding: 8px 16px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 3px 8px rgba(102, 126, 234, 0.3);
+}
+
+.back-button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 5px 12px rgba(102, 126, 234, 0.4);
+}
 .decomposition-container {
   display: flex;
   flex-direction: column;

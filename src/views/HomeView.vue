@@ -14,8 +14,8 @@
 
         <div class="scores-container">
           <div class="score-card-title">счет - ⭐ {{ countingScore }}</div>
-          <div class="score-card-title">разложение - ⭐ {{ decompositionScore }}</div>
-          <div class="score-card-title">разложение (1 кл) - ⭐ {{ firstGradeDecompositionScore }}</div>
+          <div class="score-card-title">состав числа - ⭐ {{ decompositionScore }}</div>
+          <div class="score-card-title">состав числа (1 кл) - ⭐ {{ firstGradeDecompositionScore }}</div>
           <div class="score-card-title">умножение - ⭐ {{ multiplicationScore }}</div>
         </div>
 
@@ -103,8 +103,8 @@ export default {
       if (!selectedGrade.value) {
         return {
           counting: { available: true, title: 'Тренажер счета', description: 'Решай примеры на сложение и вычитание' },
-          firstGradeDecomposition: { available: false, title: 'Разложение чисел (1 класс)', description: 'Изучи состав чисел до 10' },
-          decomposition: { available: false, title: 'Разложение чисел', description: 'Выбирай правильный способ разложения чисел' },
+          firstGradeDecomposition: { available: false, title: 'Состав числа (1 класс)', description: 'Изучи состав чисел до 10' },
+          decomposition: { available: false, title: 'Состав числа', description: 'Выбирай правильный способ разложения чисел' },
           multiplication: { available: false, title: 'Таблица умножения', description: 'Изучай таблицу умножения постепенно' }
         }
       }

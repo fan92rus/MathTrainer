@@ -158,12 +158,12 @@ export function getAvailableExercises(grade, quarter) {
     },
     firstGradeDecomposition: {
       available: grade === 1 && quarter >= 2, // Разложение чисел (1 класс) только для 1 класса со 2 четверти
-      title: 'Разложение чисел (1 класс)',
+      title: 'Состав числа (1 класс)',
       description: 'Изучи состав чисел до 10'
     },
     decomposition: {
       available: grade >= 2, // Разложение чисел доступно со 2 класса
-      title: 'Разложение чисел',
+      title: 'Состав числа',
       description: 'Выбирай правильный способ разложения чисел'
     },
     multiplication: {
