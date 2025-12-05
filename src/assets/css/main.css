@@ -456,13 +456,185 @@ body {
 
 /* Для очень маленьких экранов */
 @media (max-width: 480px) {
+    .app-container {
+        padding: 2px;
+    }
+    
+    .game-container {
+        padding: 10px;
+        border-radius: 10px;
+        max-height: 99vh;
+    }
+    
     .options-grid {
         grid-template-columns: 1fr;
         gap: 6px;
     }
     
     .option-card {
-        min-height: 55px;
+        min-height: 50px;
+        padding: 8px;
+        font-size: 16px;
+    }
+    
+    .math-expression {
+        font-size: 24px;
+        padding: 10px;
+        margin: 10px 0;
+    }
+    
+    .progress-bar {
+        height: 6px;
+        margin: 10px 0;
+    }
+    
+    .stars-container {
+        gap: 5px;
+        margin: 10px 0;
+    }
+    
+    .star {
+        font-size: 20px;
+    }
+    
+    .stats-bar {
+        padding: 6px;
+        margin: 1px 0;
+    }
+    
+    .score-item {
+        min-width: 50px;
+        padding: 2px 5px;
+    }
+    
+    .score-label {
+        font-size: 10px;
+    }
+    
+    .score-value {
+        font-size: 16px;
+    }
+    
+    .btn {
+        padding: 8px 15px;
+        font-size: 12px;
+    }
+    
+    .back-button {
+        padding: 6px 10px;
+        font-size: 11px;
+    }
+}
+
+/* Для сверхмаленьких экранов */
+@media (max-width: 360px) {
+    .game-container {
+        padding: 8px;
+    }
+    
+    .option-card {
+        min-height: 45px;
+        font-size: 14px;
+    }
+    
+    .math-expression {
+        font-size: 20px;
+        padding: 8px;
+    }
+    
+    .score-item {
+        min-width: 45px;
+    }
+    
+    .score-value {
+        font-size: 14px;
+    }
+    
+    .game-over {
+        padding: 15px;
+    }
+    
+    .game-over h1 {
+        font-size: 20px;
+        margin-bottom: 15px;
+    }
+    
+    .final-score {
+        font-size: 16px;
+        margin: 15px 0;
+    }
+    
+    .final-score-number {
+        font-size: 24px;
+    }
+    
+    .achievement {
+        font-size: 12px;
+        padding: 6px 12px;
+        margin: 5px 2px;
+    }
+    
+    .score-summary {
+        gap: 8px;
+        margin: 15px 0;
+    }
+    
+    .score-item-final {
+        min-width: 80px;
+        padding: 6px 10px;
+    }
+}
+
+/* Оптимизация для GameOver компонента на мобильных устройствах */
+@media (max-width: 480px) {
+    .game-over {
+        padding: 20px;
+    }
+    
+    .game-over h1 {
+        font-size: 22px;
+        margin-bottom: 15px;
+    }
+    
+    .final-score {
+        font-size: 18px;
+        margin: 15px 0;
+    }
+    
+    .final-score-number {
+        font-size: 28px;
+    }
+    
+    .achievement {
+        font-size: 13px;
+        padding: 7px 14px;
+        margin: 6px 3px;
+    }
+    
+    .score-summary {
+        gap: 10px;
+        margin: 15px 0;
+    }
+    
+    .score-item-final {
+        min-width: 90px;
+        padding: 8px 12px;
+    }
+}
+
+/* Дополнительная оптимизация для компонентов игровых страниц */
+@media (max-width: 768px) {
+    .game-container-inner {
+        padding: 5px;
+    }
+    
+    .header {
+        margin-bottom: 3px;
+    }
+    
+    .level-indicator {
+        font-size: 11px;
+        padding: 4px 10px;
     }
 }
 

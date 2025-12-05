@@ -293,22 +293,131 @@ export default {
 }
 
 @media (max-width: 768px) {
-  .scores-container {
-    gap: 15px;
-  }
-
-  .games-container {
-    gap: 20px;
-  }
-
-  .score-card-title {
-    min-width: 150px;
+  .main-container {
     padding: 15px;
   }
 
+  .grade-info-container {
+    margin-bottom: 15px;
+    padding: 12px 15px;
+  }
+
+  .grade-value {
+    font-size: 16px;
+  }
+
+  .change-grade-button {
+    padding: 6px 12px;
+    font-size: 12px;
+  }
+
+  .scores-container {
+    gap: 10px;
+    margin-bottom: 15px;
+  }
+
+  .score-card-title {
+    min-width: 120px;
+    padding: 8px 12px;
+    font-size: 14px;
+  }
+
+  .games-container {
+    gap: 15px;
+    margin-bottom: 20px;
+  }
+
   .game-card {
-    min-width: 160px;
+    min-width: 140px;
+    padding: 15px;
+  }
+
+  .game-icon {
+    font-size: 40px;
+    margin-bottom: 10px;
+  }
+
+  .game-title {
+    font-size: 18px;
+    margin-bottom: 8px;
+  }
+
+  .game-description {
+    font-size: 13px;
+    margin-bottom: 15px;
+  }
+
+  .reset-button {
+    margin-top: 20px;
+    padding: 8px 16px;
+    font-size: 13px;
+  }
+}
+
+/* Для очень маленьких экранов */
+@media (max-width: 480px) {
+  .main-container {
     padding: 10px;
+  }
+
+  .grade-info-container {
+    flex-direction: column;
+    gap: 10px;
+    padding: 10px;
+  }
+
+  .grade-info {
+    align-items: center;
+  }
+
+  .change-grade-button {
+    width: 100%;
+    max-width: 200px;
+  }
+
+  .scores-container {
+    gap: 8px;
+    margin-bottom: 12px;
+  }
+
+  .score-card-title {
+    min-width: 100px;
+    padding: 6px 10px;
+    font-size: 12px;
+  }
+
+  .games-container {
+    flex-direction: column;
+    gap: 12px;
+    width: 100%;
+  }
+
+  .game-card {
+    width: 100%;
+    max-width: 300px;
+    min-width: auto;
+    padding: 12px;
+  }
+
+  .game-icon {
+    font-size: 32px;
+    margin-bottom: 8px;
+  }
+
+  .game-title {
+    font-size: 16px;
+    margin-bottom: 6px;
+  }
+
+  .game-description {
+    font-size: 12px;
+    margin-bottom: 10px;
+  }
+
+  .reset-button {
+    margin-top: 15px;
+    padding: 6px 12px;
+    font-size: 12px;
   }
 }
 </style>

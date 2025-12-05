@@ -18,11 +18,11 @@
       <div v-else-if="currentScore >= 20" class="achievement">🥉 Хорошая работа!</div>
       <div v-else class="achievement">💪 Продолжай учиться!</div>
     </div>
-    <div style="margin-top: 20px; display: flex; gap: 10px; justify-content: center;">
-      <button class="btn" style="background: linear-gradient(135deg, #667eea, #764ba2); color: white;" @click="restartGame">
+    <div class="game-over-buttons">
+      <button class="btn restart-button" @click="restartGame">
         Играть снова
       </button>
-      <button class="btn" style="background: linear-gradient(135deg, #28a745, #20c997); color: white;" @click="goToMain">
+      <button class="btn main-button" @click="goToMain">
         На главную
       </button>
     </div>
@@ -58,3 +58,45 @@ export default {
   }
 }
 </script>
+
+<style scoped>
+.game-over-buttons {
+  margin-top: 20px;
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.restart-button {
+  background: linear-gradient(135deg, #667eea, #764ba2);
+  color: white;
+}
+
+.main-button {
+  background: linear-gradient(135deg, #28a745, #20c997);
+  color: white;
+}
+
+@media (max-width: 480px) {
+  .game-over-buttons {
+    flex-direction: column;
+    gap: 8px;
+    width: 100%;
+  }
+  
+  .btn {
+    width: 100%;
+    max-width: 200px;
+    padding: 10px 15px;
+    font-size: 14px;
+  }
+}
+
+@media (max-width: 360px) {
+  .btn {
+    padding: 8px 12px;
+    font-size: 12px;
+  }
+}
+</style>

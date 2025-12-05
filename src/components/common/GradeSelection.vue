@@ -188,11 +188,118 @@ export default {
 @media (max-width: 768px) {
   .grade-selection-container {
     padding: 20px;
+    width: 95%;
+    max-height: 85vh;
+  }
+  
+  .grade-selection-header {
+    margin-bottom: 20px;
+  }
+  
+  .grade-selection-title {
+    margin-bottom: 10px;
+  }
+  
+  .grade-selection-subtitle {
+    font-size: 14px;
   }
   
   .grade-options {
     grid-template-columns: repeat(2, 1fr);
     gap: 15px;
+    margin-bottom: 20px;
+  }
+  
+  .grade-card {
+    padding: 15px;
+  }
+  
+  .continue-button {
+    padding: 12px 30px;
+  }
+}
+
+/* Для очень маленьких экранов */
+@media (max-width: 480px) {
+  .grade-selection-container {
+    padding: 15px;
+    width: 98%;
+    border-radius: 15px;
+  }
+  
+  .grade-selection-header {
+    margin-bottom: 15px;
+  }
+  
+  .grade-selection-title {
+    font-size: 20px;
+    margin-bottom: 8px;
+  }
+  
+  .grade-selection-subtitle {
+    font-size: 13px;
+  }
+  
+  .grade-options {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+    margin-bottom: 15px;
+  }
+  
+  .grade-card {
+    padding: 12px;
+    border-radius: 10px;
+  }
+  
+  .grade-icon {
+    font-size: 30px;
+    margin-bottom: 8px;
+  }
+  
+  .grade-name {
+    font-size: 14px;
+  }
+  
+  .continue-button {
+    padding: 10px 25px;
+    font-size: 14px;
+  }
+}
+
+/* Для сверхмаленьких экранов */
+@media (max-width: 360px) {
+  .grade-selection-container {
+    padding: 10px;
+  }
+  
+  .grade-selection-title {
+    font-size: 18px;
+  }
+  
+  .grade-selection-subtitle {
+    font-size: 12px;
+  }
+  
+  .grade-options {
+    gap: 8px;
+  }
+  
+  .grade-card {
+    padding: 10px;
+  }
+  
+  .grade-icon {
+    font-size: 24px;
+    margin-bottom: 5px;
+  }
+  
+  .grade-name {
+    font-size: 12px;
+  }
+  
+  .continue-button {
+    padding: 8px 20px;
+    font-size: 12px;
   }
 }
 </style>
