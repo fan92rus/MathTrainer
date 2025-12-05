@@ -1,12 +1,47 @@
 <template>
   <div id="app">
     <router-view />
+    <GradeSelection
+      v-if="showGradeSelection"
+      @grade-selected="handleGradeSelected"
+    />
   </div>
 </template>
 
 <script>
+import { computed, onMounted } from 'vue'
+import { useSettingsStore } from './store/settings'
+import GradeSelection from './components/common/GradeSelection.vue'
+
 export default {
-  name: 'App'
+  name: 'App',
+  components: {
+    GradeSelection
+  },
+  setup() {
+    const settingsStore = useSettingsStore()
+    
+    // Вычисляемое свойство для определения необходимости показа выбора класса
+    const showGradeSelection = computed(() => {
+      return settingsStore.isFirstTime || !settingsStore.isGradeSelected
+    })
+    
+    // Обработчик выбора класса
+    const handleGradeSelected = () => {
+      // Класс выбран, компонент GradeSelection скроется автоматически
+      // благодаря реактивности showGradeSelection
+    }
+    
+    // Загружаем настройки при монтировании приложения
+    onMounted(() => {
+      settingsStore.loadSettings()
+    })
+    
+    return {
+      showGradeSelection,
+      handleGradeSelected
+    }
+  }
 }
 </script>
 

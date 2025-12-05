@@ -45,9 +45,10 @@
 </template>
 
 <script>
-import { onMounted } from 'vue'
+import { onMounted, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { useScoresStore } from '../store/scores'
+import { useSettingsStore } from '../store/settings'
 import { useGameLogic } from '../composables/useGameLogic'
 import { generateCountingProblem } from '../utils/mathHelpers'
 import ScoreDisplay from '../components/common/ScoreDisplay.vue'
@@ -68,6 +69,7 @@ export default {
   setup() {
     const router = useRouter()
     const scoresStore = useScoresStore()
+    const settingsStore = useSettingsStore()
     const totalQuestions = 10
     
     // Инициализируем игру
@@ -88,6 +90,9 @@ export default {
     // Загружаем общий счет
     const totalScore = scoresStore.countingScore
     
+    // Получаем максимальное число из настроек класса
+    const maxNumber = computed(() => settingsStore.maxCountingNumber)
+    
     // Обработчик выбора ответа
     const handleAnswerSelected = (index) => {
       selectAnswer(
@@ -104,7 +109,7 @@ export default {
     const restartGame = () => {
       initializeGame()
       generateAllProblems(() => {
-        return generateCountingProblem(scoresStore.countingScore, currentLevel.value)
+        return generateCountingProblem(scoresStore.countingScore, currentLevel.value, maxNumber.value)
       })
     }
     
@@ -129,6 +134,7 @@ export default {
       progressPercent,
       currentProblem,
       totalQuestions,
+      maxNumber,
       handleAnswerSelected,
       restartGame,
       goToMain

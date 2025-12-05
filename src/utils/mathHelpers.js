@@ -7,55 +7,56 @@ export function shuffleArray(array) {
   return newArray
 }
 
-export function generateCountingProblem(totalScore, currentLevel) {
+export function generateCountingProblem(totalScore, currentLevel, maxNumber = null) {
   // Генерируем два числа в зависимости от уровня и общего количества очков
   let maxNum
   
-  // Определяем максимальное число на основе общего количества очков
-  if (totalScore < 300) {
-    maxNum = 20 // До 300 очков - числа до 20
-  } else if (totalScore < 400) {
-    maxNum = 30 // 300-399 очков - числа до 30
-  } else if (totalScore < 500) {
-    maxNum = 40 // 400-499 очков - числа до 40
-  } else if (totalScore < 600) {
-    maxNum = 50 // 500-599 очков - числа до 50
-  } else if (totalScore < 700) {
-    maxNum = 60 // 600-699 очков - числа до 60
-  } else if (totalScore < 800) {
-    maxNum = 70 // 700-799 очков - числа до 70
-  } else if (totalScore < 900) {
-    maxNum = 80 // 800-899 очков - числа до 80
-  } else if (totalScore < 1000) {
-    maxNum = 90 // 900-999 очков - числа до 90
+  // Если передано максимальное число из настроек класса, используем его
+  if (maxNumber !== null) {
+    maxNum = maxNumber
   } else {
-    maxNum = 100 // 1000+ очков - числа до 100
+    // Иначе определяем максимальное число на основе общего количества очков (старая логика)
+    if (totalScore < 300) {
+      maxNum = 20 // До 300 очков - числа до 20
+    } else if (totalScore < 400) {
+      maxNum = 30 // 300-399 очков - числа до 30
+    } else if (totalScore < 500) {
+      maxNum = 40 // 400-499 очков - числа до 40
+    } else if (totalScore < 600) {
+      maxNum = 50 // 500-599 очков - числа до 50
+    } else if (totalScore < 700) {
+      maxNum = 60 // 600-699 очков - числа до 60
+    } else if (totalScore < 800) {
+      maxNum = 70 // 700-799 очков - числа до 70
+    } else if (totalScore < 900) {
+      maxNum = 80 // 800-899 очков - числа до 80
+    } else if (totalScore < 1000) {
+      maxNum = 90 // 900-999 очков - числа до 90
+    } else {
+      maxNum = 100 // 1000+ очков - числа до 100
+    }
   }
   
-  // Также учитываем текущий уровень для небольшого увеличения сложности
-  maxNum = Math.min(maxNum + currentLevel * 2, 100)
-  let num1 = Math.floor(Math.random() * maxNum) + 1
-  let num2 = Math.floor(Math.random() * maxNum) + 1
-  
-  // Выбираем операцию
+  // Генерируем числа с учетом ограничений
+  let num1, num2, correctAnswer
   const isAddition = Math.random() > 0.5
   
-  // Для вычитания убедимся, что первое число больше или равно второму
-  if (!isAddition && num1 < num2) {
-    ;[num1, num2] = [num2, num1]
-  }
-  
-  // Вычисляем правильный ответ
-  let correctAnswer
-  let expression
-  
   if (isAddition) {
+    // Для сложения генерируем числа так, чтобы сумма не превышала maxNum
+    num1 = Math.floor(Math.random() * (maxNum - 1)) + 1
+    // Второе число генерируем с учетом того, чтобы сумма не превышала maxNum
+    const maxNum2 = maxNum - num1
+    num2 = Math.floor(Math.random() * Math.max(1, maxNum2)) + 1
     correctAnswer = num1 + num2
-    expression = `${num1} + ${num2}`
   } else {
+    // Для вычитания генерируем числа так, чтобы первое число было в пределах maxNum
+    num1 = Math.floor(Math.random() * (maxNum - 1)) + 1
+    num2 = Math.floor(Math.random() * num1) + 1
     correctAnswer = num1 - num2
-    expression = `${num1} - ${num2}`
   }
+  
+  // Вычисляем выражение
+  const expression = isAddition ? `${num1} + ${num2}` : `${num1} - ${num2}`
   
   // Генерируем неправильные варианты ответов
   const wrongAnswers = generateWrongCountingAnswers(correctAnswer, isAddition)
@@ -130,10 +131,16 @@ export function generateWrongCountingAnswers(correctAnswer, isAddition) {
   return wrongAnswers
 }
 
-export function generateDecompositionProblem() {
+export function generateDecompositionProblem(maxNumber = null) {
   // Генерируем два числа, большее всегда слева
-  let num1 = Math.floor(Math.random() * 50) + 20
-  let num2 = Math.floor(Math.random() * 30) + 5
+  let maxNum = maxNumber || 50
+  
+  // Убеждаемся, что минимальное значение достаточно для разложения
+  maxNum = Math.max(maxNum, 20)
+  
+  // Генерируем числа с учетом максимального значения
+  let num1 = Math.floor(Math.random() * (maxNum - 5)) + 5  // от 5 до maxNum
+  let num2 = Math.floor(Math.random() * Math.min(num1, maxNum/2)) + 1  // второе число не больше первого и не больше половины maxNum
   
   if (num2 > num1) {
     ;[num1, num2] = [num2, num1]
