@@ -3,6 +3,7 @@ import HomeView from '../views/HomeView.vue'
 import CountingView from '../views/CountingView.vue'
 import DecompositionView from '../views/DecompositionView.vue'
 import FirstGradeDecompositionView from '../views/FirstGradeDecompositionView.vue'
+import MultiplicationView from '../views/MultiplicationView.vue'
 import { useSettingsStore } from '../store/settings'
 
 const routes = [
@@ -25,6 +26,11 @@ const routes = [
     path: '/first-grade-decomposition',
     name: 'first-grade-decomposition',
     component: FirstGradeDecompositionView
+  },
+  {
+    path: '/multiplication',
+    name: 'multiplication',
+    component: MultiplicationView
   }
 ]
 

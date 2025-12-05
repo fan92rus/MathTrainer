@@ -9,6 +9,8 @@ export function useGameLogic(totalQuestions = 10) {
   const gameOver = ref(false)
   const currentLevel = ref(1)
   const problems = ref([])
+  const correctAnswers = ref(0)
+  const totalAnswers = ref(0)
   
   // Вычисляемые свойства
   const progressPercent = computed(() => {
@@ -28,6 +30,8 @@ export function useGameLogic(totalQuestions = 10) {
     gameOver.value = false
     currentLevel.value = 1
     problems.value = []
+    correctAnswers.value = 0
+    totalAnswers.value = 0
   }
   
   const selectAnswer = (index, correctIndex, onCorrect) => {
@@ -35,9 +39,11 @@ export function useGameLogic(totalQuestions = 10) {
     
     answered.value = true
     selectedIndex.value = index
+    totalAnswers.value++
     
     if (index === correctIndex) {
       score.value += 10
+      correctAnswers.value++
       if (onCorrect) onCorrect()
     }
     
@@ -80,6 +86,8 @@ export function useGameLogic(totalQuestions = 10) {
     gameOver,
     currentLevel,
     problems,
+    correctAnswers,
+    totalAnswers,
     
     // Вычисляемые свойства
     progressPercent,

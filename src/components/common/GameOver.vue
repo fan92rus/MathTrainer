@@ -3,27 +3,27 @@
     <h1>🎉 Игра окончена! 🎉</h1>
     <div class="score-summary">
       <div class="score-item-final">
-        <div class="score-label">За эту игру</div>
-        <div class="final-score-number">⭐ {{ currentScore }}</div>
+        <div class="score-label">Правильных ответов</div>
+        <div class="final-score-number">{{ correctAnswers }} / {{ totalAnswers }}</div>
       </div>
       <div class="score-item-final">
-        <div class="score-label">Всего накоплено</div>
-        <div class="final-score-number total-score-number">⭐ {{ totalScore }}</div>
+        <div class="score-label">За эту игру</div>
+        <div class="final-score-number">⭐ {{ score }}</div>
       </div>
     </div>
-    <StarRating :score="currentScore" />
+    <StarRating :score="score" />
     <div>
-      <div v-if="currentScore >= 60" class="achievement">🏆 Математический гений!</div>
-      <div v-else-if="currentScore >= 40" class="achievement">🥈 Отличный результат!</div>
-      <div v-else-if="currentScore >= 20" class="achievement">🥉 Хорошая работа!</div>
+      <div v-if="accuracy >= 90" class="achievement">🏆 Математический гений!</div>
+      <div v-else-if="accuracy >= 75" class="achievement">🥈 Отличный результат!</div>
+      <div v-else-if="accuracy >= 60" class="achievement">🥉 Хорошая работа!</div>
       <div v-else class="achievement">💪 Продолжай учиться!</div>
     </div>
     <div class="game-over-buttons">
       <button class="btn restart-button" @click="restartGame">
         Играть снова
       </button>
-      <button class="btn main-button" @click="goToMain">
-        На главную
+      <button class="btn main-button" @click="exit">
+        Выйти
       </button>
     </div>
   </div>
@@ -38,22 +38,31 @@ export default {
     StarRating
   },
   props: {
-    currentScore: {
+    correctAnswers: {
       type: Number,
       required: true
     },
-    totalScore: {
+    totalAnswers: {
+      type: Number,
+      required: true
+    },
+    score: {
       type: Number,
       required: true
     }
   },
-  emits: ['restart-game', 'go-to-main'],
+  emits: ['restart', 'exit'],
+  computed: {
+    accuracy() {
+      return this.totalAnswers > 0 ? Math.round((this.correctAnswers / this.totalAnswers) * 100) : 0
+    }
+  },
   methods: {
     restartGame() {
-      this.$emit('restart-game')
+      this.$emit('restart')
     },
-    goToMain() {
-      this.$emit('go-to-main')
+    exit() {
+      this.$emit('exit')
     }
   }
 }

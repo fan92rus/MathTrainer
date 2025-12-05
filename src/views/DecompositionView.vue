@@ -33,12 +33,13 @@
         />
       </div>
       
-      <GameOver 
+      <GameOver
         v-else
-        :current-score="score" 
-        :total-score="totalScore" 
-        @restart-game="restartGame" 
-        @go-to-main="goToMain" 
+        :correct-answers="correctAnswers"
+        :total-answers="totalAnswers"
+        :score="score"
+        @restart="restartGame"
+        @exit="goToMain"
       />
     </div>
   </div>
@@ -82,6 +83,8 @@ export default {
       currentLevel,
       progressPercent,
       currentProblem,
+      correctAnswers,
+      totalAnswers,
       initializeGame,
       selectAnswer,
       generateAllProblems
@@ -118,6 +121,7 @@ export default {
     
     // Инициализация при монтировании
     onMounted(() => {
+      scoresStore.loadScores()
       restartGame()
     })
     
@@ -131,6 +135,8 @@ export default {
       currentLevel,
       progressPercent,
       currentProblem,
+      correctAnswers,
+      totalAnswers,
       totalQuestions,
       maxNumber,
       handleAnswerSelected,

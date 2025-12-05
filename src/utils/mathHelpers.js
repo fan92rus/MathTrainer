@@ -417,7 +417,7 @@ function generateWrongAdditionOptions(num1, num2, correctOption) {
   return shuffleArray(wrongOptions).slice(0, 3)
 }
 
-function generateWrongSubtractionOptions(num1, num2, correctOption) {
+export function generateWrongSubtractionOptions(num1, num2, correctOption) {
   const wrongOptions = []
   
   if (correctOption.split(' - ').length === 3) {
@@ -485,4 +485,174 @@ function generateWrongSubtractionOptions(num1, num2, correctOption) {
   }
   
   return shuffleArray(wrongOptions).slice(0, 3)
+}
+
+// Функция для генерации примеров таблицы умножения
+export function generateMultiplicationProblem(maxMultiplier = 2) {
+  // Генерируем два множителя
+  // Первый множитель - в пределах доступного уровня
+  const multiplier1 = Math.floor(Math.random() * maxMultiplier) + 1
+  // Второй множитель - всегда от 1 до 10
+  const multiplier2 = Math.floor(Math.random() * 10) + 1
+  
+  // Вычисляем правильный ответ
+  const correctAnswer = multiplier1 * multiplier2
+  
+  // Генерируем неправильные варианты ответов
+  const wrongAnswers = generateWrongMultiplicationAnswers(correctAnswer, multiplier1, multiplier2)
+  
+  // Собираем все варианты и перемешиваем
+  const allOptions = [correctAnswer, ...wrongAnswers]
+  const shuffled = shuffleArray(allOptions)
+  const correctIndex = shuffled.indexOf(correctAnswer)
+  
+  return {
+    expression: `${multiplier1} × ${multiplier2}`,
+    options: shuffled,
+    correctIndex: correctIndex,
+    multiplier1: multiplier1,
+    multiplier2: multiplier2,
+    maxMultiplier: maxMultiplier
+  }
+}
+
+// Функция для генерации неправильных ответов для умножения
+function generateWrongMultiplicationAnswers(correctAnswer, multiplier1, multiplier2) {
+  const wrongAnswers = []
+  
+  // Генерируем три неправильных ответа
+  while (wrongAnswers.length < 3) {
+    let wrongAnswer
+    
+    // Разные стратегии генерации неправильных ответов
+    const strategy = Math.floor(Math.random() * 5)
+    
+    switch (strategy) {
+      case 0:
+        // Ответ близкий к правильному (±1-5)
+        const offset = Math.floor(Math.random() * 5) + 1
+        wrongAnswer = correctAnswer + (Math.random() > 0.5 ? offset : -offset)
+        break
+      case 1:
+        // Умножение на соседнее число
+        const neighborMultiplier = Math.max(1, multiplier1 + (Math.random() > 0.5 ? 1 : -1))
+        wrongAnswer = neighborMultiplier * multiplier2
+        break
+      case 2:
+        // Умножение второго множителя на соседнее число
+        const neighborMultiplier2 = Math.max(1, multiplier2 + (Math.random() > 0.5 ? 1 : -1))
+        wrongAnswer = multiplier1 * neighborMultiplier2
+        break
+      case 3:
+        // Сложение вместо умножения
+        wrongAnswer = multiplier1 + multiplier2
+        break
+      case 4:
+        // Умножение на 2 или деление на 2 (если возможно)
+        if (correctAnswer % 2 === 0 && correctAnswer / 2 > 0) {
+          wrongAnswer = correctAnswer / 2
+        } else {
+          wrongAnswer = correctAnswer * 2
+        }
+        break
+    }
+    
+    // Убеждаемся, что ответ положительный и не совпадает с правильным
+    wrongAnswer = Math.max(0, wrongAnswer)
+    
+    // Проверяем, что такого ответа еще нет
+    if (wrongAnswer !== correctAnswer && !wrongAnswers.includes(wrongAnswer)) {
+      wrongAnswers.push(wrongAnswer)
+    }
+  }
+  
+  return wrongAnswers
+}
+
+// Функция для определения доступных уровней умножения на основе очков
+export function getAvailableMultiplicationLevels(totalScore) {
+  const levels = []
+  
+  // Уровень 2 (таблица умножения на 2) доступен сразу
+  levels.push({
+    multiplier: 2,
+    requiredScore: 0,
+    available: true,
+    name: "Таблица на 2",
+    pointsPerCorrect: 10
+  })
+  
+  // Уровень 3 (таблица умножения на 3) доступен после 50 очков
+  levels.push({
+    multiplier: 3,
+    requiredScore: 50,
+    available: totalScore >= 50,
+    name: "Таблица на 3",
+    pointsPerCorrect: 15
+  })
+  
+  // Уровень 4 (таблица умножения на 4) доступен после 150 очков
+  levels.push({
+    multiplier: 4,
+    requiredScore: 150,
+    available: totalScore >= 150,
+    name: "Таблица на 4",
+    pointsPerCorrect: 20
+  })
+  
+  // Уровень 5 (таблица умножения на 5) доступен после 300 очков
+  levels.push({
+    multiplier: 5,
+    requiredScore: 300,
+    available: totalScore >= 300,
+    name: "Таблица на 5",
+    pointsPerCorrect: 25
+  })
+  
+  // Уровень 6 (таблица умножения на 6) доступен после 500 очков
+  levels.push({
+    multiplier: 6,
+    requiredScore: 500,
+    available: totalScore >= 500,
+    name: "Таблица на 6",
+    pointsPerCorrect: 30
+  })
+  
+  // Уровень 7 (таблица умножения на 7) доступен после 750 очков
+  levels.push({
+    multiplier: 7,
+    requiredScore: 750,
+    available: totalScore >= 750,
+    name: "Таблица на 7",
+    pointsPerCorrect: 35
+  })
+  
+  // Уровень 8 (таблица умножения на 8) доступен после 1050 очков
+  levels.push({
+    multiplier: 8,
+    requiredScore: 1050,
+    available: totalScore >= 1050,
+    name: "Таблица на 8",
+    pointsPerCorrect: 40
+  })
+  
+  // Уровень 9 (таблица умножения на 9) доступен после 1400 очков
+  levels.push({
+    multiplier: 9,
+    requiredScore: 1400,
+    available: totalScore >= 1400,
+    name: "Таблица на 9",
+    pointsPerCorrect: 45
+  })
+  
+  // Уровень 10 (таблица умножения на 10) доступен после 1800 очков
+  levels.push({
+    multiplier: 10,
+    requiredScore: 1800,
+    available: totalScore >= 1800,
+    name: "Таблица на 10",
+    pointsPerCorrect: 50
+  })
+  
+  return levels
 }

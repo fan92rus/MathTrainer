@@ -16,6 +16,7 @@
           <div class="score-card-title">счет - ⭐ {{ countingScore }}</div>
           <div class="score-card-title">разложение - ⭐ {{ decompositionScore }}</div>
           <div class="score-card-title">разложение (1 кл) - ⭐ {{ firstGradeDecompositionScore }}</div>
+          <div class="score-card-title">умножение - ⭐ {{ multiplicationScore }}</div>
         </div>
 
         <div class="games-container">
@@ -33,6 +34,11 @@
             <div class="game-icon">🔢</div>
             <div class="game-title">Тренажер счета</div>
             <div class="game-description">Решай примеры на сложение и вычитание</div>
+          </div>
+          <div class="game-card" @click="goToMultiplication">
+            <div class="game-icon">✖️</div>
+            <div class="game-title">Таблица умножения</div>
+            <div class="game-description">Изучай таблицу умножения постепенно</div>
           </div>
         </div>
 
@@ -66,6 +72,7 @@ export default {
     const countingScore = computed(() => scoresStore.countingScore)
     const decompositionScore = computed(() => scoresStore.decompositionScore)
     const firstGradeDecompositionScore = computed(() => scoresStore.firstGradeDecompositionScore)
+    const multiplicationScore = computed(() => scoresStore.multiplicationScore)
     const isGradeSelected = computed(() => settingsStore.isGradeSelected)
     const selectedGrade = computed(() => settingsStore.selectedGrade)
     const currentQuarter = computed(() => settingsStore.currentQuarter)
@@ -86,14 +93,18 @@ export default {
       router.push('/first-grade-decomposition')
     }
     
+    const goToMultiplication = () => {
+      router.push('/multiplication')
+    }
+    
     const resetAllScores = () => {
-      if (confirm('Вы уверены, что хотите сбросить все накопленные очки в обеих играх?')) {
+      if (confirm('Вы уверены, что хотите сбросить все накопленные очки во всех играх?')) {
         scoresStore.resetAllScores()
       }
     }
     
     const changeGrade = () => {
-      if (confirm('Вы хотите изменить класс? Это сбросит текущий прогресс и настройки сложности.')) {
+      if (confirm('Вы хотите изменить класс? Это изменит настройки сложности для новых заданий, но сохранит все ваши накопленные очки.')) {
         settingsStore.resetSettings()
         // После сброса настроек компонент GradeSelection покажется автоматически
       }
@@ -104,12 +115,14 @@ export default {
       countingScore,
       decompositionScore,
       firstGradeDecompositionScore,
+      multiplicationScore,
       isGradeSelected,
       gradeName,
       quarterName,
       goToCounting,
       goToDecomposition,
       goToFirstGradeDecomposition,
+      goToMultiplication,
       resetAllScores,
       changeGrade
     }
