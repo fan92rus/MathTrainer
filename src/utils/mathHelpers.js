@@ -291,10 +291,12 @@ function generateAdditionOption(num1, num2) {
   const tensAfter = Math.floor(sum / 10)
   
   // Если количество десятков изменилось, значит был переход через десяток
+  // Это включает как переход с 9 единиц на следующий десяток, так и переход между десятками
   if (tensAfter > tensBefore) {
     // Есть переход через десяток - раскладываем
     if (num2 <= 9) {
       // Однозначное число - раскладываем чтобы дополнить до круглого десятка
+      const lastDigit1 = num1 % 10
       const neededForRound = 10 - lastDigit1
       
       // Раскладываем, чтобы дополнить до круглого десятка
@@ -337,6 +339,7 @@ function generateSubtractionOption(num1, num2) {
     // Есть переход через десяток - раскладываем
     if (num2 <= 9) {
       // Однозначное второе число
+      const lastDigit1 = num1 % 10
       const roundPart = lastDigit1
       const remainder = num2 - roundPart
       
