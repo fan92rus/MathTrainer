@@ -2,6 +2,7 @@
   "name": "mathtrainer",
   "version": "1.0.0",
   "description": "",
+  "type": "module",
   "main": "main.js",
   "scripts": {
     "dev": "vite",
