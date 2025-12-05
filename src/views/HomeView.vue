@@ -17,46 +17,59 @@
             class="game-card"
             @click="goToFirstGradeDecomposition"
           >
-            <div class="game-icon">🔢</div>
-            <div class="game-title">{{ availableExercises.firstGradeDecomposition.title }}</div>
-            <div class="game-description">{{ availableExercises.firstGradeDecomposition.description }}</div>
-            <div class="game-score">⭐ {{ firstGradeDecompositionScore }}</div>
+            <div class="game-content">
+              <div class="game-icon">🔢</div>
+              <div class="game-info">
+                <div class="game-title">{{ availableExercises.firstGradeDecomposition.title }}</div>
+                <div class="game-description">{{ availableExercises.firstGradeDecomposition.description }}</div>
+                <div class="game-score">⭐ {{ firstGradeDecompositionScore }}</div>
+              </div>
+            </div>
           </div>
           <div
             v-if="availableExercises.decomposition.available"
             class="game-card"
             @click="goToDecomposition"
           >
-            <div class="game-icon">➕</div>
-            <div class="game-title">{{ availableExercises.decomposition.title }}</div>
-            <div class="game-description">{{ availableExercises.decomposition.description }}</div>
-            <div class="game-score">⭐ {{ decompositionScore }}</div>
+            <div class="game-content">
+              <div class="game-icon">➕</div>
+              <div class="game-info">
+                <div class="game-title">{{ availableExercises.decomposition.title }}</div>
+                <div class="game-description">{{ availableExercises.decomposition.description }}</div>
+                <div class="game-score">⭐ {{ decompositionScore }}</div>
+              </div>
+            </div>
           </div>
           <div
             v-if="availableExercises.counting.available"
             class="game-card"
             @click="goToCounting"
           >
-            <div class="game-icon">🔢</div>
-            <div class="game-title">{{ availableExercises.counting.title }}</div>
-            <div class="game-description">{{ availableExercises.counting.description }}</div>
-            <div class="game-score">⭐ {{ countingScore }}</div>
+            <div class="game-content">
+              <div class="game-icon">🔢</div>
+              <div class="game-info">
+                <div class="game-title">{{ availableExercises.counting.title }}</div>
+                <div class="game-description">{{ availableExercises.counting.description }}</div>
+                <div class="game-score">⭐ {{ countingScore }}</div>
+              </div>
+            </div>
           </div>
           <div
             v-if="availableExercises.multiplication.available"
             class="game-card"
             @click="goToMultiplication"
           >
-            <div class="game-icon">✖️</div>
-            <div class="game-title">{{ availableExercises.multiplication.title }}</div>
-            <div class="game-description">{{ availableExercises.multiplication.description }}</div>
-            <div class="game-score">⭐ {{ multiplicationScore }}</div>
+            <div class="game-content">
+              <div class="game-icon">✖️</div>
+              <div class="game-info">
+                <div class="game-title">{{ availableExercises.multiplication.title }}</div>
+                <div class="game-description">{{ availableExercises.multiplication.description }}</div>
+                <div class="game-score">⭐ {{ multiplicationScore }}</div>
+              </div>
+            </div>
           </div>
         </div>
 
-        <button class="reset-button" @click="resetAllScores">
-          Сбросить все очки
-        </button>
       </div>
     </div>
   </div>
@@ -124,17 +137,10 @@ export default {
       router.push('/multiplication')
     }
     
-    const resetAllScores = () => {
-      if (confirm('Вы уверены, что хотите сбросить все накопленные очки во всех играх?')) {
-        scoresStore.resetAllScores()
-      }
-    }
     
     const changeGrade = () => {
-      if (confirm('Вы хотите изменить класс? Это изменит настройки сложности для новых заданий, но сохранит все ваши накопленные очки.')) {
-        settingsStore.resetSettings()
-        // После сброса настроек компонент GradeSelection покажется автоматически
-      }
+      settingsStore.resetSettings()
+      // После сброса настроек компонент GradeSelection покажется автоматически
     }
     
     
@@ -151,7 +157,6 @@ export default {
       goToDecomposition,
       goToFirstGradeDecomposition,
       goToMultiplication,
-      resetAllScores,
       changeGrade
     }
   }
@@ -284,17 +289,13 @@ export default {
 .game-card {
   background: linear-gradient(135deg, #ffffff, #f8f9ff);
   border-radius: 20px;
-  padding: 30px;
+  padding: 20px;
   box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
-  text-align: center;
   transition: all 0.3s ease;
   cursor: pointer;
-  min-width: 200px;
+  width: 600px;
   position: relative;
   overflow: hidden;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
 }
 
 .game-card::before {
@@ -312,53 +313,48 @@ export default {
   box-shadow: 0 15px 30px rgba(0, 0, 0, 0.15);
 }
 
+.game-content {
+  display: flex;
+  align-items: flex-start;
+  gap: 15px;
+}
+
 .game-icon {
-  font-size: clamp(30px, 8vw, 64px);
-  margin-bottom: 15px;
+  font-size: clamp(40px, 8vw, 60px);
+  flex-shrink: 0;
+  margin-top: 5px;
+}
+
+.game-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
 }
 
 .game-title {
-  font-size: clamp(20px, 4vw, 24px);
+  font-size: clamp(18px, 4vw, 22px);
   font-weight: 700;
   color: #333;
-  margin-bottom: 10px;
+  margin-bottom: 8px;
 }
 
 .game-description {
   font-size: clamp(14px, 2.5vw, 16px);
   color: #666;
-  margin-bottom: 10px;
+  margin-bottom: 8px;
 }
 
 .game-score {
-  font-size: clamp(16px, 3vw, 20px);
+  font-size: clamp(16px, 3vw, 18px);
   font-weight: 700;
   color: #ff9800;
-  margin-top: auto;
   background: rgba(255, 152, 0, 0.1);
   border-radius: 15px;
-  padding: 8px 15px;
+  padding: 6px 12px;
   display: inline-block;
+  align-self: flex-start;
 }
 
-.reset-button {
-  margin-top: 40px;
-  padding: 10px 20px;
-  background: linear-gradient(135deg, #ff6b6b, #ee5a24);
-  color: white;
-  border: none;
-  border-radius: 30px;
-  font-size: clamp(14px, 3vw, 16px);
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  box-shadow: 0 4px 8px rgba(255, 107, 107, 0.3);
-}
-
-.reset-button:hover {
-  transform: scale(1.05);
-  box-shadow: 0 6px 12px rgba(255, 107, 107, 0.4);
-}
 
 @media (max-width: 768px) {
   .main-container {
@@ -396,35 +392,33 @@ export default {
   }
 
   .game-card {
-    min-width: 140px;
+    width: 400px;
     padding: 15px;
   }
 
+  .game-content {
+    gap: 12px;
+  }
+
   .game-icon {
-    font-size: 40px;
-    margin-bottom: 10px;
+    font-size: 36px;
   }
 
   .game-title {
-    font-size: 18px;
-    margin-bottom: 8px;
+    font-size: 16px;
+    margin-bottom: 6px;
   }
 
   .game-description {
     font-size: 13px;
-    margin-bottom: 8px;
+    margin-bottom: 6px;
   }
 
   .game-score {
     font-size: 14px;
-    padding: 6px 12px;
+    padding: 5px 10px;
   }
 
-  .reset-button {
-    margin-top: 20px;
-    padding: 8px 16px;
-    font-size: 13px;
-  }
 }
 
 /* Для очень маленьких экранов */
@@ -468,13 +462,15 @@ export default {
   .game-card {
     width: 100%;
     max-width: 300px;
-    min-width: auto;
     padding: 12px;
+  }
+
+  .game-content {
+    gap: 10px;
   }
 
   .game-icon {
     font-size: 32px;
-    margin-bottom: 8px;
   }
 
   .game-title {
@@ -492,10 +488,5 @@ export default {
     padding: 4px 8px;
   }
 
-  .reset-button {
-    margin-top: 15px;
-    padding: 6px 12px;
-    font-size: 12px;
-  }
 }
 </style>
