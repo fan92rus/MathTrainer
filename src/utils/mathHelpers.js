@@ -32,6 +32,12 @@ function generateWrongOptions(targetNumber, correctFirstPart, correctSecondPart)
   const wrongOptions = []
   const maxAttempts = 10
   
+  // Проверка на валидность входных данных
+  if (isNaN(targetNumber) || isNaN(correctFirstPart) || isNaN(correctSecondPart)) {
+    // Возвращаем значения по умолчанию в случае ошибки
+    return ['1 и 1', '2 и 2', '3 и 3']
+  }
+  
   // Вспомогательные функции
   const hasCorrectSum = (part1, part2) => (part1 + part2) === targetNumber
   const isCorrectVariant = (part1, part2) =>
@@ -81,13 +87,21 @@ function generateWrongOptions(targetNumber, correctFirstPart, correctSecondPart)
   )
   
   // Если все еще не хватает вариантов, добавляем случайные
-  while (wrongOptions.length < 3) {
+  let fallbackAttempts = 0
+  const maxFallbackAttempts = 20
+  while (wrongOptions.length < 3 && fallbackAttempts < maxFallbackAttempts) {
+    fallbackAttempts++
     const part1 = Math.floor(Math.random() * 9) + 1
     const part2 = Math.floor(Math.random() * 9) + 1
     
     if (!hasCorrectSum(part1, part2) && isNotAlreadyAdded(part1, part2)) {
       wrongOptions.push(`${part1} и ${part2}`)
+      console.log(`Added fallback option: ${part1} и ${part2}`)
     }
+  }
+  
+  if (fallbackAttempts >= maxFallbackAttempts) {
+    console.error(`generateWrongOptions exceeded max fallback attempts (${maxFallbackAttempts})`)
   }
   
   return wrongOptions.slice(0, 3)
@@ -185,9 +199,17 @@ export function generateCountingProblem(totalScore, currentLevel, maxNumber = nu
 
 export function generateWrongCountingAnswers(correctAnswer, isAddition) {
   const wrongAnswers = []
+  let attempts = 0
+  const maxAttempts = 100 // Защита от бесконечного цикла
+  
+  // Проверка на валидность входных данных
+  if (isNaN(correctAnswer)) {
+    return [1, 2, 3] // Возвращаем значения по умолчанию
+  }
   
   // Генерируем три неправильных ответа
-  while (wrongAnswers.length < 3) {
+  while (wrongAnswers.length < 3 && attempts < maxAttempts) {
+    attempts++
     let wrongAnswer
     
     // Разные стратегии генерации неправильных ответов
@@ -235,6 +257,13 @@ export function generateWrongCountingAnswers(correctAnswer, isAddition) {
     // Проверяем, что такого ответа еще нет
     if (wrongAnswer !== correctAnswer && !wrongAnswers.includes(wrongAnswer)) {
       wrongAnswers.push(wrongAnswer)
+    }
+  }
+  
+  if (attempts >= maxAttempts) {
+    // Если превышено количество попыток, просто добавляем любые значения
+    while (wrongAnswers.length < 3) {
+      wrongAnswers.push(wrongAnswers.length + 1)
     }
   }
   
@@ -422,6 +451,11 @@ function generateWrongAdditionOptions(num1, num2, correctOption) {
 export function generateWrongSubtractionOptions(num1, num2, correctOption) {
   const wrongOptions = []
   
+  // Проверка на валидность входных данных
+  if (isNaN(num1) || isNaN(num2) || !correctOption) {
+    return ['1 - 1', '2 - 2', '3 - 3'] // Возвращаем значения по умолчанию
+  }
+  
   if (correctOption.split(' - ').length === 3) {
     // Разбираем правильный вариант с разложением
     const parts = correctOption.split(' - ')
@@ -521,9 +555,17 @@ export function generateMultiplicationProblem(maxMultiplier = 2) {
 // Функция для генерации неправильных ответов для умножения
 function generateWrongMultiplicationAnswers(correctAnswer, multiplier1, multiplier2) {
   const wrongAnswers = []
+  let attempts = 0
+  const maxAttempts = 100 // Защита от бесконечного цикла
+  
+  // Проверка на валидность входных данных
+  if (isNaN(correctAnswer) || isNaN(multiplier1) || isNaN(multiplier2)) {
+    return [1, 2, 3] // Возвращаем значения по умолчанию
+  }
   
   // Генерируем три неправильных ответа
-  while (wrongAnswers.length < 3) {
+  while (wrongAnswers.length < 3 && attempts < maxAttempts) {
+    attempts++
     let wrongAnswer
     
     // Разные стратегии генерации неправильных ответов
@@ -565,6 +607,13 @@ function generateWrongMultiplicationAnswers(correctAnswer, multiplier1, multipli
     // Проверяем, что такого ответа еще нет
     if (wrongAnswer !== correctAnswer && !wrongAnswers.includes(wrongAnswer)) {
       wrongAnswers.push(wrongAnswer)
+    }
+  }
+  
+  if (attempts >= maxAttempts) {
+    // Если превышено количество попыток, просто добавляем любые значения
+    while (wrongAnswers.length < 3) {
+      wrongAnswers.push(wrongAnswers.length + 1)
     }
   }
   
