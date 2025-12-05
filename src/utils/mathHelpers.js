@@ -245,11 +245,11 @@ export function generateDecompositionProblem(maxNumber = null) {
   // Генерируем два числа, большее всегда слева
   let maxNum = maxNumber || 50
   
-  // Убеждаемся, что минимальное значение достаточно для разложения
+  // Убеждаемся, что минимальное значение достаточно для разложения (минимум 10 для первого числа)
   maxNum = Math.max(maxNum, 20)
   
   // Генерируем числа с учетом максимального значения
-  let num1 = Math.floor(Math.random() * (maxNum - 5)) + 5  // от 5 до maxNum
+  let num1 = Math.floor(Math.random() * (maxNum - 10)) + 10  // от 10 до maxNum
   let num2 = Math.floor(Math.random() * Math.min(num1, maxNum/2)) + 1  // второе число не больше первого и не больше половины maxNum
   
   if (num2 > num1) {
