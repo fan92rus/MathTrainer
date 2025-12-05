@@ -4,11 +4,12 @@ import { useStorage } from '../composables/useStorage'
 export const useScoresStore = defineStore('scores', {
   state: () => ({
     countingScore: 0,
-    decompositionScore: 0
+    decompositionScore: 0,
+    firstGradeDecompositionScore: 0
   }),
   
   getters: {
-    getTotalScore: (state) => state.countingScore + state.decompositionScore
+    getTotalScore: (state) => state.countingScore + state.decompositionScore + state.firstGradeDecompositionScore
   },
   
   actions: {
@@ -24,6 +25,11 @@ export const useScoresStore = defineStore('scores', {
       if (decompositionSaved !== null) {
         this.decompositionScore = parseInt(decompositionSaved, 10)
       }
+      
+      const firstGradeDecompositionSaved = getItem('firstGradeDecompositionScore')
+      if (firstGradeDecompositionSaved !== null) {
+        this.firstGradeDecompositionScore = parseInt(firstGradeDecompositionSaved, 10)
+      }
     },
     
     updateCountingScore(points) {
@@ -36,6 +42,11 @@ export const useScoresStore = defineStore('scores', {
       this.saveDecompositionScore()
     },
     
+    updateFirstGradeDecompositionScore(points) {
+      this.firstGradeDecompositionScore += points
+      this.saveFirstGradeDecompositionScore()
+    },
+    
     saveCountingScore() {
       const { setItem } = useStorage()
       setItem('countingTrainerTotalScore', this.countingScore.toString())
@@ -46,11 +57,18 @@ export const useScoresStore = defineStore('scores', {
       setItem('mathTrainerTotalScore', this.decompositionScore.toString())
     },
     
+    saveFirstGradeDecompositionScore() {
+      const { setItem } = useStorage()
+      setItem('firstGradeDecompositionScore', this.firstGradeDecompositionScore.toString())
+    },
+    
     resetAllScores() {
       this.countingScore = 0
       this.decompositionScore = 0
+      this.firstGradeDecompositionScore = 0
       this.saveCountingScore()
       this.saveDecompositionScore()
+      this.saveFirstGradeDecompositionScore()
     }
   }
 })

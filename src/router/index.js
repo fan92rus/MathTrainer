@@ -2,6 +2,8 @@ import { createRouter, createWebHistory } from 'vue-router'
 import HomeView from '../views/HomeView.vue'
 import CountingView from '../views/CountingView.vue'
 import DecompositionView from '../views/DecompositionView.vue'
+import FirstGradeDecompositionView from '../views/FirstGradeDecompositionView.vue'
+import { useSettingsStore } from '../store/settings'
 
 const routes = [
   {
@@ -18,12 +20,23 @@ const routes = [
     path: '/decomposition',
     name: 'decomposition',
     component: DecompositionView
+  },
+  {
+    path: '/first-grade-decomposition',
+    name: 'first-grade-decomposition',
+    component: FirstGradeDecompositionView
   }
 ]
 
 const router = createRouter({
   history: createWebHistory(),
   routes
+})
+
+// Навигационные guard'ы для проверки доступа
+router.beforeEach((to, from, next) => {
+  // Доступ разрешен для всех пользователей
+  next()
 })
 
 export default router

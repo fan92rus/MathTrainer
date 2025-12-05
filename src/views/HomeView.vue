@@ -15,9 +15,15 @@
         <div class="scores-container">
           <div class="score-card-title">счет - ⭐ {{ countingScore }}</div>
           <div class="score-card-title">разложение - ⭐ {{ decompositionScore }}</div>
+          <div class="score-card-title">разложение (1 кл) - ⭐ {{ firstGradeDecompositionScore }}</div>
         </div>
 
         <div class="games-container">
+          <div class="game-card" @click="goToFirstGradeDecomposition">
+            <div class="game-icon">🔢</div>
+            <div class="game-title">Разложение чисел (1 класс)</div>
+            <div class="game-description">Изучи состав чисел до 10</div>
+          </div>
           <div class="game-card" @click="goToDecomposition">
             <div class="game-icon">➕</div>
             <div class="game-title">Разложение чисел</div>
@@ -59,6 +65,7 @@ export default {
     // Вычисляемые свойства
     const countingScore = computed(() => scoresStore.countingScore)
     const decompositionScore = computed(() => scoresStore.decompositionScore)
+    const firstGradeDecompositionScore = computed(() => scoresStore.firstGradeDecompositionScore)
     const isGradeSelected = computed(() => settingsStore.isGradeSelected)
     const selectedGrade = computed(() => settingsStore.selectedGrade)
     const currentQuarter = computed(() => settingsStore.currentQuarter)
@@ -73,6 +80,10 @@ export default {
     
     const goToDecomposition = () => {
       router.push('/decomposition')
+    }
+    
+    const goToFirstGradeDecomposition = () => {
+      router.push('/first-grade-decomposition')
     }
     
     const resetAllScores = () => {
@@ -92,11 +103,13 @@ export default {
     return {
       countingScore,
       decompositionScore,
+      firstGradeDecompositionScore,
       isGradeSelected,
       gradeName,
       quarterName,
       goToCounting,
       goToDecomposition,
+      goToFirstGradeDecomposition,
       resetAllScores,
       changeGrade
     }

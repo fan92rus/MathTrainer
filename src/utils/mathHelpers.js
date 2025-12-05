@@ -1,3 +1,113 @@
+// Функция для генерации примеров разложения чисел до 10 для 1 класса
+export function generateFirstGradeDecompositionProblem() {
+  // Генерируем случайное число от 2 до 10
+  const targetNumber = Math.floor(Math.random() * 9) + 2
+  
+  // Генерируем правильное разложение (два числа, дающих в сумме targetNumber)
+  const firstPart = Math.floor(Math.random() * (targetNumber - 1)) + 1
+  const secondPart = targetNumber - firstPart
+  
+  // Создаем правильный вариант в формате "2 и 1"
+  const correctOption = `${firstPart} и ${secondPart}`
+  
+  // Генерируем неправильные варианты
+  const wrongOptions = generateWrongOptions(targetNumber, firstPart, secondPart)
+  
+  // Собираем все варианты и перемешиваем
+  const allOptions = [correctOption, ...wrongOptions]
+  const shuffled = shuffleArray(allOptions)
+  const correctIndex = shuffled.indexOf(correctOption)
+  
+  return {
+    expression: `${targetNumber} это ? и ?`,
+    options: shuffled,
+    correctIndex: correctIndex,
+    targetNumber: targetNumber,
+    correctDecomposition: [firstPart, secondPart]
+  }
+}
+
+// Вспомогательная функция для генерации неправильных вариантов
+function generateWrongOptions(targetNumber, correctFirstPart, correctSecondPart) {
+  const wrongOptions = []
+  const maxAttempts = 10
+  
+  // Вспомогательные функции
+  const hasCorrectSum = (part1, part2) => (part1 + part2) === targetNumber
+  const isCorrectVariant = (part1, part2) =>
+    (part1 === correctFirstPart && part2 === correctSecondPart) ||
+    (part1 === correctSecondPart && part2 === correctFirstPart)
+  const isNotAlreadyAdded = (part1, part2) => {
+    const option = `${part1} и ${part2}`
+    return !wrongOptions.includes(option)
+  }
+  
+  // Стратегия 1: неправильная сумма (больше)
+  generateWrongOptionByStrategy(
+    wrongOptions,
+    () => {
+      const wrongSum = Math.min(targetNumber + Math.floor(Math.random() * 3) + 1, 10)
+      const part1 = Math.floor(Math.random() * (wrongSum - 1)) + 1
+      const part2 = wrongSum - part1
+      return { part1, part2, isValid: !hasCorrectSum(part1, part2) }
+    },
+    isNotAlreadyAdded,
+    maxAttempts
+  )
+  
+  // Стратегия 2: неправильная сумма (меньше)
+  generateWrongOptionByStrategy(
+    wrongOptions,
+    () => {
+      const wrongSum = Math.max(targetNumber - Math.floor(Math.random() * 3) - 1, 2)
+      const part1 = Math.floor(Math.random() * (wrongSum - 1)) + 1
+      const part2 = wrongSum - part1
+      return { part1, part2, isValid: !hasCorrectSum(part1, part2) }
+    },
+    isNotAlreadyAdded,
+    maxAttempts
+  )
+  
+  // Стратегия 3: неправильные части для правильной суммы
+  generateWrongOptionByStrategy(
+    wrongOptions,
+    () => {
+      const part1 = Math.floor(Math.random() * (targetNumber - 1)) + 1
+      const part2 = targetNumber - part1
+      return { part1, part2, isValid: !isCorrectVariant(part1, part2) }
+    },
+    isNotAlreadyAdded,
+    maxAttempts
+  )
+  
+  // Если все еще не хватает вариантов, добавляем случайные
+  while (wrongOptions.length < 3) {
+    const part1 = Math.floor(Math.random() * 9) + 1
+    const part2 = Math.floor(Math.random() * 9) + 1
+    
+    if (!hasCorrectSum(part1, part2) && isNotAlreadyAdded(part1, part2)) {
+      wrongOptions.push(`${part1} и ${part2}`)
+    }
+  }
+  
+  return wrongOptions.slice(0, 3)
+}
+
+// Вспомогательная функция для генерации неправильного варианта по заданной стратегии
+function generateWrongOptionByStrategy(wrongOptions, strategyFn, isNotAlreadyAdded, maxAttempts) {
+  let attempts = 0
+  
+  while (wrongOptions.length < (wrongOptions.length + 1) && attempts < maxAttempts) {
+    const { part1, part2, isValid } = strategyFn()
+    
+    if (isValid && isNotAlreadyAdded(part1, part2)) {
+      wrongOptions.push(`${part1} и ${part2}`)
+    }
+    
+    attempts++
+  }
+}
+
 export function shuffleArray(array) {
   const newArray = [...array]
   for (let i = newArray.length - 1; i > 0; i--) {

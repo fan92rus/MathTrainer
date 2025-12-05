@@ -6,7 +6,7 @@
           <div style="display: flex; justify-content: space-between; align-items: center;">
             <span class="level-indicator">Уровень {{ currentLevel }}</span>
           </div>
-          <h1 class="title">Выбери вариант разложения</h1>
+          <h1 class="title">Выбери правильное разложение</h1>
         </div>
         
         <ScoreDisplay 
@@ -45,12 +45,11 @@
 </template>
 
 <script>
-import { onMounted, computed } from 'vue'
+import { onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useScoresStore } from '../store/scores'
-import { useSettingsStore } from '../store/settings'
 import { useGameLogic } from '../composables/useGameLogic'
-import { generateDecompositionProblem } from '../utils/mathHelpers'
+import { generateFirstGradeDecompositionProblem } from '../utils/mathHelpers'
 import ScoreDisplay from '../components/common/ScoreDisplay.vue'
 import ProgressBar from '../components/common/ProgressBar.vue'
 import StarRating from '../components/common/StarRating.vue'
@@ -58,7 +57,7 @@ import AnswerOptions from '../components/common/AnswerOptions.vue'
 import GameOver from '../components/common/GameOver.vue'
 
 export default {
-  name: 'DecompositionView',
+  name: 'FirstGradeDecompositionView',
   components: {
     ScoreDisplay,
     ProgressBar,
@@ -69,7 +68,6 @@ export default {
   setup() {
     const router = useRouter()
     const scoresStore = useScoresStore()
-    const settingsStore = useSettingsStore()
     const totalQuestions = 10
     
     // Инициализируем игру
@@ -88,10 +86,7 @@ export default {
     } = useGameLogic(totalQuestions)
     
     // Загружаем общий счет
-    const totalScore = scoresStore.decompositionScore
-    
-    // Получаем максимальное число из настроек класса
-    const maxNumber = computed(() => settingsStore.maxDecompositionNumber)
+    const totalScore = scoresStore.firstGradeDecompositionScore || 0
     
     // Обработчик выбора ответа
     const handleAnswerSelected = (index) => {
@@ -100,7 +95,7 @@ export default {
         currentProblem.value?.correctIndex || 0, 
         () => {
           // При правильном ответе обновляем общий счет
-          scoresStore.updateDecompositionScore(10)
+          scoresStore.updateFirstGradeDecompositionScore(10)
         }
       )
     }
@@ -108,7 +103,7 @@ export default {
     // Перезапуск игры
     const restartGame = () => {
       initializeGame()
-      generateAllProblems(() => generateDecompositionProblem(maxNumber.value))
+      generateAllProblems(() => generateFirstGradeDecompositionProblem())
     }
     
     // Переход на главную
@@ -132,7 +127,6 @@ export default {
       progressPercent,
       currentProblem,
       totalQuestions,
-      maxNumber,
       handleAnswerSelected,
       restartGame,
       goToMain
@@ -142,4 +136,92 @@ export default {
 </script>
 
 <style scoped>
+.decomposition-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin: 20px 0;
+}
+
+.target-number {
+  font-size: 48px;
+  font-weight: bold;
+  color: #667eea;
+  margin-bottom: 20px;
+  width: 80px;
+  height: 80px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background-color: rgba(102, 126, 234, 0.1);
+  box-shadow: 0 4px 8px rgba(102, 126, 234, 0.2);
+}
+
+.decomposition-parts {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.part {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.part-number {
+  font-size: 32px;
+  font-weight: bold;
+  color: #333;
+  width: 60px;
+  height: 60px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background-color: rgba(102, 126, 234, 0.1);
+  box-shadow: 0 4px 8px rgba(102, 126, 234, 0.2);
+}
+
+.part-label {
+  font-size: 14px;
+  color: #666;
+  margin-top: 5px;
+}
+
+.plus-sign, .equals-sign {
+  font-size: 32px;
+  font-weight: bold;
+  color: #333;
+  margin: 0 5px;
+}
+
+@media (max-width: 768px) {
+  .target-number {
+    font-size: 36px;
+    width: 60px;
+    height: 60px;
+  }
+  
+  .decomposition-parts {
+    gap: 5px;
+  }
+  
+  .part-number {
+    font-size: 24px;
+    width: 45px;
+    height: 45px;
+  }
+  
+  .part-label {
+    font-size: 12px;
+  }
+  
+  .plus-sign, .equals-sign {
+    font-size: 24px;
+  }
+}
 </style>
