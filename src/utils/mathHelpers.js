@@ -328,27 +328,29 @@ function generateAdditionOption(num1, num2) {
       const lastDigit1 = num1 % 10
       const neededForRound = 10 - lastDigit1
       
+      // Проверяем, не будет ли нулевого компонента при разложении
+      if (neededForRound === 0 || num2 - neededForRound === 0) {
+        // Если будет нулевой компонент, не раскладываем
+        return `${num1} + ${num2}`
+      }
+      
       // Раскладываем, чтобы дополнить до круглого десятка
       const part1 = neededForRound
       const part2 = num2 - neededForRound
       
-      // Проверяем, не равен ли part2 нулю
-      if (part2 === 0) {
-        return `${num1} + ${part1}`
-      } else {
-        return `${num1} + ${part1} + ${part2}`
-      }
+      return `${num1} + ${part1} + ${part2}`
     } else {
       // Двузначное число - раскладываем на десятки и единицы
       const tens = Math.floor(num2 / 10) * 10
       const remainder = num2 - tens
       
-      // Если остаток 0, не раскладываем вообще
-      if (remainder === 0) {
+      // Проверяем, чтобы оба компонента были ненулевыми
+      if (tens === 0 || remainder === 0) {
+        // Если один из компонентов нулевой, не раскладываем
         return `${num1} + ${num2}`
-      } else {
-        return `${num1} + ${tens} + ${remainder}`
       }
+      
+      return `${num1} + ${tens} + ${remainder}`
     }
   } else {
     // Нет перехода через десяток - не раскладываем
@@ -369,25 +371,29 @@ function generateSubtractionOption(num1, num2) {
     if (num2 <= 9) {
       // Однозначное второе число
       const lastDigit1 = num1 % 10
+      
+      // Проверяем, не будет ли нулевого компонента при разложении
+      if (lastDigit1 === 0 || num2 - lastDigit1 <= 0) {
+        // Если будет нулевой компонент, не раскладываем
+        return `${num1} - ${num2}`
+      }
+      
       const roundPart = lastDigit1
       const remainder = num2 - roundPart
       
-      // Проверяем, чтобы не было отрицательных чисел или нуля
-      if (remainder <= 0) {
-        return `${num1} - ${num2}`
-      }
       return `${num1} - ${roundPart} - ${remainder}`
     } else {
       // Двузначное второе число - раскладываем на десятки и единицы (сначала вычитаем десятки, потом единицы)
       const tens = Math.floor(num2 / 10) * 10
       const remainder = num2 - tens
       
-      if (remainder === 0) {
-        // Если остаток 0, не включаем его в выражение
-        return `${num1} - ${tens}`
-      } else {
-        return `${num1} - ${tens} - ${remainder}`
+      // Проверяем, чтобы оба компонента были ненулевыми
+      if (tens === 0 || remainder === 0) {
+        // Если один из компонентов нулевой, не раскладываем
+        return `${num1} - ${num2}`
       }
+      
+      return `${num1} - ${tens} - ${remainder}`
     }
   } else {
     // Нет перехода через десяток - не раскладываем
@@ -413,7 +419,7 @@ function generateWrongAdditionOptions(num1, num2, correctOption) {
     }
     
     // Вариант с разложением на 2 числа, дающий правильную сумму
-    if (num2 - 1 !== 0) {
+    if (num2 - 1 !== 0 && 1 !== 0) {
       wrongOptions.push(`${mainNum} + ${num2 - 1} + 1`)
     }
     
@@ -429,18 +435,18 @@ function generateWrongAdditionOptions(num1, num2, correctOption) {
     if (combined > 2) {
       const newPart1 = Math.floor(combined / 2)
       const newPart2 = combined - newPart1
-      if (newPart1 !== part1 && newPart2 !== part2) {
+      if (newPart1 !== part1 && newPart2 !== part2 && newPart1 !== 0 && newPart2 !== 0) {
         wrongOptions.push(`${mainNum} + ${newPart1} + ${newPart2}`)
       }
     }
     
     // Вариант 2: меняем первое слагаемое и компенсируем во втором
-    if (part1 > 1) {
+    if (part1 > 1 && part2 + 1 !== 0 && part1 - 1 !== 0) {
       wrongOptions.push(`${mainNum} + ${part1 - 1} + ${part2 + 1}`)
     }
     
     // Вариант 3: меняем второе слагаемое и компенсируем в первом
-    if (part2 > 1) {
+    if (part2 > 1 && part1 + 1 !== 0 && part2 - 1 !== 0) {
       wrongOptions.push(`${mainNum} + ${part1 + 1} + ${part2 - 1}`)
     }
   }
@@ -464,10 +470,11 @@ export function generateWrongSubtractionOptions(num1, num2, correctOption) {
     const part2 = parseInt(parts[2])
     
     // Неправильные варианты для разложенного вычитания с 2 числами
-    if (part2 + 1 > 0) {
+    // Проверяем, чтобы компоненты не были нулевыми
+    if (part2 + 1 > 0 && part2 + 1 !== 0 && part1 !== 0) {
       wrongOptions.push(`${mainNum} - ${part1} - ${part2 + 1}`)
     }
-    if (part1 + 1 < num2) {
+    if (part1 + 1 < num2 && part1 + 1 !== 0 && part2 !== 0) {
       wrongOptions.push(`${mainNum} - ${part1 + 1} - ${part2}`)
     }
     
@@ -477,10 +484,10 @@ export function generateWrongSubtractionOptions(num1, num2, correctOption) {
       const lastDigit = num1 % 10
       if (lastDigit > 1 && num2 - lastDigit + 1 > 0) {
         const remainder = num2 - lastDigit + 1
-        // Проверяем, не равен ли remainder нулю
-        if (remainder !== 0) {
+        // Проверяем, не равен ли remainder нулю и не будет ли нулевых компонентов
+        if (remainder !== 0 && lastDigit - 1 !== 0) {
           wrongOptions.push(`${mainNum} - ${lastDigit - 1} - ${remainder}`)
-        } else {
+        } else if (lastDigit - 1 !== 0) {
           wrongOptions.push(`${mainNum} - ${lastDigit - 1}`)
         }
       } else {
@@ -488,7 +495,8 @@ export function generateWrongSubtractionOptions(num1, num2, correctOption) {
       }
     } else {
       // Для двузначного - меняем десятки и единицы
-      if (part1 - 10 > 0 && part2 + 10 < num2) {
+      // Проверяем, чтобы компоненты не были нулевыми
+      if (part1 - 10 > 0 && part2 + 10 < num2 && part1 - 10 !== 0 && part2 + 10 !== 0) {
         wrongOptions.push(`${mainNum} - ${part1 - 10} - ${part2 + 10}`)
       } else {
         wrongOptions.push(`${mainNum} - ${num2 + 1}`)
@@ -499,7 +507,8 @@ export function generateWrongSubtractionOptions(num1, num2, correctOption) {
     const lastDigit = num1 % 10
     
     // Создаем варианты с разложением на 2 числа, дающие правильную разность
-    if (lastDigit > 0 && num2 - lastDigit > 0 && num1 % 10 !== 0) {
+    // Проверяем, чтобы компоненты не были нулевыми
+    if (lastDigit > 0 && num2 - lastDigit > 0 && num1 % 10 !== 0 && lastDigit !== 0) {
       const remainder = num2 - lastDigit
       // Проверяем, не равен ли remainder нулю
       if (remainder !== 0) {
@@ -508,7 +517,7 @@ export function generateWrongSubtractionOptions(num1, num2, correctOption) {
         wrongOptions.push(`${num1} - ${lastDigit}`)
       }
     }
-    if (lastDigit > 1 && num2 - lastDigit - 1 > 0 && num1 % 10 !== 0) {
+    if (lastDigit > 1 && num2 - lastDigit - 1 > 0 && num1 % 10 !== 0 && lastDigit + 1 !== 0) {
       const remainder = num2 - lastDigit - 1
       // Проверяем, не равен ли remainder нулю
       if (remainder !== 0) {
@@ -706,4 +715,125 @@ export function getAvailableMultiplicationLevels(totalScore) {
   })
   
   return levels
+}
+// Функция для генерации уравнений для 2 класса
+export function generateEquationProblem(maxNumber = 100) {
+  // Выбираем случайный тип уравнения
+  const equationType = Math.floor(Math.random() * 3)
+  let expression, correctAnswer
+  
+  switch (equationType) {
+    case 0:
+      // x + a = b (сложение с неизвестным первым слагаемым)
+      const a = Math.floor(Math.random() * (maxNumber - 1)) + 1
+      const b = Math.floor(Math.random() * (maxNumber - a)) + a
+      correctAnswer = b - a
+      expression = `x + ${a} = ${b}`
+      break
+    case 1:
+      // x - a = b (вычитание с неизвестным уменьшаемым)
+      const subA = Math.floor(Math.random() * (maxNumber - 1)) + 1
+      const subB = Math.floor(Math.random() * (maxNumber - subA - 1)) + 1
+      correctAnswer = subA + subB
+      expression = `x - ${subA} = ${subB}`
+      break
+    case 2:
+      // a - x = b (вычитание с неизвестным вычитаемым)
+      const minA = Math.floor(Math.random() * (maxNumber - 1)) + 1
+      const minB = Math.floor(Math.random() * minA)
+      correctAnswer = minA - minB
+      expression = `${minA} - x = ${minB}`
+      break
+  }
+  
+  // Генерируем неправильные варианты ответов
+  const wrongAnswers = generateWrongEquationAnswers(correctAnswer, maxNumber)
+  
+  // Собираем все варианты и перемешиваем
+  const allOptions = [correctAnswer, ...wrongAnswers]
+  const shuffled = shuffleArray(allOptions)
+  const correctIndex = shuffled.indexOf(correctAnswer)
+  
+  return {
+    expression: expression,
+    options: shuffled,
+    correctIndex: correctIndex
+  }
+}
+
+// Вспомогательная функция для генерации неправильных вариантов ответов для уравнений
+function generateWrongEquationAnswers(correctAnswer, maxNumber) {
+  const wrongAnswers = []
+  let attempts = 0
+  const maxAttempts = 100 // Защита от бесконечного цикла
+  
+  // Проверка на валидность входных данных
+  if (isNaN(correctAnswer)) {
+    return [1, 2, 3] // Возвращаем значения по умолчанию
+  }
+  
+  // Генерируем три неправильных ответа
+  while (wrongAnswers.length < 3 && attempts < maxAttempts) {
+    attempts++
+    let wrongAnswer
+    
+    // Разные стратегии генерации неправильных ответов
+    const strategy = Math.floor(Math.random() * 4)
+    
+    switch (strategy) {
+      case 0:
+        // Ответ близкий к правильному (±1-5)
+        const offset = Math.floor(Math.random() * 5) + 1
+        wrongAnswer = correctAnswer + (Math.random() > 0.5 ? offset : -offset)
+        break
+      case 1:
+        // Ответ с ошибкой в последней цифре
+        const lastDigit = correctAnswer % 10
+        const newLastDigit = (lastDigit + Math.floor(Math.random() * 9) + 1) % 10
+        wrongAnswer = Math.floor(correctAnswer / 10) * 10 + newLastDigit
+        break
+      case 2:
+        // Ответ, полученный неверным применением операции
+        // Для уравнений это может быть результат сложения вместо вычитания или наоборот
+        if (Math.random() > 0.5 && correctAnswer > 0) {
+          wrongAnswer = correctAnswer * 2
+        } else if (correctAnswer > 1) {
+          wrongAnswer = Math.floor(correctAnswer / 2)
+        } else {
+          wrongAnswer = correctAnswer + 10
+        }
+        break
+      case 3:
+        // Ответ с ошибкой в десятках (если возможно)
+        if (correctAnswer >= 10) {
+          const tens = Math.floor(correctAnswer / 10)
+          const newTens = Math.max(1, tens + (Math.random() > 0.5 ? 1 : -1))
+          wrongAnswer = newTens * 10 + (correctAnswer % 10)
+        } else {
+          // Для чисел меньше 10 просто добавляем/вычитаем
+          wrongAnswer = correctAnswer + (Math.random() > 0.5 ? 10 : -10)
+        }
+        break
+    }
+    
+    // Убеждаемся, что ответ положительный, не превышает maxNumber и не совпадает с правильным
+    wrongAnswer = Math.max(0, Math.min(wrongAnswer, maxNumber))
+    
+    // Проверяем, что такого ответа еще нет
+    if (wrongAnswer !== correctAnswer && !wrongAnswers.includes(wrongAnswer)) {
+      wrongAnswers.push(wrongAnswer)
+    }
+  }
+  
+  if (attempts >= maxAttempts) {
+    // Если превышено количество попыток, просто добавляем любые значения
+    while (wrongAnswers.length < 3) {
+      const fallbackAnswer = Math.floor(Math.random() * maxNumber)
+      if (fallbackAnswer !== correctAnswer && !wrongAnswers.includes(fallbackAnswer)) {
+        wrongAnswers.push(fallbackAnswer)
+      }
+    }
+  }
+  
+  return wrongAnswers
 }

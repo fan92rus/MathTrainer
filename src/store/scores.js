@@ -7,11 +7,19 @@ export const useScoresStore = defineStore('scores', {
     decompositionScore: 0,
     firstGradeDecompositionScore: 0,
     multiplicationScore: 0,
+    equationsScore: 0,
     currentMultiplicationLevel: 2 // Текущий открытый уровень таблицы умножения
   }),
-  
   getters: {
-    getTotalScore: (state) => state.countingScore + state.decompositionScore + state.firstGradeDecompositionScore + state.multiplicationScore
+    getTotalScore: (state) => state.countingScore + state.decompositionScore + state.firstGradeDecompositionScore + state.multiplicationScore + state.equationsScore,
+    getEquationsScore: (state) => state.equationsScore,
+    getAllScores: (state) => ({
+      countingScore: state.countingScore,
+      decompositionScore: state.decompositionScore,
+      firstGradeDecompositionScore: state.firstGradeDecompositionScore,
+      multiplicationScore: state.multiplicationScore,
+      equationsScore: state.equationsScore
+    })
   },
   
   actions: {
@@ -36,6 +44,11 @@ export const useScoresStore = defineStore('scores', {
       const multiplicationSaved = getItem('multiplicationScore')
       if (multiplicationSaved !== null) {
         this.multiplicationScore = parseInt(multiplicationSaved, 10)
+      }
+      
+      const equationsSaved = getItem('equationsScore')
+      if (equationsSaved !== null) {
+        this.equationsScore = parseInt(equationsSaved, 10)
       }
       
       const currentLevelSaved = getItem('currentMultiplicationLevel')
@@ -64,6 +77,16 @@ export const useScoresStore = defineStore('scores', {
       this.saveMultiplicationScore()
     },
     
+    updateEquationsScore(points) {
+      this.equationsScore += points
+      this.saveEquationsScore()
+    },
+    
+    resetEquationsScore() {
+      this.equationsScore = 0
+      this.saveEquationsScore()
+    },
+    
     updateCurrentMultiplicationLevel(level) {
       this.currentMultiplicationLevel = level
       this.saveCurrentMultiplicationLevel()
@@ -89,6 +112,11 @@ export const useScoresStore = defineStore('scores', {
       setItem('multiplicationScore', this.multiplicationScore.toString())
     },
     
+    saveEquationsScore() {
+      const { setItem } = useStorage()
+      setItem('equationsScore', this.equationsScore.toString())
+    },
+    
     saveCurrentMultiplicationLevel() {
       const { setItem } = useStorage()
       setItem('currentMultiplicationLevel', this.currentMultiplicationLevel.toString())
@@ -99,11 +127,13 @@ export const useScoresStore = defineStore('scores', {
       this.decompositionScore = 0
       this.firstGradeDecompositionScore = 0
       this.multiplicationScore = 0
+      this.equationsScore = 0
       this.currentMultiplicationLevel = 2
       this.saveCountingScore()
       this.saveDecompositionScore()
       this.saveFirstGradeDecompositionScore()
       this.saveMultiplicationScore()
+      this.saveEquationsScore()
       this.saveCurrentMultiplicationLevel()
     }
   }

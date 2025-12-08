@@ -4,6 +4,7 @@ import CountingView from '../views/CountingView.vue'
 import DecompositionView from '../views/DecompositionView.vue'
 import FirstGradeDecompositionView from '../views/FirstGradeDecompositionView.vue'
 import MultiplicationView from '../views/MultiplicationView.vue'
+import EquationsView from '../views/EquationsView.vue'
 import { useSettingsStore } from '../store/settings'
 import { getAvailableExercises } from '../utils/gradeHelpers'
 
@@ -36,6 +37,12 @@ const routes = [
     name: 'multiplication',
     component: MultiplicationView,
     meta: { exerciseType: 'multiplication' }
+  },
+  {
+    path: '/equations',
+    name: 'equations',
+    component: EquationsView,
+    meta: { exerciseType: 'equations' }
   }
 ]
 

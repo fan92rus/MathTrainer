@@ -96,7 +96,11 @@ describe('Math Helpers - Decomposition', () => {
         
         if (tensAfter < tensBefore) {
           // Если есть переход через десяток, должен быть разложенный ответ
-          expect(correctOption.split('-').length).toBeGreaterThan(2)
+          // Но только если разложение не приведет к нулевым компонентам
+          const lastDigit1 = num1 % 10
+          if (lastDigit1 > 0 && num2 - lastDigit1 > 0) {
+            expect(correctOption.split('-').length).toBeGreaterThan(2)
+          }
         }
       }
     })
@@ -167,6 +171,96 @@ describe('Math Helpers - Decomposition', () => {
         if (remainder > 0) {
           expect(correctOption).toContain(`${tens}`)
           expect(correctOption).toContain(`${remainder}`)
+        }
+      }
+    })
+  })
+
+  describe('Проверка отсутствия нулевых компонентов в разложении', () => {
+    test('в разложении сложения не должно быть нулевых компонентов', () => {
+      // Прогоняем несколько раз, чтобы проверить разные случаи
+      for (let i = 0; i < 20; i++) {
+        const problem = generateDecompositionProblem(50)
+        const correctOption = problem.options[problem.correctIndex]
+        
+        // Проверяем, что это сложение
+        if (problem.expression.includes('+')) {
+          // Если есть разложение, проверяем отсутствие нулевых компонентов
+          if (correctOption.split('+').length > 2) {
+            const parts = correctOption.split('+').map(part => parseInt(part.trim()))
+            
+            // Все компоненты должны быть положительными числами
+            parts.forEach(part => {
+              expect(part).toBeGreaterThan(0)
+            })
+          }
+        }
+      }
+    })
+
+    test('в разложении вычитания не должно быть нулевых компонентов', () => {
+      // Прогоняем несколько раз, чтобы проверить разные случаи
+      for (let i = 0; i < 20; i++) {
+        const problem = generateDecompositionProblem(50)
+        const correctOption = problem.options[problem.correctIndex]
+        
+        // Проверяем, что это вычитание
+        if (problem.expression.includes('-')) {
+          // Если есть разложение, проверяем отсутствие нулевых компонентов
+          if (correctOption.split('-').length > 2) {
+            const parts = correctOption.split('-').map(part => parseInt(part.trim()))
+            
+            // Все компоненты должны быть положительными числами
+            parts.forEach(part => {
+              expect(part).toBeGreaterThan(0)
+            })
+          }
+        }
+      }
+    })
+
+    test('в неправильных вариантах разложения сложения не должно быть нулевых компонентов', () => {
+      // Прогоняем несколько раз, чтобы проверить разные случаи
+      for (let i = 0; i < 20; i++) {
+        const problem = generateDecompositionProblem(50)
+        
+        // Проверяем, что это сложение
+        if (problem.expression.includes('+')) {
+          // Проверяем все варианты
+          problem.options.forEach(option => {
+            // Если вариант содержит разложение
+            if (option.split('+').length > 2) {
+              const parts = option.split('+').map(part => parseInt(part.trim()))
+              
+              // Все компоненты должны быть положительными числами
+              parts.forEach(part => {
+                expect(part).toBeGreaterThan(0)
+              })
+            }
+          })
+        }
+      }
+    })
+
+    test('в неправильных вариантах разложения вычитания не должно быть нулевых компонентов', () => {
+      // Прогоняем несколько раз, чтобы проверить разные случаи
+      for (let i = 0; i < 20; i++) {
+        const problem = generateDecompositionProblem(50)
+        
+        // Проверяем, что это вычитание
+        if (problem.expression.includes('-')) {
+          // Проверяем все варианты
+          problem.options.forEach(option => {
+            // Если вариант содержит разложение
+            if (option.split('-').length > 2) {
+              const parts = option.split('-').map(part => parseInt(part.trim()))
+              
+              // Все компоненты должны быть положительными числами
+              parts.forEach(part => {
+                expect(part).toBeGreaterThan(0)
+              })
+            }
+          })
         }
       }
     })

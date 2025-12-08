@@ -68,6 +68,20 @@
               </div>
             </div>
           </div>
+          <div
+            v-if="availableExercises.equations.available"
+            class="game-card"
+            @click="goToEquations"
+          >
+            <div class="game-content">
+              <div class="game-icon">🧮</div>
+              <div class="game-info">
+                <div class="game-title">{{ availableExercises.equations.title }}</div>
+                <div class="game-description">{{ availableExercises.equations.description }}</div>
+                <div class="game-score">⭐ {{ equationsScore }}</div>
+              </div>
+            </div>
+          </div>
         </div>
 
       </div>
@@ -95,9 +109,10 @@ export default {
     
     // Вычисляемые свойства
     const countingScore = computed(() => scoresStore.countingScore)
-    const decompositionScore = computed(() => scoresStore.decompositionScore)
-    const firstGradeDecompositionScore = computed(() => scoresStore.firstGradeDecompositionScore)
-    const multiplicationScore = computed(() => scoresStore.multiplicationScore)
+   const decompositionScore = computed(() => scoresStore.decompositionScore)
+   const firstGradeDecompositionScore = computed(() => scoresStore.firstGradeDecompositionScore)
+   const multiplicationScore = computed(() => scoresStore.multiplicationScore)
+   const equationsScore = computed(() => scoresStore.equationsScore)
     const isGradeSelected = computed(() => settingsStore.isGradeSelected)
     const selectedGrade = computed(() => settingsStore.selectedGrade)
     const gradeName = computed(() => getGradeName(selectedGrade.value))
@@ -114,7 +129,8 @@ export default {
           counting: { available: true, title: 'Тренажер счета', description: 'Решай примеры на сложение и вычитание' },
           firstGradeDecomposition: { available: false, title: 'Состав числа (1 класс)', description: 'Изучи состав чисел до 10' },
           decomposition: { available: false, title: 'Состав числа', description: 'Выбирай правильный способ разложения чисел' },
-          multiplication: { available: false, title: 'Таблица умножения', description: 'Изучай таблицу умножения постепенно' }
+          multiplication: { available: false, title: 'Таблица умножения', description: 'Изучай таблицу умножения постепенно' },
+          equations: { available: false, title: 'Простые уравнения', description: 'Решай простые уравнения с неизвестным' }
         }
       }
       return getAvailableExercises(selectedGrade.value, currentQuarter.value)
@@ -136,29 +152,34 @@ export default {
     const goToMultiplication = () => {
       router.push('/multiplication')
     }
-    
-    
-    const changeGrade = () => {
-      settingsStore.resetSettings()
-      // После сброса настроек компонент GradeSelection покажется автоматически
-    }
-    
-    
-    return {
-      countingScore,
-      decompositionScore,
-      firstGradeDecompositionScore,
-      multiplicationScore,
-      isGradeSelected,
-      gradeName,
-      quarterName,
-      availableExercises,
-      goToCounting,
-      goToDecomposition,
-      goToFirstGradeDecomposition,
-      goToMultiplication,
-      changeGrade
-    }
+   
+   const goToEquations = () => {
+     router.push('/equations')
+   }
+   
+   const changeGrade = () => {
+     settingsStore.resetSettings()
+     // После сброса настроек компонент GradeSelection покажется автоматически
+   }
+   
+   
+   return {
+     countingScore,
+     decompositionScore,
+     firstGradeDecompositionScore,
+     multiplicationScore,
+     equationsScore,
+     isGradeSelected,
+     gradeName,
+     quarterName,
+     availableExercises,
+     goToCounting,
+     goToDecomposition,
+     goToFirstGradeDecomposition,
+     goToMultiplication,
+     goToEquations,
+     changeGrade
+   }
   }
 }
 </script>
