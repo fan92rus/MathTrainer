@@ -9,7 +9,7 @@
             </button>
             <span class="level-indicator">Уровень {{ currentLevel }}</span>
           </div>
-          <h1 class="title">Выбери вариант состава числа</h1>
+          <h1 class="title">Выбери удобный вариант решения</h1>
         </div>
         
         <ScoreDisplay 

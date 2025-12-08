@@ -164,7 +164,7 @@ export function getAvailableExercises(grade, quarter) {
     decomposition: {
       available: grade >= 2, // Разложение чисел доступно со 2 класса
       title: 'Вычисление удобным способом',
-      description: 'Выбирай удобный способ разложения чисел'
+      description: 'Выбирай удобный способ вычисления'
     },
     multiplication: {
       available: (grade === 2 && quarter >= 3) || grade > 2, // Умножение доступно постоянно начиная с 3 четверти 2 класса и далее

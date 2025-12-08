@@ -719,19 +719,19 @@ export function getAvailableMultiplicationLevels(totalScore) {
 // Функция для определения конфигурации уровня уравнений на основе баллов
 export function getEquationsLevelConfig(score) {
   // Определяем уровень на основе количества баллов
-  // Первые 2 уровня по 100 баллов, остальные по 60 баллов
+  // Первые 2 уровня по 150 баллов, остальные по 60 баллов
   let level
-  if (score <= 100) {
+  if (score <= 150) {
     level = 1
-  } else if (score <= 200) {
+  } else if (score <= 300) {
     level = 2
-  } else if (score <= 260) {
+  } else if (score <= 360) {
     level = 3
-  } else if (score <= 320) {
+  } else if (score <= 420) {
     level = 4
-  } else if (score <= 380) {
+  } else if (score <= 480) {
     level = 5
-  } else if (score <= 440) {
+  } else if (score <= 540) {
     level = 6
   } else {
     level = 7
@@ -742,7 +742,7 @@ export function getEquationsLevelConfig(score) {
     1: {
       level: 1,
       minScore: 0,
-      maxScore: 100,
+      maxScore: 150,
       maxNumber: 10,
       equationTypes: ['addition'], // Только сложение (x + a = b)
       description: 'Сложение чисел до 10',
@@ -750,8 +750,8 @@ export function getEquationsLevelConfig(score) {
     },
     2: {
       level: 2,
-      minScore: 101,
-      maxScore: 200,
+      minScore: 151,
+      maxScore: 300,
       maxNumber: 10,
       equationTypes: ['subtraction'], // Только вычитание (x - a = b)
       description: 'Вычитание чисел до 10',
@@ -759,8 +759,8 @@ export function getEquationsLevelConfig(score) {
     },
     3: {
       level: 3,
-      minScore: 201,
-      maxScore: 260,
+      minScore: 301,
+      maxScore: 360,
       maxNumber: 20,
       equationTypes: ['addition', 'subtraction'], // Сложение и вычитание (x + a = b, x - a = b)
       description: 'Сложение и вычитание до 20',
@@ -768,8 +768,8 @@ export function getEquationsLevelConfig(score) {
     },
     4: {
       level: 4,
-      minScore: 261,
-      maxScore: 320,
+      minScore: 361,
+      maxScore: 420,
       maxNumber: 20,
       equationTypes: ['addition', 'subtraction', 'reverseSubtraction'], // Все типы (x + a = b, x - a = b, a - x = b)
       description: 'Все типы уравнений до 20',
@@ -777,8 +777,8 @@ export function getEquationsLevelConfig(score) {
     },
     5: {
       level: 5,
-      minScore: 321,
-      maxScore: 380,
+      minScore: 421,
+      maxScore: 480,
       maxNumber: 50,
       equationTypes: ['addition', 'subtraction', 'reverseSubtraction'],
       description: 'Все типы уравнений до 50',
@@ -786,8 +786,8 @@ export function getEquationsLevelConfig(score) {
     },
     6: {
       level: 6,
-      minScore: 381,
-      maxScore: 440,
+      minScore: 481,
+      maxScore: 540,
       maxNumber: 100,
       equationTypes: ['addition', 'subtraction', 'reverseSubtraction'],
       description: 'Все типы уравнений до 100',
@@ -795,7 +795,7 @@ export function getEquationsLevelConfig(score) {
     },
     7: {
       level: 7,
-      minScore: 441,
+      minScore: 541,
       maxScore: Infinity,
       maxNumber: 100,
       equationTypes: ['addition', 'subtraction', 'reverseSubtraction'],
@@ -835,42 +835,42 @@ export function getAllEquationsLevels() {
       level: 1,
       description: 'Сложение чисел до 10',
       minScore: 0,
-      maxScore: 100
+      maxScore: 150
     },
     {
       level: 2,
       description: 'Вычитание чисел до 10',
-      minScore: 101,
-      maxScore: 200
+      minScore: 151,
+      maxScore: 300
     },
     {
       level: 3,
       description: 'Сложение и вычитание до 20',
-      minScore: 201,
-      maxScore: 260
+      minScore: 301,
+      maxScore: 360
     },
     {
       level: 4,
       description: 'Все типы уравнений до 20',
-      minScore: 261,
-      maxScore: 320
+      minScore: 361,
+      maxScore: 420
     },
     {
       level: 5,
       description: 'Все типы уравнений до 50',
-      minScore: 321,
-      maxScore: 380
+      minScore: 421,
+      maxScore: 480
     },
     {
       level: 6,
       description: 'Все типы уравнений до 100',
-      minScore: 381,
-      maxScore: 440
+      minScore: 481,
+      maxScore: 540
     },
     {
       level: 7,
       description: 'Экспертный уровень',
-      minScore: 441,
+      minScore: 541,
       maxScore: Infinity
     }
   ]
