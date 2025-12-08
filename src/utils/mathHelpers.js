@@ -716,38 +716,226 @@ export function getAvailableMultiplicationLevels(totalScore) {
   
   return levels
 }
-// Функция для генерации уравнений для 2 класса
-export function generateEquationProblem(maxNumber = 100) {
-  // Выбираем случайный тип уравнения
-  const equationType = Math.floor(Math.random() * 3)
-  let expression, correctAnswer
-  
-  switch (equationType) {
-    case 0:
-      // x + a = b (сложение с неизвестным первым слагаемым)
-      const a = Math.floor(Math.random() * (maxNumber - 1)) + 1
-      const b = Math.floor(Math.random() * (maxNumber - a)) + a
-      correctAnswer = b - a
-      expression = `x + ${a} = ${b}`
-      break
-    case 1:
-      // x - a = b (вычитание с неизвестным уменьшаемым)
-      const subA = Math.floor(Math.random() * (maxNumber - 1)) + 1
-      const subB = Math.floor(Math.random() * (maxNumber - subA - 1)) + 1
-      correctAnswer = subA + subB
-      expression = `x - ${subA} = ${subB}`
-      break
-    case 2:
-      // a - x = b (вычитание с неизвестным вычитаемым)
-      const minA = Math.floor(Math.random() * (maxNumber - 1)) + 1
-      const minB = Math.floor(Math.random() * minA)
-      correctAnswer = minA - minB
-      expression = `${minA} - x = ${minB}`
-      break
+// Функция для определения конфигурации уровня уравнений на основе баллов
+export function getEquationsLevelConfig(score) {
+  // Определяем уровень на основе количества баллов
+  // Первые 2 уровня по 100 баллов, остальные по 60 баллов
+  let level
+  if (score <= 100) {
+    level = 1
+  } else if (score <= 200) {
+    level = 2
+  } else if (score <= 260) {
+    level = 3
+  } else if (score <= 320) {
+    level = 4
+  } else if (score <= 380) {
+    level = 5
+  } else if (score <= 440) {
+    level = 6
+  } else {
+    level = 7
   }
   
+  // Возвращаем конфигурацию уровня
+  const levelConfigs = {
+    1: {
+      level: 1,
+      minScore: 0,
+      maxScore: 100,
+      maxNumber: 10,
+      equationTypes: ['addition'], // Только сложение (x + a = b)
+      description: 'Сложение чисел до 10',
+      pointsPerCorrect: 10
+    },
+    2: {
+      level: 2,
+      minScore: 101,
+      maxScore: 200,
+      maxNumber: 10,
+      equationTypes: ['subtraction'], // Только вычитание (x - a = b)
+      description: 'Вычитание чисел до 10',
+      pointsPerCorrect: 10
+    },
+    3: {
+      level: 3,
+      minScore: 201,
+      maxScore: 260,
+      maxNumber: 20,
+      equationTypes: ['addition', 'subtraction'], // Сложение и вычитание (x + a = b, x - a = b)
+      description: 'Сложение и вычитание до 20',
+      pointsPerCorrect: 15
+    },
+    4: {
+      level: 4,
+      minScore: 261,
+      maxScore: 320,
+      maxNumber: 20,
+      equationTypes: ['addition', 'subtraction', 'reverseSubtraction'], // Все типы (x + a = b, x - a = b, a - x = b)
+      description: 'Все типы уравнений до 20',
+      pointsPerCorrect: 15
+    },
+    5: {
+      level: 5,
+      minScore: 321,
+      maxScore: 380,
+      maxNumber: 50,
+      equationTypes: ['addition', 'subtraction', 'reverseSubtraction'],
+      description: 'Все типы уравнений до 50',
+      pointsPerCorrect: 20
+    },
+    6: {
+      level: 6,
+      minScore: 381,
+      maxScore: 440,
+      maxNumber: 100,
+      equationTypes: ['addition', 'subtraction', 'reverseSubtraction'],
+      description: 'Все типы уравнений до 100',
+      pointsPerCorrect: 20
+    },
+    7: {
+      level: 7,
+      minScore: 441,
+      maxScore: Infinity,
+      maxNumber: 100,
+      equationTypes: ['addition', 'subtraction', 'reverseSubtraction'],
+      description: 'Экспертный уровень',
+      pointsPerCorrect: 25
+    }
+  }
+  
+  return levelConfigs[level]
+}
+
+// Функция для получения информации о следующем уровне
+export function getNextEquationsLevel(currentScore) {
+  const currentLevel = getEquationsLevelConfig(currentScore).level
+  
+  if (currentLevel >= 7) {
+    return null // Уже достигнут максимальный уровень
+  }
+  
+  const nextLevelConfig = getEquationsLevelConfig(
+    getEquationsLevelConfig(currentScore).maxScore + 1
+  )
+  
+  return {
+    level: nextLevelConfig.level,
+    description: nextLevelConfig.description,
+    scoreNeeded: nextLevelConfig.minScore - currentScore,
+    minScore: nextLevelConfig.minScore,
+    maxScore: nextLevelConfig.maxScore
+  }
+}
+
+// Функция для получения всех уровней уравнений
+export function getAllEquationsLevels() {
+  return [
+    {
+      level: 1,
+      description: 'Сложение чисел до 10',
+      minScore: 0,
+      maxScore: 100
+    },
+    {
+      level: 2,
+      description: 'Вычитание чисел до 10',
+      minScore: 101,
+      maxScore: 200
+    },
+    {
+      level: 3,
+      description: 'Сложение и вычитание до 20',
+      minScore: 201,
+      maxScore: 260
+    },
+    {
+      level: 4,
+      description: 'Все типы уравнений до 20',
+      minScore: 261,
+      maxScore: 320
+    },
+    {
+      level: 5,
+      description: 'Все типы уравнений до 50',
+      minScore: 321,
+      maxScore: 380
+    },
+    {
+      level: 6,
+      description: 'Все типы уравнений до 100',
+      minScore: 381,
+      maxScore: 440
+    },
+    {
+      level: 7,
+      description: 'Экспертный уровень',
+      minScore: 441,
+      maxScore: Infinity
+    }
+  ]
+}
+
+// Функция для генерации уравнений с учетом уровня сложности
+export function generateEquationProblem(currentScore, previousX = null) {
+  // Получаем конфигурацию уровня на основе текущего счета
+  const levelConfig = getEquationsLevelConfig(currentScore)
+  
+  // Выбираем случайный тип уравнения из доступных для этого уровня
+  const equationType = levelConfig.equationTypes[
+    Math.floor(Math.random() * levelConfig.equationTypes.length)
+  ]
+  
+  let expression, correctAnswer
+  let attempts = 0
+  const maxAttempts = 10 // Максимальное количество попыток для генерации уникального X
+  
+  do {
+    attempts++
+    
+    switch (equationType) {
+      case 'addition':
+        // x + a = b (сложение с неизвестным первым слагаемым)
+        const a = Math.floor(Math.random() * (levelConfig.maxNumber - 1)) + 1
+        const b = Math.floor(Math.random() * (levelConfig.maxNumber - a)) + a
+        correctAnswer = b - a
+        expression = `x + ${a} = ${b}`
+        break
+        
+      case 'subtraction':
+        // x - a = b (вычитание с неизвестным уменьшаемым)
+        const subA = Math.floor(Math.random() * (levelConfig.maxNumber - 1)) + 1
+        const subB = Math.floor(Math.random() * (levelConfig.maxNumber - subA - 1)) + 1
+        correctAnswer = subA + subB
+        expression = `x - ${subA} = ${subB}`
+        break
+        
+      case 'reverseSubtraction':
+        // a - x = b (вычитание с неизвестным вычитаемым)
+        const minA = Math.floor(Math.random() * (levelConfig.maxNumber - 1)) + 1
+        const minB = Math.floor(Math.random() * minA)
+        correctAnswer = minA - minB
+        expression = `${minA} - x = ${minB}`
+        break
+        
+      default:
+        // По умолчанию используем сложение
+        const defaultA = Math.floor(Math.random() * (levelConfig.maxNumber - 1)) + 1
+        const defaultB = Math.floor(Math.random() * (levelConfig.maxNumber - defaultA)) + defaultA
+        correctAnswer = defaultB - defaultA
+        expression = `x + ${defaultA} = ${defaultB}`
+    }
+    
+    // Если достигнут максимальное количество попыток, выходим из цикла
+    if (attempts >= maxAttempts) {
+      break
+    }
+    
+    // Проверяем, что текущий X отличается от предыдущего (если он указан)
+  } while (previousX !== null && correctAnswer === previousX && attempts < maxAttempts)
+  
   // Генерируем неправильные варианты ответов
-  const wrongAnswers = generateWrongEquationAnswers(correctAnswer, maxNumber)
+  const wrongAnswers = generateWrongEquationAnswers(correctAnswer, levelConfig.maxNumber)
   
   // Собираем все варианты и перемешиваем
   const allOptions = [correctAnswer, ...wrongAnswers]
@@ -757,7 +945,9 @@ export function generateEquationProblem(maxNumber = 100) {
   return {
     expression: expression,
     options: shuffled,
-    correctIndex: correctIndex
+    correctIndex: correctIndex,
+    levelConfig: levelConfig,
+    xValue: correctAnswer // Добавляем значение X для отслеживания
   }
 }
 
@@ -772,18 +962,23 @@ function generateWrongEquationAnswers(correctAnswer, maxNumber) {
     return [1, 2, 3] // Возвращаем значения по умолчанию
   }
   
+  // Вспомогательная функция для проверки, что ответ не слишком близок к другим ответам
+  const isTooCloseToOthers = (answer, existingAnswers, minDistance = 2) => {
+    return existingAnswers.some(existing => Math.abs(answer - existing) < minDistance)
+  }
+  
   // Генерируем три неправильных ответа
   while (wrongAnswers.length < 3 && attempts < maxAttempts) {
     attempts++
     let wrongAnswer
     
     // Разные стратегии генерации неправильных ответов
-    const strategy = Math.floor(Math.random() * 4)
+    const strategy = Math.floor(Math.random() * 5) // Увеличили количество стратегий
     
     switch (strategy) {
       case 0:
-        // Ответ близкий к правильному (±1-5)
-        const offset = Math.floor(Math.random() * 5) + 1
+        // Ответ близкий к правильному (±6-10) - увеличили разброс
+        const offset = Math.floor(Math.random() * 5) + 6
         wrongAnswer = correctAnswer + (Math.random() > 0.5 ? offset : -offset)
         break
       case 1:
@@ -807,11 +1002,21 @@ function generateWrongEquationAnswers(correctAnswer, maxNumber) {
         // Ответ с ошибкой в десятках (если возможно)
         if (correctAnswer >= 10) {
           const tens = Math.floor(correctAnswer / 10)
-          const newTens = Math.max(1, tens + (Math.random() > 0.5 ? 1 : -1))
+          const newTens = Math.max(1, tens + (Math.random() > 0.5 ? 2 : -2)) // Увеличили разброс
           wrongAnswer = newTens * 10 + (correctAnswer % 10)
         } else {
           // Для чисел меньше 10 просто добавляем/вычитаем
           wrongAnswer = correctAnswer + (Math.random() > 0.5 ? 10 : -10)
+        }
+        break
+      case 4:
+        // Случайный ответ в допустимом диапазоне с гарантией отдаления
+        const minRange = Math.max(0, correctAnswer - 20)
+        const maxRange = Math.min(maxNumber, correctAnswer + 20)
+        wrongAnswer = Math.floor(Math.random() * (maxRange - minRange + 1)) + minRange
+        // Гарантируем, что ответ достаточно далек от правильного
+        if (Math.abs(wrongAnswer - correctAnswer) < 3) {
+          wrongAnswer = wrongAnswer + (Math.random() > 0.5 ? 10 : -10)
         }
         break
     }
@@ -819,8 +1024,10 @@ function generateWrongEquationAnswers(correctAnswer, maxNumber) {
     // Убеждаемся, что ответ положительный, не превышает maxNumber и не совпадает с правильным
     wrongAnswer = Math.max(0, Math.min(wrongAnswer, maxNumber))
     
-    // Проверяем, что такого ответа еще нет
-    if (wrongAnswer !== correctAnswer && !wrongAnswers.includes(wrongAnswer)) {
+    // Проверяем, что такого ответа еще нет и он не слишком близок к другим ответам
+    if (wrongAnswer !== correctAnswer &&
+        !wrongAnswers.includes(wrongAnswer) &&
+        !isTooCloseToOthers(wrongAnswer, [...wrongAnswers, correctAnswer], 2)) {
       wrongAnswers.push(wrongAnswer)
     }
   }
@@ -829,7 +1036,9 @@ function generateWrongEquationAnswers(correctAnswer, maxNumber) {
     // Если превышено количество попыток, просто добавляем любые значения
     while (wrongAnswers.length < 3) {
       const fallbackAnswer = Math.floor(Math.random() * maxNumber)
-      if (fallbackAnswer !== correctAnswer && !wrongAnswers.includes(fallbackAnswer)) {
+      if (fallbackAnswer !== correctAnswer &&
+          !wrongAnswers.includes(fallbackAnswer) &&
+          !isTooCloseToOthers(fallbackAnswer, [...wrongAnswers, correctAnswer], 2)) {
         wrongAnswers.push(fallbackAnswer)
       }
     }

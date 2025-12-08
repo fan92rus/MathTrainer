@@ -80,8 +80,15 @@ export function useGameLogic(totalQuestions = 10) {
   }
   
   const generateAllProblems = (generator) => {
+    let previousX = null
+    
     for (let i = 0; i < totalQuestions; i++) {
-      addProblem(generator())
+      // Передаем предыдущее значение X в генератор
+      const problem = generator(previousX)
+      addProblem(problem)
+      
+      // Обновляем предыдущее значение X для следующей итерации
+      previousX = problem.xValue || null
     }
   }
   
