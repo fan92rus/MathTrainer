@@ -54,6 +54,7 @@ import { useRouter } from 'vue-router'
 import { useScoresStore } from '../store/scores'
 import { useGameLogic } from '../composables/useGameLogic'
 import { generateFirstGradeDecompositionProblem } from '../utils/mathHelpers'
+import { calculateExercisePoints } from '../utils/gradeHelpers'
 import ScoreDisplay from '../components/common/ScoreDisplay.vue'
 import ProgressBar from '../components/common/ProgressBar.vue'
 import StarRating from '../components/common/StarRating.vue'
@@ -97,11 +98,11 @@ export default {
     // Обработчик выбора ответа
     const handleAnswerSelected = (index) => {
       selectAnswer(
-        index, 
-        currentProblem.value?.correctIndex || 0, 
-        () => {
-          // При правильном ответе обновляем общий счет
-          scoresStore.updateFirstGradeDecompositionScore(10)
+        index,
+        currentProblem.value?.correctIndex || 0,
+        (points) => {
+          // При правильном ответе обновляем общий счет с учетом количества ошибок
+          scoresStore.updateFirstGradeDecompositionScore(points)
         }
       )
     }

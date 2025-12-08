@@ -1,4 +1,5 @@
 import { ref, computed } from 'vue'
+import { calculateExercisePoints } from '../utils/gradeHelpers'
 
 export function useGameLogic(totalQuestions = 10) {
   // Состояние игры
@@ -11,6 +12,7 @@ export function useGameLogic(totalQuestions = 10) {
   const problems = ref([])
   const correctAnswers = ref(0)
   const totalAnswers = ref(0)
+  const errorsPerQuestion = ref([]) // Массив для хранения количества ошибок по каждому вопросу
   
   // Вычисляемые свойства
   const progressPercent = computed(() => {
@@ -32,6 +34,7 @@ export function useGameLogic(totalQuestions = 10) {
     problems.value = []
     correctAnswers.value = 0
     totalAnswers.value = 0
+    errorsPerQuestion.value = []
   }
   
   const selectAnswer = (index, correctIndex, onCorrect) => {
@@ -41,6 +44,10 @@ export function useGameLogic(totalQuestions = 10) {
     // Считаем общий ответ только при первом выборе
     if (!answered.value) {
       totalAnswers.value++
+      // Инициализируем счетчик ошибок для текущего вопроса
+      if (errorsPerQuestion.value.length <= currentQuestion.value) {
+        errorsPerQuestion.value[currentQuestion.value] = 0
+      }
     }
     
     selectedIndex.value = index
@@ -48,16 +55,25 @@ export function useGameLogic(totalQuestions = 10) {
     // Если ответ правильный
     if (index === correctIndex) {
       answered.value = true
-      score.value += 10
+      // Начисляем очки в зависимости от количества ошибок
+      // Важно: используем текущее количество ошибок до увеличения счетчика
+      const errors = errorsPerQuestion.value[currentQuestion.value] || 0
+      const points = calculateExercisePoints(errors)
+      console.log(`Правильный ответ! Вопрос ${currentQuestion.value}, ошибок: ${errors}, очков: ${points}`)
+      score.value += points
       correctAnswers.value++
-      if (onCorrect) onCorrect()
+      if (onCorrect) onCorrect(points) // Передаем количество очков в колбэк
       
       // Автоматический переход к следующему вопросу через 1.5 секунды
       setTimeout(() => {
         nextQuestion()
       }, 1500)
     }
-    // Если ответ неправильный, просто подсвечиваем его, но не переходим дальше
+    // Если ответ неправильный, увеличиваем счетчик ошибок
+    else {
+      errorsPerQuestion.value[currentQuestion.value]++
+      console.log(`Неправильный ответ! Вопрос ${currentQuestion.value}, всего ошибок: ${errorsPerQuestion.value[currentQuestion.value]}`)
+    }
   }
   
   const nextQuestion = () => {
@@ -103,6 +119,7 @@ export function useGameLogic(totalQuestions = 10) {
     problems,
     correctAnswers,
     totalAnswers,
+    errorsPerQuestion,
     
     // Вычисляемые свойства
     progressPercent,

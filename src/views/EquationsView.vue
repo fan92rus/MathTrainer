@@ -73,6 +73,7 @@ import {
   getEquationsLevelConfig,
   getNextEquationsLevel
 } from '../utils/mathHelpers'
+import { calculateExercisePoints } from '../utils/gradeHelpers'
 import ScoreDisplay from '../components/common/ScoreDisplay.vue'
 import ProgressBar from '../components/common/ProgressBar.vue'
 import StarRating from '../components/common/StarRating.vue'
@@ -141,10 +142,11 @@ export default {
       selectAnswer(
         index,
         currentProblem.value?.correctIndex || 0,
-        () => {
-          // При правильном ответе обновляем общий счет
-          // Количество баллов зависит от уровня сложности
-          scoresStore.updateEquationsScore(currentLevelConfig.value.pointsPerCorrect)
+        (points) => {
+          // При правильном ответе обновляем общий счет с учетом количества ошибок
+          // Применяем коэффициент уровня сложности к базовым очкам
+          const adjustedPoints = Math.round(points * (currentLevelConfig.value.pointsPerCorrect / 10))
+          scoresStore.updateEquationsScore(adjustedPoints)
         }
       )
     }

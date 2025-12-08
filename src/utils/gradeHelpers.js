@@ -180,3 +180,21 @@ export function getAvailableExercises(grade, quarter) {
   
   return exercises
 }
+
+// Функция для расчета очков за упражнение в зависимости от количества ошибок
+export function calculateExercisePoints(errors) {
+  // Базовые очки за упражнение без ошибок
+  const basePoints = 10
+  
+  // Если ошибок больше 2, очки не начисляются
+  if (errors > 2) {
+    return 0
+  }
+  
+  // Уменьшаем очки в зависимости от количества ошибок
+  // 0 ошибок = 10 очков
+  // 1 ошибка = 5 очков
+  // 2 ошибки = 0 очков
+  // 3+ ошибок = 0 очков
+  return errors === 0 ? basePoints : errors === 1 ? 5 : 0
+}

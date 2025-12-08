@@ -55,6 +55,7 @@ import { useScoresStore } from '../store/scores'
 import { useSettingsStore } from '../store/settings'
 import { useGameLogic } from '../composables/useGameLogic'
 import { generateCountingProblem } from '../utils/mathHelpers'
+import { calculateExercisePoints } from '../utils/gradeHelpers'
 import ScoreDisplay from '../components/common/ScoreDisplay.vue'
 import ProgressBar from '../components/common/ProgressBar.vue'
 import StarRating from '../components/common/StarRating.vue'
@@ -102,11 +103,11 @@ export default {
     // Обработчик выбора ответа
     const handleAnswerSelected = (index) => {
       selectAnswer(
-        index, 
-        currentProblem.value?.correctIndex || 0, 
-        () => {
-          // При правильном ответе обновляем общий счет
-          scoresStore.updateCountingScore(10)
+        index,
+        currentProblem.value?.correctIndex || 0,
+        (points) => {
+          // При правильном ответе обновляем общий счет с учетом количества ошибок
+          scoresStore.updateCountingScore(points)
         }
       )
     }

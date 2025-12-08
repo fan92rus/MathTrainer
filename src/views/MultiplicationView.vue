@@ -72,6 +72,7 @@ import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useScoresStore } from '../store/scores'
 import { generateMultiplicationProblem } from '../utils/mathHelpers'
+import { calculateExercisePoints } from '../utils/gradeHelpers'
 import GameOver from '../components/common/GameOver.vue'
 
 export default {
@@ -94,6 +95,7 @@ export default {
     const showGameOver = ref(false)
     const problemsPerSession = 10
     const problemsSolved = ref(0)
+    const errorsPerProblem = ref([]) // Массив для хранения количества ошибок по каждому заданию
     
     // Вычисляемые свойства
     const multiplicationScore = computed(() => scoresStore.multiplicationScore)
@@ -151,6 +153,11 @@ export default {
       // Если уже был выбран правильный ответ, не делаем ничего
       if (selectedAnswer.value !== null && isCorrect.value) return
       
+      // Инициализируем счетчик ошибок для текущей задачи, если это первый ответ
+      if (errorsPerProblem.value.length <= problemsSolved.value) {
+        errorsPerProblem.value[problemsSolved.value] = 0
+      }
+      
       selectedAnswer.value = index
       showFeedback.value = true
       isCorrect.value = index === currentProblem.value.correctIndex
@@ -162,8 +169,16 @@ export default {
       
       if (isCorrect.value) {
         correctAnswers.value++
-        scoreGained.value += pointsPerCorrect.value
-        scoresStore.updateMultiplicationScore(pointsPerCorrect.value)
+        // Рассчитываем очки с учетом количества ошибок
+        const errors = errorsPerProblem.value[problemsSolved.value] || 0
+        const points = calculateExercisePoints(errors)
+        
+        // Для умножения используем базовые очки, умноженные на коэффициент сложности
+        const adjustedPoints = points * ((pointsPerCorrect.value + 5) / 10) // Нормализуем к базовому значению
+        const finalPoints = Math.round(adjustedPoints)
+        
+        scoreGained.value += finalPoints
+        scoresStore.updateMultiplicationScore(finalPoints)
         problemsSolved.value++
         
         // Автоматический переход к следующему примеру при правильном ответе
@@ -175,7 +190,10 @@ export default {
           }
         }, 1500) // Задержка 1.5 секунды для отображения обратной связи
       }
-      // Если ответ неправильный, просто подсвечиваем и позволяем выбрать другой вариант
+      // Если ответ неправильный, увеличиваем счетчик ошибок
+      else {
+        errorsPerProblem.value[problemsSolved.value]++
+      }
     }
     
     const nextProblem = () => {
@@ -197,6 +215,7 @@ export default {
       totalAnswers.value = 0
       scoreGained.value = 0
       problemsSolved.value = 0
+      errorsPerProblem.value = []
       selectedAnswer.value = null
       showFeedback.value = false
     }
