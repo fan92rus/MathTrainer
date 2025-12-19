@@ -140,3 +140,7 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Git worktrees (Crystal)
+/worktrees/
+/worktree-*/
