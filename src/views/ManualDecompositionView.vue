@@ -1,5 +1,5 @@
 <template>
-  <div class="app-container">
+  <div class="app-container" :style="{ '--keyboard-height': keyboardHeight + 'px' }">
     <div class="game-container">
       <div v-if="!gameOver" class="game-container-inner">
         <div class="header">
@@ -55,22 +55,29 @@
                 type="number"
                 class="number-input"
                 placeholder="?"
+                inputmode="numeric"
+                enterkeyhint="next"
                 @keyup.enter="checkDecomposition"
                 @input="onDecompositionInput"
+                @focus="handleInputFocus(firstPartInput)"
                 autocomplete="off"
               /> +
               <input
+                ref="secondPartInput"
                 v-model="secondPart"
                 type="number"
                 class="number-input"
                 placeholder="?"
+                inputmode="numeric"
+                enterkeyhint="done"
                 @keyup.enter="checkDecomposition"
                 @input="onDecompositionInput"
+                @focus="handleInputFocus(secondPartInput)"
                 autocomplete="off"
               />
             </div>
             <button
-              v-if="!decompositionChecked"
+              v-if="!decompositionChecked && !isMobileWithKeyboard"
               class="check-button"
               @click="checkDecomposition"
               :disabled="!firstPart || !secondPart"
@@ -93,7 +100,7 @@
               </div>
               <div v-else>
                 <div v-if="decompositionError === 'tens'" class="hint-feedback">
-                  💡 Подумай о десятках. Сколько десятков в числе {{ secondNumber }}?
+                  💡 Подумай, сколько десятков в числе {{ secondNumber }}?
                   <div class="auto-retry-hint">Исправь значение в поле выше и попробуй снова</div>
                 </div>
                 <div v-else-if="decompositionError === 'units'" class="retry-feedback">
@@ -130,12 +137,16 @@
                 type="number"
                 class="number-input"
                 placeholder="?"
+                inputmode="numeric"
+                enterkeyhint="next"
                 @keyup.enter="checkIntermediate"
+                @focus="handleInputFocus(intermediateInput)"
                 :disabled="intermediateChecked"
                 autocomplete="off"
               />
             </div>
             <button
+              v-if="!isMobileWithKeyboard"
               class="check-button"
               @click="checkIntermediate"
               :disabled="intermediateChecked || !intermediateResult"
@@ -181,26 +192,34 @@
             <div class="decomposition-input" v-if="isAddition && correctDecomposition.needsFurtherDecomposition">
               {{ secondPart }} =
               <input
+                ref="furtherFirstInput"
                 v-model="furtherFirstPart"
                 type="number"
                 class="number-input"
                 placeholder="?"
+                inputmode="numeric"
+                enterkeyhint="next"
                 @keyup.enter="checkFurther"
+                @focus="handleInputFocus(furtherFirstInput)"
                 :disabled="furtherChecked"
                 autocomplete="off"
               /> +
               <input
+                ref="furtherSecondInput"
                 v-model="furtherSecondPart"
                 type="number"
                 class="number-input"
                 placeholder="?"
+                inputmode="numeric"
+                enterkeyhint="done"
                 @keyup.enter="checkFurther"
+                @focus="handleInputFocus(furtherSecondInput)"
                 :disabled="furtherChecked"
                 autocomplete="off"
               />
             </div>
             <button
-              v-if="isAddition && correctDecomposition.needsFurtherDecomposition"
+              v-if="isAddition && correctDecomposition.needsFurtherDecomposition && !isMobileWithKeyboard"
               class="check-button"
               @click="checkFurther"
               :disabled="furtherChecked || !furtherFirstPart || !furtherSecondPart"
@@ -252,16 +271,21 @@
               <span v-else>-</span>
               {{ furtherFirstPart }} =
               <input
+                ref="furtherIntermediateInput"
                 v-model="furtherIntermediate"
                 type="number"
                 class="number-input"
                 placeholder="?"
+                inputmode="numeric"
+                enterkeyhint="next"
                 @keyup.enter="checkFurtherIntermediate"
+                @focus="handleInputFocus(furtherIntermediateInput)"
                 :disabled="furtherChecked"
                 autocomplete="off"
               />
             </div>
             <button
+              v-if="!isMobileWithKeyboard"
               class="check-button"
               @click="checkFurtherIntermediate"
               :disabled="furtherChecked || !furtherIntermediate"
@@ -314,12 +338,16 @@
                 type="number"
                 class="number-input"
                 placeholder="?"
+                inputmode="numeric"
+                enterkeyhint="done"
                 @keyup.enter="checkFinal"
+                @focus="handleInputFocus(finalInput)"
                 :disabled="answered"
                 autocomplete="off"
               />
             </div>
             <button
+              v-if="!isMobileWithKeyboard"
               class="check-button"
               @click="checkFinal"
               :disabled="answered || !finalResult"
@@ -386,6 +414,7 @@
   import { useRouter } from 'vue-router';
   import { useScoresStore } from '../store/scores';
   import { useGameLogic } from '../composables/useGameLogic';
+  import { useMobileKeyboard } from '../composables/useMobileKeyboard';
   import {
     generateDecompositionProblem
   } from '../utils/math/index';
@@ -409,8 +438,15 @@
 
       // Рефы для полей ввода
       const firstPartInput = ref(null);
+      const secondPartInput = ref(null);
       const intermediateInput = ref(null);
+      const furtherFirstInput = ref(null);
+      const furtherSecondInput = ref(null);
+      const furtherIntermediateInput = ref(null);
       const finalInput = ref(null);
+
+      // Используем mobile keyboard composable
+      const { keyboardHeight, isKeyboardOpen, focusWithScroll } = useMobileKeyboard();
 
       // Инициализируем игру
       const {
@@ -433,6 +469,16 @@
 
       // Загружаем общий счет
       const totalScore = computed(() => scoresStore.decompositionScore);
+
+      // Определяем, нужно ли скрывать кнопку на мобильных с клавиатурой
+      const isMobileWithKeyboard = computed(() => {
+        // Определяем, что это мобильное устройство
+        const isMobile = /Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) ||
+                         (window.innerWidth <= 768 && 'ontouchstart' in window);
+
+        // Скрываем кнопку только на мобильных с открытой клавиатурой
+        return isMobile && isKeyboardOpen.value;
+      });
 
       // Состояние для пошагового решения
       const step = ref(0); // 0 - начало, 1 - разложение, 2 - десятки, 3 - единицы (если нужно), 4 - финал
@@ -622,13 +668,19 @@
           decompositionCorrect.value = false;
           decompositionChecked.value = true;
 
-          // Определяем тип ошибки
-          if (!isCorrectTens) {
-            decompositionError.value = 'tens';
-          } else if (!isCorrectUnits) {
+          // Проверяем, есть ли в числе десятки
+          if (correctDecomposition.value.first === 0) {
+            // В числе нет десятков - всегда "попробуй еще раз"
             decompositionError.value = 'units';
           } else {
-            decompositionError.value = 'units';
+            // В числе есть десятки - даем конкретную подсказку
+            if (!isCorrectTens) {
+              decompositionError.value = 'tens';
+            } else if (!isCorrectUnits) {
+              decompositionError.value = 'units';
+            } else {
+              decompositionError.value = 'units';
+            }
           }
         }
       };
@@ -640,6 +692,13 @@
           decompositionChecked.value = false;
           decompositionCorrect.value = false;
           decompositionError.value = '';
+        }
+      };
+
+      // Обработчик фокуса на полях ввода
+      const handleInputFocus = (inputRef) => {
+        if (inputRef && inputRef.value && !inputRef.value.disabled) {
+          focusWithScroll(inputRef.value, 120);
         }
       };
 
@@ -906,8 +965,16 @@
         correctFurtherIntermediate,
         correctAnswer,
         firstPartInput,
+        secondPartInput,
         intermediateInput,
+        furtherFirstInput,
+        furtherSecondInput,
+        furtherIntermediateInput,
         finalInput,
+        keyboardHeight,
+        isKeyboardOpen,
+        isMobileWithKeyboard,
+        handleInputFocus,
         getDisplayExpression,
         isAddition,
         startDecomposition,
@@ -927,17 +994,24 @@
 </script>
 
 <style scoped>
+  /* Mobile-first стили */
+  .app-container {
+    min-height: 100dvh;
+    padding-bottom: env(keyboard-inset-height, 0px);
+  }
+
   .back-button {
     background: linear-gradient(135deg, #667eea, #764ba2);
     color: white;
     border: none;
     border-radius: 20px;
-    padding: 8px 16px;
-    font-size: 14px;
+    padding: clamp(8px, 2vw, 12px) clamp(12px, 3vw, 20px);
+    font-size: clamp(12px, 3vw, 16px);
     font-weight: 600;
     cursor: pointer;
     transition: all 0.3s ease;
     box-shadow: 0 3px 8px rgba(102, 126, 234, 0.3);
+    touch-action: manipulation;
   }
 
   .back-button:hover {
@@ -952,72 +1026,80 @@
   }
 
   .level-indicator {
-    font-size: 14px;
+    font-size: clamp(11px, 2.5vw, 14px);
     font-weight: 600;
     color: #4a5568;
   }
 
   .decomposition-container {
-    margin: 20px 0;
-    padding: 30px;
+    margin: clamp(15px, 4vw, 25px) 0;
+    padding: clamp(20px, 5vw, 35px);
     background-color: #f7fafc;
-    border-radius: 16px;
+    border-radius: 12px;
     border: 2px solid #e2e8f0;
-    min-height: 400px;
+    min-height: clamp(300px, 60vh, 500px);
+    will-change: height;
   }
 
   .step-container {
     text-align: center;
+    padding: 0 clamp(10px, 3vw, 20px);
   }
 
   .expression-large {
-    font-size: 36px;
+    font-size: clamp(24px, 6vw, 36px);
     font-weight: bold;
     color: #2d3748;
-    margin-bottom: 20px;
+    margin-bottom: clamp(15px, 4vw, 25px);
+    line-height: 1.2;
   }
 
   .expression-part {
-    font-size: 28px;
+    font-size: clamp(20px, 5vw, 28px);
     color: #2d3748;
-    margin-bottom: 15px;
+    margin-bottom: clamp(12px, 3vw, 20px);
+    line-height: 1.3;
   }
 
   .highlighted-number {
     color: #667eea;
     font-weight: bold;
     background-color: #edf2ff;
-    padding: 4px 12px;
+    padding: clamp(3px, 1vw, 6px) clamp(8px, 2vw, 15px);
     border-radius: 8px;
   }
 
   .step-hint {
     color: #718096;
-    font-size: 18px;
-    margin: 30px 0;
+    font-size: clamp(16px, 4vw, 20px);
+    margin: clamp(20px, 5vw, 35px) 0;
+    line-height: 1.4;
   }
 
   .step-instruction {
-    font-size: 20px;
+    font-size: clamp(16px, 4vw, 20px);
     color: #4a5568;
-    margin: 20px 0;
-    padding: 15px;
+    margin: clamp(15px, 4vw, 25px) 0;
+    padding: clamp(12px, 3vw, 20px);
     background-color: #fff;
     border-radius: 12px;
     border-left: 4px solid #667eea;
+    line-height: 1.4;
   }
 
   .start-button {
-    padding: 16px 32px;
+    padding: clamp(12px, 3vw, 20px) clamp(24px, 6vw, 40px);
     background: linear-gradient(135deg, #667eea, #764ba2);
     color: white;
     border: none;
     border-radius: 12px;
-    font-size: 18px;
+    font-size: clamp(16px, 4vw, 20px);
     font-weight: 600;
     cursor: pointer;
     transition: all 0.3s ease;
     box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+    touch-action: manipulation;
+    min-height: 48px;
   }
 
   .start-button:hover {
@@ -1027,50 +1109,58 @@
 
   .decomposition-input,
   .calculation-input {
-    font-size: 24px;
+    font-size: clamp(18px, 5vw, 26px);
     color: #2d3748;
-    margin: 20px 0;
+    margin: clamp(15px, 4vw, 25px) 0;
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 10px;
+    gap: clamp(8px, 2vw, 15px);
+    flex-wrap: wrap;
   }
 
   .number-input {
-    width: 100px;
-    padding: 10px 15px;
-    font-size: 22px;
+    width: clamp(70px, 20vw, 120px);
+    min-height: 48px;
+    padding: clamp(8px, 2vw, 15px);
+    font-size: clamp(18px, 4.5vw, 24px);
     border: 2px solid #e2e8f0;
     border-radius: 8px;
     text-align: center;
     transition: all 0.3s ease;
     background-color: white;
+    -webkit-appearance: none;
+    -moz-appearance: textfield;
   }
 
   .number-input:focus {
     outline: none;
     border-color: #667eea;
     box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+    transform: scale(1.02);
   }
 
   .number-input:disabled {
     background-color: #edf2f7;
     color: #4a5568;
     border-color: #cbd5e0;
+    transform: none;
   }
 
   .check-button {
-    padding: 12px 28px;
+    padding: clamp(10px, 2.5vw, 16px) clamp(20px, 5vw, 35px);
     background: linear-gradient(135deg, #667eea, #764ba2);
     color: white;
     border: none;
     border-radius: 8px;
-    font-size: 16px;
+    font-size: clamp(14px, 3.5vw, 18px);
     font-weight: 600;
     cursor: pointer;
     transition: all 0.3s ease;
     box-shadow: 0 3px 8px rgba(102, 126, 234, 0.3);
-    margin: 10px 0;
+    margin: clamp(8px, 2vw, 15px) 0;
+    touch-action: manipulation;
+    min-height: 48px;
   }
 
   .check-button:hover:not(:disabled) {
@@ -1084,18 +1174,19 @@
   }
 
   .hint-box {
-    margin-top: 20px;
-    padding: 15px;
+    margin-top: clamp(15px, 4vw, 25px);
+    padding: clamp(12px, 3vw, 20px);
     background-color: #fef5e7;
     border: 1px solid #f9e79f;
     border-radius: 8px;
     color: #7d6608;
-    font-size: 16px;
+    font-size: clamp(14px, 3.5vw, 16px);
+    line-height: 1.4;
   }
 
   .feedback-box {
-    margin-top: 20px;
-    padding: 15px;
+    margin-top: clamp(15px, 4vw, 25px);
+    padding: clamp(12px, 3vw, 20px);
     border-radius: 8px;
   }
 
@@ -1103,53 +1194,59 @@
     background-color: #d4edda;
     border: 1px solid #c3e6cb;
     color: #155724;
-    font-size: 16px;
+    font-size: clamp(14px, 3.5vw, 16px);
     font-weight: 600;
+    line-height: 1.4;
   }
 
   .incorrect-feedback {
     background-color: #f8d7da;
     border: 1px solid #f5c6cb;
     color: #721c24;
-    font-size: 16px;
+    font-size: clamp(14px, 3.5vw, 16px);
     font-weight: 600;
+    line-height: 1.4;
   }
 
   .hint-feedback {
     background-color: #fff3cd;
     border: 1px solid #ffeaa7;
     color: #856404;
-    font-size: 16px;
+    font-size: clamp(14px, 3.5vw, 16px);
     font-weight: 600;
+    line-height: 1.4;
   }
 
   .retry-feedback {
     background-color: #d1ecf1;
     border: 1px solid #bee5eb;
     color: #0c5460;
-    font-size: 16px;
+    font-size: clamp(14px, 3.5vw, 16px);
     font-weight: 600;
+    line-height: 1.4;
   }
 
   .auto-retry-hint {
-    margin-top: 10px;
-    font-size: 14px;
+    margin-top: clamp(8px, 2vw, 12px);
+    font-size: clamp(12px, 3vw, 14px);
     font-weight: 400;
     color: #6c757d;
     font-style: italic;
   }
 
   .next-button {
-    margin-top: 15px;
-    padding: 10px 24px;
+    margin-top: clamp(10px, 2.5vw, 18px);
+    padding: clamp(8px, 2vw, 14px) clamp(16px, 4vw, 28px);
     background: #4a5568;
     color: white;
     border: none;
     border-radius: 8px;
-    font-size: 16px;
+    font-size: clamp(14px, 3.5vw, 16px);
     font-weight: 600;
     cursor: pointer;
     transition: all 0.3s ease;
+    touch-action: manipulation;
+    min-height: 44px;
   }
 
   .next-button:hover {
@@ -1159,13 +1256,13 @@
   .steps-progress {
     display: flex;
     justify-content: center;
-    gap: 15px;
-    margin-top: 30px;
+    gap: clamp(10px, 2.5vw, 20px);
+    margin-top: clamp(20px, 5vw, 35px);
   }
 
   .step-dot {
-    width: 12px;
-    height: 12px;
+    width: clamp(10px, 2.5vw, 14px);
+    height: clamp(10px, 2.5vw, 14px);
     border-radius: 50%;
     background-color: #e2e8f0;
     transition: all 0.3s ease;
@@ -1178,5 +1275,90 @@
 
   .step-dot.completed {
     background-color: #48bb78;
+  }
+
+  /* Таблеты (min-width: 768px) */
+  @media (min-width: 768px) {
+    .decomposition-container {
+      padding: clamp(25px, 4vw, 40px);
+      border-radius: 16px;
+    }
+
+    .decomposition-input,
+    .calculation-input {
+      flex-wrap: nowrap;
+    }
+
+    .number-input {
+      width: 100px;
+    }
+  }
+
+  /* Десктоп (min-width: 1024px) */
+  @media (min-width: 1024px) {
+    .app-container {
+      padding-bottom: 0;
+    }
+
+    .decomposition-container {
+      min-height: 450px;
+    }
+
+    .expression-large {
+      font-size: 36px;
+    }
+
+    .expression-part {
+      font-size: 28px;
+    }
+
+    .step-instruction {
+      font-size: 20px;
+    }
+
+    .number-input {
+      width: 100px;
+      font-size: 22px;
+    }
+
+    .check-button {
+      font-size: 16px;
+    }
+
+    .next-button {
+      font-size: 16px;
+    }
+  }
+
+  /* Очень маленькие экраны (max-width: 360px) */
+  @media (max-width: 360px) {
+    .level-info {
+      display: none;
+    }
+
+    .decomposition-input,
+    .calculation-input {
+      font-size: 16px;
+    }
+
+    .number-input {
+      width: 60px;
+      font-size: 16px;
+    }
+  }
+
+  /* Оптимизации для мобильных браузеров */
+  @supports (-webkit-touch-callout: none) {
+    .number-input {
+      -webkit-appearance: none;
+      border-radius: 8px;
+    }
+  }
+
+  /* Предотвращение зума на iOS при фокусе на input */
+  @supports (-webkit-appearance: none) {
+    .number-input {
+      font-size: 16px !important;
+    }
   }
 </style>
