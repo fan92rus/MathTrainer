@@ -43,6 +43,8 @@
 </script>
 
 <style>
+@import './assets/css/main.css';
+
   .app-container {
     font-family: 'Rubik', sans-serif;
     -webkit-font-smoothing: antialiased;
