@@ -1,0 +1,1182 @@
+<template>
+  <div class="app-container">
+    <div class="game-container">
+      <div v-if="!gameOver" class="game-container-inner">
+        <div class="header">
+          <div style="display: flex; justify-content: space-between; align-items: center">
+            <button class="back-button" @click="goToMain">← Назад</button>
+            <div class="level-info">
+              <span class="level-indicator">Ручной режим: Разложение чисел</span>
+            </div>
+          </div>
+          <h1 class="title">Реши по шагам</h1>
+        </div>
+
+        <ScoreDisplay
+          :current-score="score"
+          :total-score="totalScore"
+          :current-question="currentQuestion"
+          :total-questions="totalQuestions"
+        />
+
+        <!-- Динамический контент в зависимости от шага -->
+        <div class="decomposition-container">
+          <!-- Шаг 0: Показываем исходный пример -->
+          <div v-if="step === 0" class="step-container">
+            <div class="expression-large">
+              {{ getDisplayExpression() }}
+            </div>
+            <div class="step-hint">
+              <p>👆 Нажми "Начать", чтобы решить этот пример по шагам</p>
+            </div>
+            <button class="start-button" @click="startDecomposition">
+              Начать решать
+            </button>
+          </div>
+
+          <!-- Шаг 1: Разложение второго числа -->
+          <div v-if="step === 1" class="step-container">
+            <div class="expression-part">
+              {{ firstNumber }}
+              <span v-if="isAddition">+</span>
+              <span v-else>-</span>
+              <span class="highlighted-number">{{ secondNumber }}</span>
+              = ?
+            </div>
+            <div class="step-instruction">
+              📝 <span v-if="isAddition">Разложи число <strong>{{ secondNumber }}</strong> на удобные слагаемые</span>
+              <span v-else>Разложи число <strong>{{ secondNumber }}</strong> для удобного вычитания</span>
+            </div>
+            <div class="decomposition-input">
+              {{ secondNumber }} =
+              <input
+                ref="firstPartInput"
+                v-model="firstPart"
+                type="number"
+                class="number-input"
+                placeholder="?"
+                @keyup.enter="checkDecomposition"
+                @input="onDecompositionInput"
+                autocomplete="off"
+              /> +
+              <input
+                v-model="secondPart"
+                type="number"
+                class="number-input"
+                placeholder="?"
+                @keyup.enter="checkDecomposition"
+                @input="onDecompositionInput"
+                autocomplete="off"
+              />
+            </div>
+            <button
+              v-if="!decompositionChecked"
+              class="check-button"
+              @click="checkDecomposition"
+              :disabled="!firstPart || !secondPart"
+            >
+              Проверить
+            </button>
+
+            <!-- Подсказка -->
+            <div v-if="!decompositionChecked && showHint" class="hint-box">
+              💡 Разложи число на десятки и единицы<br>
+              Для примера {{ firstNumber }} + {{ secondNumber }}:<br>
+              Важно: сначала десятки, потом единицы!<br>
+              Подсказка: {{ secondNumber }} = {{ correctDecomposition.first }} (десятки) + {{ correctDecomposition.second }} (единицы)
+            </div>
+
+            <!-- Обратная связь -->
+            <div v-if="decompositionChecked" class="feedback-box">
+              <div v-if="decompositionCorrect" class="correct-feedback">
+                ✅ Правильно! {{ secondNumber }} = {{ firstPart }} + {{ secondPart }}
+              </div>
+              <div v-else>
+                <div v-if="decompositionError === 'tens'" class="hint-feedback">
+                  💡 Подумай о десятках. Сколько десятков в числе {{ secondNumber }}?
+                  <div class="auto-retry-hint">Исправь значение в поле выше и попробуй снова</div>
+                </div>
+                <div v-else-if="decompositionError === 'units'" class="retry-feedback">
+                  🔄 Попробуй еще раз!
+                  <div class="auto-retry-hint">Исправь значение в поле выше и попробуй снова</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Шаг 2: Первая часть решения -->
+          <div v-if="step === 2" class="step-container">
+            <div class="expression-part">
+              {{ firstNumber }}
+              <span v-if="isAddition">+</span>
+              <span v-else>-</span>
+              {{ firstPart }}
+              <span v-if="isAddition">+</span>
+              <span v-else>-</span>
+              {{ secondPart }} = ?
+            </div>
+            <div class="step-instruction">
+              📝 <span v-if="isAddition">Сначала реши {{ firstNumber }} + {{ firstPart }}</span>
+              <span v-else>Сначала реши {{ firstNumber }} - {{ firstPart }}</span>
+            </div>
+            <div class="calculation-input">
+              {{ firstNumber }}
+              <span v-if="isAddition">+</span>
+              <span v-else>-</span>
+              {{ firstPart }} =
+              <input
+                ref="intermediateInput"
+                v-model="intermediateResult"
+                type="number"
+                class="number-input"
+                placeholder="?"
+                @keyup.enter="checkIntermediate"
+                :disabled="intermediateChecked"
+                autocomplete="off"
+              />
+            </div>
+            <button
+              class="check-button"
+              @click="checkIntermediate"
+              :disabled="intermediateChecked || !intermediateResult"
+            >
+              Проверить
+            </button>
+
+            <!-- Обратная связь -->
+            <div v-if="intermediateChecked" class="feedback-box">
+              <div v-if="intermediateCorrect" class="correct-feedback">
+                ✅ Верно! {{ firstNumber }}
+                <span v-if="isAddition">+</span>
+                <span v-else>-</span>
+                {{ firstPart }} = {{ intermediateResult }}
+              </div>
+              <div v-else class="incorrect-feedback">
+                ❌ Неправильно. Попробуй еще раз!
+                <br>
+                Правильный ответ: {{ firstNumber }}
+                <span v-if="isAddition">+</span>
+                <span v-else>-</span>
+                {{ firstPart }} = {{ correctIntermediate }}
+              </div>
+              <button class="next-button" @click="nextStep">
+                {{ intermediateCorrect ? 'Далее →' : 'Продолжить →' }}
+              </button>
+            </div>
+          </div>
+
+          <!-- Шаг 3: Разложение единиц (если нужно) -->
+          <div v-if="step === 3" class="step-container">
+            <div class="expression-part">
+              {{ intermediateResult }}
+              <span v-if="isAddition">+</span>
+              <span v-else>-</span>
+              <span class="highlighted-number">{{ secondPart }}</span>
+              = ?
+            </div>
+            <div class="step-instruction">
+              📝 <span v-if="isAddition">Разложи число <strong>{{ secondPart }}</strong> для удобного сложения</span>
+              <span v-else>Разложи число <strong>{{ secondPart }}</strong> для удобного вычитания</span>
+            </div>
+            <div class="decomposition-input" v-if="isAddition && correctDecomposition.needsFurtherDecomposition">
+              {{ secondPart }} =
+              <input
+                v-model="furtherFirstPart"
+                type="number"
+                class="number-input"
+                placeholder="?"
+                @keyup.enter="checkFurther"
+                :disabled="furtherChecked"
+                autocomplete="off"
+              /> +
+              <input
+                v-model="furtherSecondPart"
+                type="number"
+                class="number-input"
+                placeholder="?"
+                @keyup.enter="checkFurther"
+                :disabled="furtherChecked"
+                autocomplete="off"
+              />
+            </div>
+            <button
+              v-if="isAddition && correctDecomposition.needsFurtherDecomposition"
+              class="check-button"
+              @click="checkFurther"
+              :disabled="furtherChecked || !furtherFirstPart || !furtherSecondPart"
+            >
+              Проверить
+            </button>
+
+            <!-- Обратная связь для разложения -->
+            <div v-if="furtherChecked && isAddition && correctDecomposition.needsFurtherDecomposition" class="feedback-box">
+              <div v-if="furtherCorrect" class="correct-feedback">
+                ✅ Правильно! {{ secondPart }} = {{ furtherFirstPart }} + {{ furtherSecondPart }}
+              </div>
+              <div v-else class="incorrect-feedback">
+                ❌ Неправильно. Попробуй еще раз!
+                <br>
+                Правильный ответ: {{ secondPart }} = {{ correctDecomposition.furtherFirst }} + {{ correctDecomposition.furtherSecond }}
+              </div>
+              <button class="next-button" @click="nextStep">
+                {{ furtherCorrect ? 'Далее →' : 'Продолжить →' }}
+              </button>
+            </div>
+
+            <!-- Если дополнительное разложение не нужно -->
+            <div v-if="!isAddition || !correctDecomposition.needsFurtherDecomposition" class="feedback-box">
+              <div class="correct-feedback">
+                ✅ Можно сразу сложить!
+              </div>
+              <button class="next-button" @click="nextStep">
+                Далее →
+              </button>
+            </div>
+          </div>
+
+          <!-- Шаг 3.5: Промежуточный результат после разложения единиц -->
+          <div v-if="step === 3.5" class="step-container">
+            <div class="expression-part">
+              {{ intermediateResult }}
+              <span v-if="isAddition">+</span>
+              <span v-else>-</span>
+              {{ furtherFirstPart }} = ?
+            </div>
+            <div class="step-instruction">
+              📝 <span v-if="isAddition">Сначала реши {{ intermediateResult }} + {{ furtherFirstPart }}</span>
+              <span v-else>Сначала реши {{ intermediateResult }} - {{ furtherFirstPart }}</span>
+            </div>
+            <div class="calculation-input">
+              {{ intermediateResult }}
+              <span v-if="isAddition">+</span>
+              <span v-else>-</span>
+              {{ furtherFirstPart }} =
+              <input
+                v-model="furtherIntermediate"
+                type="number"
+                class="number-input"
+                placeholder="?"
+                @keyup.enter="checkFurtherIntermediate"
+                :disabled="furtherChecked"
+                autocomplete="off"
+              />
+            </div>
+            <button
+              class="check-button"
+              @click="checkFurtherIntermediate"
+              :disabled="furtherChecked || !furtherIntermediate"
+            >
+              Проверить
+            </button>
+
+            <!-- Обратная связь -->
+            <div v-if="furtherChecked" class="feedback-box">
+              <div v-if="furtherCorrect" class="correct-feedback">
+                ✅ Верно! {{ intermediateResult }}
+                <span v-if="isAddition">+</span>
+                <span v-else>-</span>
+                {{ furtherFirstPart }} = {{ furtherIntermediate }}
+              </div>
+              <div v-else class="incorrect-feedback">
+                ❌ Неправильно. Попробуй еще раз!
+                <br>
+                Правильный ответ: {{ intermediateResult }}
+                <span v-if="isAddition">+</span>
+                <span v-else>-</span>
+                {{ furtherFirstPart }} = {{ correctFurtherIntermediate }}
+              </div>
+              <button class="next-button" @click="nextStep">
+                {{ furtherCorrect ? 'Далее →' : 'Продолжить →' }}
+              </button>
+            </div>
+          </div>
+
+          <!-- Шаг 4: Финальный расчет -->
+          <div v-if="step === 4" class="step-container">
+            <div class="expression-part">
+              {{ furtherIntermediate || intermediateResult || firstNumber }}
+              <span v-if="isAddition">+</span>
+              <span v-else>-</span>
+              {{ (correctDecomposition.needsFurtherDecomposition && isAddition) ? furtherSecondPart : secondPart }} = ?
+            </div>
+            <div class="step-instruction">
+              📝 <span v-if="isAddition">Теперь прибавь оставшееся число</span>
+              <span v-else>Теперь вычти оставшееся число</span>
+            </div>
+            <div class="calculation-input">
+              {{ furtherIntermediate || intermediateResult || firstNumber }}
+              <span v-if="isAddition">+</span>
+              <span v-else>-</span>
+              {{ (correctDecomposition.needsFurtherDecomposition && isAddition) ? furtherSecondPart : secondPart }} =
+              <input
+                ref="finalInput"
+                v-model="finalResult"
+                type="number"
+                class="number-input"
+                placeholder="?"
+                @keyup.enter="checkFinal"
+                :disabled="answered"
+                autocomplete="off"
+              />
+            </div>
+            <button
+              class="check-button"
+              @click="checkFinal"
+              :disabled="answered || !finalResult"
+            >
+              Проверить
+            </button>
+
+            <!-- Обратная связь -->
+            <div v-if="answered" class="feedback-box">
+              <div v-if="isCorrect" class="correct-feedback">
+                🎉 Отлично! Ты правильно решил пример!<br>
+                {{ firstNumber }}
+                <span v-if="isAddition">+</span>
+                <span v-else>-</span>
+                {{ secondNumber }} = {{ finalResult }}
+              </div>
+              <div v-else class="incorrect-feedback">
+                ❌ Неправильно.<br>
+                Правильный ответ: {{ firstNumber }}
+                <span v-if="isAddition">+</span>
+                <span v-else>-</span>
+                {{ secondNumber }} = {{ correctAnswer }}
+              </div>
+              <button class="next-button" @click="nextQuestion">
+                Следующий пример →
+              </button>
+            </div>
+          </div>
+
+          <!-- Индикатор прогресса по шагам -->
+          <div class="steps-progress">
+            <div
+              v-for="i in 5"
+              :key="i-1"
+              :class="['step-dot', {
+                active: i-1 === step || (i-1 === 3 && step === 3.5),
+                completed: (i-1 < step && !(i-1 === 3 && !correctDecomposition.needsFurtherDecomposition)) ||
+                         (i-1 === 3 && !correctDecomposition.needsFurtherDecomposition && step >= 3) ||
+                         (i-1 === 4 && answered)
+              }]"
+            ></div>
+          </div>
+        </div>
+
+        <ProgressBar :progress-percent="progressPercent" />
+
+        <StarRating :score="score" />
+      </div>
+
+      <GameOver
+        v-else
+        :correct-answers="correctAnswers"
+        :total-answers="totalAnswers"
+        :score="score"
+        @restart="restartGame"
+        @exit="goToMain"
+      />
+    </div>
+  </div>
+</template>
+
+<script>
+  import { ref, onMounted, computed, nextTick } from 'vue';
+  import { useRouter } from 'vue-router';
+  import { useScoresStore } from '../store/scores';
+  import { useGameLogic } from '../composables/useGameLogic';
+  import {
+    generateDecompositionProblem
+  } from '../utils/math/index';
+  import ScoreDisplay from '../components/common/ScoreDisplay.vue';
+  import ProgressBar from '../components/common/ProgressBar.vue';
+  import StarRating from '../components/common/StarRating.vue';
+  import GameOver from '../components/common/GameOver.vue';
+
+  export default {
+    name: 'ManualDecompositionView',
+    components: {
+      ScoreDisplay,
+      ProgressBar,
+      StarRating,
+      GameOver
+    },
+    setup() {
+      const router = useRouter();
+      const scoresStore = useScoresStore();
+      const totalQuestions = 5;
+
+      // Рефы для полей ввода
+      const firstPartInput = ref(null);
+      const intermediateInput = ref(null);
+      const finalInput = ref(null);
+
+      // Инициализируем игру
+      const {
+        score,
+        currentQuestion,
+        answered,
+        selectedIndex,
+        gameOver,
+        currentLevel,
+        progressPercent,
+        currentProblem,
+        correctAnswers,
+        totalAnswers,
+        initializeGame,
+        selectAnswer,
+        generateAllProblems,
+        problems,
+        setManualMode
+      } = useGameLogic(totalQuestions);
+
+      // Загружаем общий счет
+      const totalScore = computed(() => scoresStore.decompositionScore);
+
+      // Состояние для пошагового решения
+      const step = ref(0); // 0 - начало, 1 - разложение, 2 - десятки, 3 - единицы (если нужно), 4 - финал
+      const firstNumber = ref(0);
+      const secondNumber = ref(0);
+      const firstPart = ref('');
+      const secondPart = ref('');
+      const intermediateResult = ref('');
+      const finalResult = ref('');
+
+      // Для дополнительного разложения единиц
+      const furtherFirstPart = ref('');
+      const furtherSecondPart = ref('');
+      const furtherIntermediate = ref('');
+
+      // Флаги проверки
+      const decompositionChecked = ref(false);
+      const decompositionCorrect = ref(false);
+      const decompositionError = ref(''); // 'tens', 'units', или ''
+      const intermediateChecked = ref(false);
+      const intermediateCorrect = ref(false);
+      const furtherChecked = ref(false);
+      const furtherCorrect = ref(false);
+      const isCorrect = ref(false);
+      const showHint = ref(false);
+
+      // Правильные ответы для проверки
+      const correctDecomposition = ref({
+        first: 0,
+        second: 0,
+        needsFurtherDecomposition: false,
+        furtherFirst: 0,
+        furtherSecond: 0
+      });
+      const correctIntermediate = ref(0);
+      const correctFurtherIntermediate = ref(0);
+      const correctAnswer = ref(0);
+
+      // Получаем выражение для отображения
+      const getDisplayExpression = () => {
+        if (!currentProblem.value) return '';
+        return currentProblem.value.expression;
+      };
+
+      // Определяем, это сложение или вычитание
+      const isAddition = computed(() => {
+        if (!currentProblem.value) return true;
+        return currentProblem.value.expression.includes('+');
+      });
+
+      // Начинаем разложение
+      const startDecomposition = () => {
+        const expr = currentProblem.value?.expression || '';
+        const match = expr.match(/(\d+)\s*([+-])\s*(\d+)/);
+
+        if (match) {
+          firstNumber.value = parseInt(match[1]);
+          secondNumber.value = parseInt(match[3]);
+          const operation = match[2]; // '+' или '-'
+
+          // Вычисляем правильное разложение для удобного счета
+          if (operation === '+') {
+            // Для сложения: проверяем, есть ли переход через десяток
+            const lastDigitOfFirst = firstNumber.value % 10;
+            const sum = firstNumber.value + secondNumber.value;
+            const tensBefore = Math.floor(firstNumber.value / 10);
+            const tensAfter = Math.floor(sum / 10);
+
+            if (tensAfter > tensBefore && secondNumber.value <= 9) {
+              // Есть переход через десяток для однозначного числа - раскладываем для дополнения до круглого
+              const neededForRound = 10 - lastDigitOfFirst;
+
+              // Проверяем, чтобы избежать нулевых компонентов
+              if (neededForRound === secondNumber.value || neededForRound === 0) {
+                // Число равно ровно столько, сколько нужно для дополнения - не раскладываем
+                correctDecomposition.value.first = 0; // Не будем раскладывать
+                correctDecomposition.value.second = secondNumber.value;
+              } else {
+                correctDecomposition.value.first = neededForRound;
+                correctDecomposition.value.second = secondNumber.value - neededForRound;
+              }
+            } else {
+              // Для двузначных чисел или без перехода - раскладываем на десятки и единицы
+              const tens = Math.floor(secondNumber.value / 10) * 10;
+              const units = secondNumber.value - tens;
+
+              // Избегаем нулевых компонентов
+              if (tens === 0) {
+                correctDecomposition.value.first = 0; // Не будем раскладывать
+                correctDecomposition.value.second = secondNumber.value;
+              } else {
+                correctDecomposition.value.first = tens;
+                correctDecomposition.value.second = units;
+              }
+            }
+
+            // Промежуточный результат
+            correctIntermediate.value = firstNumber.value + correctDecomposition.value.first;
+            correctAnswer.value = firstNumber.value + secondNumber.value;
+
+            // Проверяем, нужен ли дальнейший разложение единиц при сложении
+            const lastDigitOfIntermediate = correctIntermediate.value % 10;
+            const needsFurtherDecomposition = (lastDigitOfIntermediate + correctDecomposition.value.second) >= 10;
+
+            correctDecomposition.value.needsFurtherDecomposition = needsFurtherDecomposition;
+
+            // Если нужен, вычисляем как разложить единицы
+            if (needsFurtherDecomposition) {
+              const neededForRoundTen = 10 - lastDigitOfIntermediate;
+              correctDecomposition.value.furtherFirst = neededForRoundTen;
+              correctDecomposition.value.furtherSecond = units - neededForRoundTen;
+              // Вычисляем промежуточный результат после разложения единиц
+              correctFurtherIntermediate.value = correctIntermediate.value + neededForRoundTen;
+            }
+          } else {
+            // Для вычитания: раскладываем вычитаемое число для удобного счета
+            const lastDigitOfFirst = firstNumber.value % 10;
+
+            if (lastDigitOfFirst >= secondNumber.value) {
+              // Заем не нужен, раскладываем на единицы (от большего к меньшему)
+              // Например: 27 - 4 → 4 = 3 + 1
+              let remainder = secondNumber.value;
+              let firstPart = Math.min(remainder, lastDigitOfFirst);
+              let secondPart = remainder - firstPart;
+
+              correctDecomposition.value.first = firstPart;
+              correctDecomposition.value.second = secondPart;
+              correctIntermediate.value = firstNumber.value - firstPart;
+            } else {
+              // Нужен заем, раскладываем для удобного вычитания с заемом
+              correctDecomposition.value.first = lastDigitOfFirst;
+              correctDecomposition.value.second = secondNumber.value - lastDigitOfFirst;
+              correctIntermediate.value = firstNumber.value - lastDigitOfFirst; // получаем круглый десяток
+            }
+
+            correctAnswer.value = firstNumber.value - secondNumber.value;
+          }
+
+          // Проверяем, нужно ли разложение
+          if (correctDecomposition.value.first === 0) {
+            // Разложение не нужно, переходим сразу к шагу 2
+            step.value = 2;
+            decompositionChecked.value = true;
+            decompositionCorrect.value = true;
+            firstPart.value = '0';
+            secondPart.value = correctDecomposition.value.second.toString();
+
+            nextTick(() => {
+              if (intermediateInput.value) {
+                intermediateInput.value.focus();
+              }
+            });
+          } else {
+            step.value = 1;
+            showHint.value = false;
+
+            nextTick(() => {
+              if (firstPartInput.value) {
+                firstPartInput.value.focus();
+              }
+            });
+          }
+        }
+      };
+
+      // Проверяем разложение
+      const checkDecomposition = () => {
+        const first = parseInt(firstPart.value);
+        const second = parseInt(secondPart.value);
+
+        // Порядок важен: сначала десятки, потом единицы!
+        const isCorrectTens = first === correctDecomposition.value.first;
+        const isCorrectUnits = second === correctDecomposition.value.second;
+
+        if (isCorrectTens && isCorrectUnits) {
+          // Правильный ответ
+          decompositionCorrect.value = true;
+          decompositionError.value = '';
+          decompositionChecked.value = true;
+
+          // Автоматический переход через 2 секунды
+          setTimeout(() => {
+            nextStep();
+          }, 2000);
+        } else {
+          // Неправильный ответ
+          decompositionCorrect.value = false;
+          decompositionChecked.value = true;
+
+          // Определяем тип ошибки
+          if (!isCorrectTens) {
+            decompositionError.value = 'tens';
+          } else if (!isCorrectUnits) {
+            decompositionError.value = 'units';
+          } else {
+            decompositionError.value = 'units';
+          }
+        }
+      };
+
+      // Обработчик ввода при разложении
+      const onDecompositionInput = () => {
+        // Если были ошибки, сбрасываем их при вводе новых значений
+        if (decompositionChecked.value && !decompositionCorrect.value) {
+          decompositionChecked.value = false;
+          decompositionCorrect.value = false;
+          decompositionError.value = '';
+        }
+      };
+
+      // Проверяем промежуточный результат
+      const checkIntermediate = () => {
+        const result = parseInt(intermediateResult.value);
+
+        // Определяем операцию
+        const expr = currentProblem.value?.expression || '';
+        const match = expr.match(/(\d+)\s*([+-])\s*(\d+)/);
+        const operation = match ? match[2] : '+';
+
+        // Для сложения порядок важен - используем первое слагаемое (десятки)
+        // Для вычитания порядок тоже важен - используем первое слагаемое
+        const first = parseInt(firstPart.value);
+
+        if (operation === '+') {
+          correctIntermediate.value = firstNumber.value + first;
+        } else {
+          correctIntermediate.value = firstNumber.value - first;
+        }
+
+        intermediateCorrect.value = result === correctIntermediate.value;
+        intermediateChecked.value = true;
+      };
+
+      // Проверяем дополнительное разложение единиц
+      const checkFurther = () => {
+        const first = parseInt(furtherFirstPart.value);
+        const second = parseInt(furtherSecondPart.value);
+
+        // Проверяем, что разложение правильное
+        if (first === correctDecomposition.value.furtherFirst && second === correctDecomposition.value.furtherSecond) {
+          furtherCorrect.value = true;
+          furtherChecked.value = true;
+        } else {
+          furtherCorrect.value = false;
+          furtherChecked.value = true;
+        }
+      };
+
+      // Проверяем промежуточный результат после разложения единиц
+      const checkFurtherIntermediate = () => {
+        const result = parseInt(furtherIntermediate.value);
+        furtherCorrect.value = result === correctFurtherIntermediate.value;
+        furtherChecked.value = true;
+      };
+
+      // Проверяем финальный результат
+      const checkFinal = () => {
+        const result = parseInt(finalResult.value);
+
+        // Используем уже вычисленный правильный ответ
+        isCorrect.value = result === correctAnswer.value;
+        answered.value = true;
+
+        // Начисляем очки
+        const errors = 0;
+        const points = errors === 0 ? 20 : errors === 1 ? 10 : 0;
+
+        selectAnswer(0, 0, (points) => {
+          scoresStore.updateDecompositionScore(points);
+        });
+
+        // Сохраняем статистику
+        if (isCorrect.value) {
+          scoresStore.incrementManualDecompositionSolved();
+        }
+        scoresStore.incrementTotalDecompositionAttempted();
+      };
+
+      // Переход к следующему шагу
+      const nextStep = () => {
+        step.value++;
+
+        // Сбрасываем флаги для нового шага
+        if (step.value === 2) {
+          decompositionChecked.value = false;
+          decompositionError.value = '';
+          nextTick(() => {
+            if (intermediateInput.value) {
+              intermediateInput.value.focus();
+            }
+          });
+        } else if (step.value === 3) {
+          // Проверяем, нужен ли дополнительный шаг разложения
+          if (isAddition.value && correctDecomposition.value.needsFurtherDecomposition) {
+            // Шаг разложения единиц
+            intermediateChecked.value = false;
+            furtherChecked.value = false;
+            // Устанавливаем значения для разложения
+            furtherFirstPart.value = correctDecomposition.value.furtherFirst.toString();
+            furtherSecondPart.value = correctDecomposition.value.furtherSecond.toString();
+          } else {
+            // Пропускаем шаг разложения, переходим сразу к финалу
+            intermediateChecked.value = false;
+            step.value = 4;
+            nextTick(() => {
+              if (finalInput.value) {
+                finalInput.value.focus();
+              }
+            });
+          }
+        } else if (step.value === 4) {
+          // Если было разложение, теперь нужно решить промежуточный результат
+          if (isAddition.value && correctDecomposition.value.needsFurtherDecomposition && furtherChecked.value) {
+            furtherChecked.value = false;
+            step.value = 3.5;
+          } else {
+            furtherChecked.value = false;
+            nextTick(() => {
+              if (finalInput.value) {
+                finalInput.value.focus();
+              }
+            });
+          }
+        } else if (step.value === 3.5) {
+          furtherChecked.value = false;
+          step.value = 4;
+          nextTick(() => {
+            if (finalInput.value) {
+              finalInput.value.focus();
+            }
+          });
+        } else if (step.value === 5) {
+          furtherChecked.value = false;
+          nextTick(() => {
+            if (finalInput.value) {
+              finalInput.value.focus();
+            }
+          });
+        }
+      };
+
+      // Следующий вопрос
+      const nextQuestion = () => {
+        // Сбрасываем все состояния
+        step.value = 0;
+        firstNumber.value = 0;
+        secondNumber.value = 0;
+        firstPart.value = '';
+        secondPart.value = '';
+        intermediateResult.value = '';
+        finalResult.value = '';
+        furtherFirstPart.value = '';
+        furtherSecondPart.value = '';
+        furtherIntermediate.value = '';
+        decompositionChecked.value = false;
+        decompositionCorrect.value = false;
+        decompositionError.value = '';
+        intermediateChecked.value = false;
+        intermediateCorrect.value = false;
+        furtherChecked.value = false;
+        furtherCorrect.value = false;
+        answered.value = false;
+        isCorrect.value = false;
+        showHint.value = false;
+
+        // Генерируем новую задачу
+        const newProblem = generateDecompositionProblem(totalScore.value);
+        currentProblem.value = newProblem;
+        currentQuestion.value++;
+      };
+
+      // Перезапуск игры
+      const restartGame = () => {
+        initializeGame();
+        setManualMode(true);
+
+        // Генерируем задачи
+        const manualProblems = [];
+        for (let i = 0; i < totalQuestions; i++) {
+          manualProblems.push(generateDecompositionProblem(totalScore.value));
+        }
+        problems.value = manualProblems;
+
+        if (manualProblems.length > 0) {
+          currentProblem.value = manualProblems[0];
+        }
+
+        // Сбрасываем состояние
+        step.value = 0;
+        firstNumber.value = 0;
+        secondNumber.value = 0;
+        firstPart.value = '';
+        secondPart.value = '';
+        intermediateResult.value = '';
+        finalResult.value = '';
+        furtherFirstPart.value = '';
+        furtherSecondPart.value = '';
+        furtherIntermediate.value = '';
+        decompositionChecked.value = false;
+        decompositionCorrect.value = false;
+        decompositionError.value = '';
+        intermediateChecked.value = false;
+        intermediateCorrect.value = false;
+        furtherChecked.value = false;
+        furtherCorrect.value = false;
+        answered.value = false;
+        isCorrect.value = false;
+        showHint.value = false;
+      };
+
+      // Переход на главную
+      const goToMain = () => {
+        router.push('/');
+      };
+
+      // Инициализация при монтировании
+      onMounted(() => {
+        scoresStore.loadScores();
+        restartGame();
+      });
+
+      // Показываем подсказку через 5 секунд на шаге разложения
+      const checkShowHint = () => {
+        if (step.value === 1 && !decompositionChecked.value) {
+          setTimeout(() => {
+            if (step.value === 1 && !decompositionChecked.value) {
+              showHint.value = true;
+            }
+          }, 5000);
+        }
+      };
+
+      // Следим за изменением шага
+      const unwatch = computed(() => step.value);
+      unwatch.effect = checkShowHint;
+
+      return {
+        score,
+        totalScore,
+        currentQuestion,
+        answered,
+        selectedIndex,
+        gameOver,
+        currentLevel,
+        progressPercent,
+        currentProblem,
+        correctAnswers,
+        totalAnswers,
+        totalQuestions,
+        step,
+        firstNumber,
+        secondNumber,
+        firstPart,
+        secondPart,
+        intermediateResult,
+        finalResult,
+        furtherFirstPart,
+        furtherSecondPart,
+        furtherIntermediate,
+        decompositionChecked,
+        decompositionCorrect,
+        decompositionError,
+        intermediateChecked,
+        intermediateCorrect,
+        furtherChecked,
+        furtherCorrect,
+        isCorrect,
+        showHint,
+        correctDecomposition,
+        correctIntermediate,
+        correctFurtherIntermediate,
+        correctAnswer,
+        firstPartInput,
+        intermediateInput,
+        finalInput,
+        getDisplayExpression,
+        isAddition,
+        startDecomposition,
+        checkDecomposition,
+        onDecompositionInput,
+        checkIntermediate,
+        checkFurther,
+        checkFurtherIntermediate,
+        checkFinal,
+        nextStep,
+        nextQuestion,
+        restartGame,
+        goToMain
+      };
+    }
+  };
+</script>
+
+<style scoped>
+  .back-button {
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    color: white;
+    border: none;
+    border-radius: 20px;
+    padding: 8px 16px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 3px 8px rgba(102, 126, 234, 0.3);
+  }
+
+  .back-button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 12px rgba(102, 126, 234, 0.4);
+  }
+
+  .level-info {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+  }
+
+  .level-indicator {
+    font-size: 14px;
+    font-weight: 600;
+    color: #4a5568;
+  }
+
+  .decomposition-container {
+    margin: 20px 0;
+    padding: 30px;
+    background-color: #f7fafc;
+    border-radius: 16px;
+    border: 2px solid #e2e8f0;
+    min-height: 400px;
+  }
+
+  .step-container {
+    text-align: center;
+  }
+
+  .expression-large {
+    font-size: 36px;
+    font-weight: bold;
+    color: #2d3748;
+    margin-bottom: 20px;
+  }
+
+  .expression-part {
+    font-size: 28px;
+    color: #2d3748;
+    margin-bottom: 15px;
+  }
+
+  .highlighted-number {
+    color: #667eea;
+    font-weight: bold;
+    background-color: #edf2ff;
+    padding: 4px 12px;
+    border-radius: 8px;
+  }
+
+  .step-hint {
+    color: #718096;
+    font-size: 18px;
+    margin: 30px 0;
+  }
+
+  .step-instruction {
+    font-size: 20px;
+    color: #4a5568;
+    margin: 20px 0;
+    padding: 15px;
+    background-color: #fff;
+    border-radius: 12px;
+    border-left: 4px solid #667eea;
+  }
+
+  .start-button {
+    padding: 16px 32px;
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    color: white;
+    border: none;
+    border-radius: 12px;
+    font-size: 18px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+  }
+
+  .start-button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(102, 126, 234, 0.4);
+  }
+
+  .decomposition-input,
+  .calculation-input {
+    font-size: 24px;
+    color: #2d3748;
+    margin: 20px 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+  }
+
+  .number-input {
+    width: 100px;
+    padding: 10px 15px;
+    font-size: 22px;
+    border: 2px solid #e2e8f0;
+    border-radius: 8px;
+    text-align: center;
+    transition: all 0.3s ease;
+    background-color: white;
+  }
+
+  .number-input:focus {
+    outline: none;
+    border-color: #667eea;
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+  }
+
+  .number-input:disabled {
+    background-color: #edf2f7;
+    color: #4a5568;
+    border-color: #cbd5e0;
+  }
+
+  .check-button {
+    padding: 12px 28px;
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 3px 8px rgba(102, 126, 234, 0.3);
+    margin: 10px 0;
+  }
+
+  .check-button:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 12px rgba(102, 126, 234, 0.4);
+  }
+
+  .check-button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+
+  .hint-box {
+    margin-top: 20px;
+    padding: 15px;
+    background-color: #fef5e7;
+    border: 1px solid #f9e79f;
+    border-radius: 8px;
+    color: #7d6608;
+    font-size: 16px;
+  }
+
+  .feedback-box {
+    margin-top: 20px;
+    padding: 15px;
+    border-radius: 8px;
+  }
+
+  .correct-feedback {
+    background-color: #d4edda;
+    border: 1px solid #c3e6cb;
+    color: #155724;
+    font-size: 16px;
+    font-weight: 600;
+  }
+
+  .incorrect-feedback {
+    background-color: #f8d7da;
+    border: 1px solid #f5c6cb;
+    color: #721c24;
+    font-size: 16px;
+    font-weight: 600;
+  }
+
+  .hint-feedback {
+    background-color: #fff3cd;
+    border: 1px solid #ffeaa7;
+    color: #856404;
+    font-size: 16px;
+    font-weight: 600;
+  }
+
+  .retry-feedback {
+    background-color: #d1ecf1;
+    border: 1px solid #bee5eb;
+    color: #0c5460;
+    font-size: 16px;
+    font-weight: 600;
+  }
+
+  .auto-retry-hint {
+    margin-top: 10px;
+    font-size: 14px;
+    font-weight: 400;
+    color: #6c757d;
+    font-style: italic;
+  }
+
+  .next-button {
+    margin-top: 15px;
+    padding: 10px 24px;
+    background: #4a5568;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+  }
+
+  .next-button:hover {
+    background: #2d3748;
+  }
+
+  .steps-progress {
+    display: flex;
+    justify-content: center;
+    gap: 15px;
+    margin-top: 30px;
+  }
+
+  .step-dot {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background-color: #e2e8f0;
+    transition: all 0.3s ease;
+  }
+
+  .step-dot.active {
+    background-color: #667eea;
+    transform: scale(1.3);
+  }
+
+  .step-dot.completed {
+    background-color: #48bb78;
+  }
+</style>

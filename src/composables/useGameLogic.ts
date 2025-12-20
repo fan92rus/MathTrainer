@@ -1,9 +1,9 @@
 import { ref, computed, type Ref } from 'vue';
-import type { MathProblem, GameResult } from '@/types';
+import type { MathProblem, EquationProblem, GameResult } from '@/types';
 import { calculateExercisePoints } from '@/utils/gradeHelpers';
 
 // Тип для функции-генератора задач
-type ProblemGenerator = () => MathProblem;
+type ProblemGenerator = (previousX?: number | null) => MathProblem | EquationProblem;
 
 // Тип для колбэка при правильном ответе
  
@@ -17,25 +17,28 @@ export interface UseGameLogic {
   selectedIndex: Ref<number | null>;
   gameOver: Ref<boolean>;
   currentLevel: Ref<number>;
-  problems: Ref<MathProblem[]>;
+  problems: Ref<(MathProblem | EquationProblem)[]>;
   correctAnswers: Ref<number>;
   totalAnswers: Ref<number>;
   errorsPerQuestion: Ref<number[]>;
+  manualMode: Ref<boolean>;
 
   // Вычисляемые свойства
   progressPercent: Ref<number>;
-  currentProblem: Ref<MathProblem | null>;
+  currentProblem: Ref<MathProblem | EquationProblem | null>;
 
   // Методы
   initializeGame: () => void;
-   
+
   selectAnswer: (_index: number, _correctIndex: number, _onCorrect?: OnCorrectCallback) => void;
   nextQuestion: () => void;
-   
+
   addProblem: (_problem: MathProblem) => void;
-   
+
   generateAllProblems: (_generator: ProblemGenerator) => void;
   getGameResult: () => GameResult;
+
+  setManualMode: (_enabled: boolean) => void;
 }
 
 export function useGameLogic(totalQuestions: number = 10): UseGameLogic {
@@ -46,17 +49,18 @@ export function useGameLogic(totalQuestions: number = 10): UseGameLogic {
   const selectedIndex = ref<number | null>(null);
   const gameOver = ref<boolean>(false);
   const currentLevel = ref<number>(1);
-  const problems = ref<MathProblem[]>([]);
+  const problems = ref<(MathProblem | EquationProblem)[]>([]);
   const correctAnswers = ref<number>(0);
   const totalAnswers = ref<number>(0);
   const errorsPerQuestion = ref<number[]>([]); // Массив для хранения количества ошибок по каждому вопросу
+  const manualMode = ref<boolean>(false); // Флаг ручного режима решения
 
   // Вычисляемые свойства
   const progressPercent = computed<number>(() => {
     return (currentQuestion.value / totalQuestions) * 100;
   });
 
-  const currentProblem = computed<MathProblem | null>(() => {
+  const currentProblem = computed<MathProblem | EquationProblem | null>(() => {
     return problems.value[currentQuestion.value] || null;
   });
 
@@ -107,13 +111,16 @@ export function useGameLogic(totalQuestions: number = 10): UseGameLogic {
       correctAnswers.value++;
       if (onCorrect) onCorrect(points); // Передаем количество очков в колбэк
 
-      // Автоматический переход к следующему вопросу через 1.5 секунды
+      // Автоматический переход к следующему вопросу через 4 секунды (чтобы показать пошаговое решение)
       setTimeout(() => {
         nextQuestion();
-      }, 1500);
+      }, 4000);
     }
     // Если ответ неправильный, увеличиваем счетчик ошибок
     else {
+      if (errorsPerQuestion.value[currentQuestion.value] === undefined) {
+        errorsPerQuestion.value[currentQuestion.value] = 0;
+      }
       errorsPerQuestion.value[currentQuestion.value]++;
       console.log(
         `Неправильный ответ! Вопрос ${currentQuestion.value}, всего ошибок: ${errorsPerQuestion.value[currentQuestion.value]}`
@@ -136,7 +143,7 @@ export function useGameLogic(totalQuestions: number = 10): UseGameLogic {
     }
   };
 
-  const addProblem = (problem: MathProblem): void => {
+  const addProblem = (problem: MathProblem | EquationProblem): void => {
     problems.value.push(problem);
   };
 
@@ -149,7 +156,7 @@ export function useGameLogic(totalQuestions: number = 10): UseGameLogic {
       addProblem(problem);
 
       // Обновляем предыдущее значение X для следующей итерации
-      previousX = ('xValue' in problem) ? problem.xValue : null;
+      previousX = ('xValue' in problem) ? (problem as EquationProblem).xValue : null;
     }
   };
 
@@ -165,6 +172,10 @@ export function useGameLogic(totalQuestions: number = 10): UseGameLogic {
     };
   };
 
+  const setManualMode = (enabled: boolean): void => {
+    manualMode.value = enabled;
+  };
+
   return {
     // Состояние
     score,
@@ -177,6 +188,7 @@ export function useGameLogic(totalQuestions: number = 10): UseGameLogic {
     correctAnswers,
     totalAnswers,
     errorsPerQuestion,
+    manualMode,
 
     // Вычисляемые свойства
     progressPercent,
@@ -188,7 +200,8 @@ export function useGameLogic(totalQuestions: number = 10): UseGameLogic {
     nextQuestion,
     addProblem,
     generateAllProblems,
-    getGameResult
+    getGameResult,
+    setManualMode
   };
 }
 

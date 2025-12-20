@@ -21,6 +21,16 @@
           {{ currentProblem?.expression }}
         </div>
 
+        <!-- Кнопка перехода к ручному режиму -->
+        <div v-if="totalScore >= 30" class="manual-mode-container">
+          <button class="manual-mode-button" @click="goToManualMode">
+            🧩 Режим с пошаговым вводом
+          </button>
+          <p class="manual-mode-hint">
+            Набрано достаточно очков для режима с пошаговым разложением чисел!
+          </p>
+        </div>
+
         <ProgressBar :progress-percent="progressPercent" />
 
         <StarRating :score="score" />
@@ -31,6 +41,14 @@
           :answered="answered"
           :selected-index="selectedIndex"
           @answer-selected="handleAnswerSelected"
+        />
+
+        <!-- Пошаговое решение после правильного ответа -->
+        <StepByStepSolution
+          v-if="answered && selectedIndex === currentProblem?.correctIndex"
+          :expression="currentProblem?.expression || ''"
+          :correct-option="currentProblem?.options[currentProblem?.correctIndex] || ''"
+          :show="answered && selectedIndex === currentProblem?.correctIndex"
         />
       </div>
 
@@ -52,11 +70,12 @@
   import { useScoresStore } from '../store/scores';
   import { useSettingsStore } from '../store/settings';
   import { useGameLogic } from '../composables/useGameLogic';
-  import { generateDecompositionProblem } from '../utils/math';
+  import { generateDecompositionProblem } from '../utils/math/index';
     import ScoreDisplay from '../components/common/ScoreDisplay.vue';
   import ProgressBar from '../components/common/ProgressBar.vue';
   import StarRating from '../components/common/StarRating.vue';
   import AnswerOptions from '../components/common/AnswerOptions.vue';
+  import StepByStepSolution from '../components/common/StepByStepSolution.vue';
   import GameOver from '../components/common/GameOver.vue';
 
   export default {
@@ -66,6 +85,7 @@
       ProgressBar,
       StarRating,
       AnswerOptions,
+      StepByStepSolution,
       GameOver
     },
     setup() {
@@ -116,6 +136,11 @@
         router.push('/');
       };
 
+      // Переход к ручному режиму
+      const goToManualMode = () => {
+        router.push('/manual-decomposition');
+      };
+
       // Инициализация при монтировании
       onMounted(() => {
         scoresStore.loadScores();
@@ -138,7 +163,8 @@
         maxNumber,
         handleAnswerSelected,
         restartGame,
-        goToMain
+        goToMain,
+        goToManualMode
       };
     }
   };
@@ -161,5 +187,35 @@
   .back-button:hover {
     transform: translateY(-2px);
     box-shadow: 0 5px 12px rgba(102, 126, 234, 0.4);
+  }
+
+  .manual-mode-container {
+    margin: 20px 0;
+    text-align: center;
+  }
+
+  .manual-mode-button {
+    background: linear-gradient(135deg, #ed8936, #dd6b20);
+    color: white;
+    border: none;
+    border-radius: 12px;
+    padding: 12px 24px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 12px rgba(237, 137, 54, 0.3);
+    margin-bottom: 8px;
+  }
+
+  .manual-mode-button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(237, 137, 54, 0.4);
+  }
+
+  .manual-mode-hint {
+    font-size: 14px;
+    color: #718096;
+    margin: 0;
   }
 </style>

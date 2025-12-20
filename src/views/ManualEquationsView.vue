@@ -11,7 +11,7 @@
               >
             </div>
           </div>
-          <h1 class="title">Реши уравнение</h1>
+          <h1 class="title">Решай уравнение</h1>
         </div>
 
         <ScoreDisplay
@@ -31,29 +31,48 @@
           </div>
         </div>
 
-        <div class="math-expression">{{ currentProblem?.expression }}, чему равен x?</div>
+        <!-- Уравнение -->
+        <div class="equation-container">
+          <div class="math-expression">{{ currentProblem?.expression }}, чему равен x?</div>
 
-        <!-- Кнопка перехода к ручному режиму -->
-        <div v-if="totalScore >= 50" class="manual-mode-container">
-          <button class="manual-mode-button" @click="goToManualMode">
-            🎯 Режим с вводом ответа
+          <!-- Поле для ввода ответа -->
+          <div class="answer-input-container">
+            <input
+              ref="answerInput"
+              v-model="userAnswer"
+              type="number"
+              class="answer-input"
+              placeholder="Введите ответ"
+              @keyup.enter="checkAnswer"
+              :disabled="answered"
+              autocomplete="off"
+            />
+            <button
+              class="check-button"
+              @click="checkAnswer"
+              :disabled="answered || userAnswer === ''"
+            >
+              Проверить
+            </button>
+          </div>
+        </div>
+
+        <!-- Обратная связь -->
+        <div v-if="answered" class="feedback-container">
+          <div :class="['feedback', isCorrect ? 'correct' : 'incorrect']">
+            <div class="feedback-icon">{{ isCorrect ? '✓' : '✗' }}</div>
+            <div class="feedback-text">
+              {{ isCorrect ? 'Правильно!' : `Неправильно. Правильный ответ: ${currentProblem?.correctAnswer}` }}
+            </div>
+          </div>
+          <button class="next-button" @click="nextQuestion">
+            Следующий вопрос
           </button>
-          <p class="manual-mode-hint">
-            Набрано достаточно очков для режима с ручным вводом ответов!
-          </p>
         </div>
 
         <ProgressBar :progress-percent="progressPercent" />
 
         <StarRating :score="score" />
-
-        <AnswerOptions
-          :options="currentProblem?.options || []"
-          :correct-index="currentProblem?.correctIndex || 0"
-          :answered="answered"
-          :selected-index="selectedIndex"
-          @answer-selected="handleAnswerSelected"
-        />
       </div>
 
       <GameOver
@@ -69,36 +88,36 @@
 </template>
 
 <script>
-  import { onMounted, computed } from 'vue';
+  import { ref, onMounted, computed, nextTick } from 'vue';
   import { useRouter } from 'vue-router';
   import { useScoresStore } from '../store/scores';
   import { useGameLogic } from '../composables/useGameLogic';
   import {
     generateEquationProblem,
     getEquationsLevelConfig,
-    getNextEquationsLevel
+    getNextEquationsLevel,
+    generateEquationProblemManual
   } from '../utils/math/index';
-    import ScoreDisplay from '../components/common/ScoreDisplay.vue';
+  import ScoreDisplay from '../components/common/ScoreDisplay.vue';
   import ProgressBar from '../components/common/ProgressBar.vue';
   import StarRating from '../components/common/StarRating.vue';
-  import AnswerOptions from '../components/common/AnswerOptions.vue';
   import GameOver from '../components/common/GameOver.vue';
 
   export default {
-    name: 'EquationsView',
+    name: 'ManualEquationsView',
     components: {
       ScoreDisplay,
       ProgressBar,
       StarRating,
-      AnswerOptions,
       GameOver
     },
     setup() {
       const router = useRouter();
       const scoresStore = useScoresStore();
       const totalQuestions = 5;
+      const answerInput = ref(null);
 
-      // Инициализируем игру
+      // Инициализируем игру с дополнительными параметрами для ручного режима
       const {
         score,
         currentQuestion,
@@ -112,11 +131,18 @@
         totalAnswers,
         initializeGame,
         selectAnswer,
-        generateAllProblems
+        generateAllProblems,
+        problems,
+        manualMode,
+        setManualMode
       } = useGameLogic(totalQuestions);
 
       // Загружаем общий счет
       const totalScore = computed(() => scoresStore.equationsScore);
+
+      // Режим решения
+      const userAnswer = ref('');
+      const isCorrect = ref(false);
 
       // Получаем конфигурацию текущего уровня на основе общего счета
       const currentLevelConfig = computed(() => getEquationsLevelConfig(totalScore.value));
@@ -138,32 +164,78 @@
         return Math.min(100, Math.max(0, progress));
       });
 
-      // Обработчик выбора ответа
-      const handleAnswerSelected = (index) => {
-        selectAnswer(index, currentProblem.value?.correctIndex || 0, (points) => {
-          // При правильном ответе обновляем общий счет с учетом количества ошибок
-          // Применяем коэффициент уровня сложности к базовым очкам
-          const adjustedPoints = Math.round(
-            points * (currentLevelConfig.value.pointsPerCorrect / 10)
-          );
+      // Обработчик проверки ответа
+      const checkAnswer = () => {
+        if (answered.value || userAnswer.value === '') return;
+
+        const correctAnswer = currentProblem.value?.correctAnswer;
+        const userAnswerNum = parseInt(userAnswer.value);
+
+        isCorrect.value = userAnswerNum === correctAnswer;
+
+        // Вычисляем очки
+        const errors = 0; // В ручном режиме одна попытка
+        const points = errors === 0 ? 10 : errors === 1 ? 5 : 0;
+        const adjustedPoints = Math.round(
+          points * (currentLevelConfig.value.pointsPerCorrect / 10)
+        );
+
+        selectAnswer(0, 0, (points) => {
           scoresStore.updateEquationsScore(adjustedPoints);
+        });
+
+        // Сохраняем статистику
+        if (isCorrect.value) {
+          scoresStore.incrementManualEquationsSolved();
+        }
+
+        // Обновляем общую статистику
+        scoresStore.incrementTotalEquationsAttempted();
+      };
+
+      // Обработчик перехода к следующему вопросу
+      const nextQuestion = () => {
+        userAnswer.value = '';
+        isCorrect.value = false;
+        answered.value = false;
+
+        // Генерируем новую задачу
+        const newProblem = generateEquationProblemManual(totalScore.value);
+        currentProblem.value = newProblem;
+        currentQuestion.value++;
+
+        // Фокус на поле ввода
+        nextTick(() => {
+          if (answerInput.value) {
+            answerInput.value.focus();
+          }
         });
       };
 
       // Перезапуск игры
       const restartGame = () => {
+        userAnswer.value = '';
+        isCorrect.value = false;
+        answered.value = false;
         initializeGame();
-        generateAllProblems((previousX) => generateEquationProblem(totalScore.value, previousX));
+        setManualMode(true);
+
+        // Генерируем все задачи для ручного режима
+        const manualProblems = [];
+        for (let i = 0; i < totalQuestions; i++) {
+          manualProblems.push(generateEquationProblemManual(totalScore.value));
+        }
+
+        problems.value = manualProblems;
+
+        if (manualProblems.length > 0) {
+          currentProblem.value = manualProblems[0];
+        }
       };
 
       // Переход на главную
       const goToMain = () => {
         router.push('/');
-      };
-
-      // Переход к ручному режиму
-      const goToManualMode = () => {
-        router.push('/manual-equations');
       };
 
       // Инициализация при монтировании
@@ -188,10 +260,13 @@
         currentLevelConfig,
         nextLevelInfo,
         progressToNextLevelPercent,
-        handleAnswerSelected,
+        userAnswer,
+        isCorrect,
+        answerInput,
+        checkAnswer,
+        nextQuestion,
         restartGame,
-        goToMain,
-        goToManualMode
+        goToMain
       };
     }
   };
@@ -257,33 +332,108 @@
     transition: width 0.3s ease;
   }
 
-  .manual-mode-container {
+  .equation-container {
     margin: 20px 0;
-    text-align: center;
   }
 
-  .manual-mode-button {
-    background: linear-gradient(135deg, #48bb78, #38a169);
+  .answer-input-container {
+    display: flex;
+    gap: 10px;
+    max-width: 400px;
+    margin: 0 auto;
+  }
+
+  .answer-input {
+    flex: 1;
+    padding: 12px 16px;
+    font-size: 18px;
+    border: 2px solid #e2e8f0;
+    border-radius: 8px;
+    text-align: center;
+    transition: all 0.3s ease;
+  }
+
+  .answer-input:focus {
+    outline: none;
+    border-color: #667eea;
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+  }
+
+  .answer-input:disabled {
+    background-color: #f7fafc;
+    color: #a0aec0;
+  }
+
+  .check-button {
+    padding: 12px 24px;
+    background: linear-gradient(135deg, #667eea, #764ba2);
     color: white;
     border: none;
-    border-radius: 12px;
-    padding: 12px 24px;
+    border-radius: 8px;
     font-size: 16px;
     font-weight: 600;
     cursor: pointer;
     transition: all 0.3s ease;
-    box-shadow: 0 4px 12px rgba(72, 187, 120, 0.3);
-    margin-bottom: 8px;
+    box-shadow: 0 3px 8px rgba(102, 126, 234, 0.3);
   }
 
-  .manual-mode-button:hover {
+  .check-button:hover:not(:disabled) {
     transform: translateY(-2px);
-    box-shadow: 0 6px 16px rgba(72, 187, 120, 0.4);
+    box-shadow: 0 5px 12px rgba(102, 126, 234, 0.4);
   }
 
-  .manual-mode-hint {
+  .check-button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+
+  .feedback-container {
+    margin: 20px 0;
+    text-align: center;
+  }
+
+  .feedback {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    padding: 12px 20px;
+    border-radius: 8px;
+    font-weight: 600;
+  }
+
+  .feedback.correct {
+    background-color: #c6f6d5;
+    color: #22543d;
+  }
+
+  .feedback.incorrect {
+    background-color: #fed7d7;
+    color: #742a2a;
+  }
+
+  .feedback-icon {
+    font-size: 24px;
+    font-weight: bold;
+  }
+
+  .feedback-text {
+    font-size: 16px;
+  }
+
+  .next-button {
+    margin-top: 10px;
+    padding: 10px 20px;
+    background: #4a5568;
+    color: white;
+    border: none;
+    border-radius: 8px;
     font-size: 14px;
-    color: #718096;
-    margin: 0;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+  }
+
+  .next-button:hover {
+    background: #2d3748;
   }
 </style>

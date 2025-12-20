@@ -6,6 +6,8 @@ import DecompositionView from '@/views/DecompositionView.vue';
 import FirstGradeDecompositionView from '@/views/FirstGradeDecompositionView.vue';
 import MultiplicationView from '@/views/MultiplicationView.vue';
 import EquationsView from '@/views/EquationsView.vue';
+import ManualEquationsView from '@/views/ManualEquationsView.vue';
+import ManualDecompositionView from '@/views/ManualDecompositionView.vue';
 import { useSettingsStore } from '@/store/settings';
 import { getAvailableExercises } from '@/utils/gradeHelpers';
 
@@ -44,6 +46,16 @@ const routes: Array<RouteRecordRaw> = [
     name: 'equations',
     component: EquationsView,
     meta: { exerciseType: 'equations' }
+  },
+  {
+    path: '/manual-equations',
+    name: 'manual-equations',
+    component: ManualEquationsView
+  },
+  {
+    path: '/manual-decomposition',
+    name: 'manual-decomposition',
+    component: ManualDecompositionView
   }
 ];
 

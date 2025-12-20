@@ -25,7 +25,7 @@ function generateAdditionOption(num1: number, num2: number): string {
       const neededForRound = 10 - lastDigit1;
 
       // Проверяем, не будет ли нулевого компонента при разложении
-      if (neededForRound === 0 || num2 - neededForRound === 0) {
+      if (neededForRound === 0 || neededForRound === num2 || num2 - neededForRound === 0) {
         // Если будет нулевой компонент, не раскладываем
         return `${num1} + ${num2}`;
       }
@@ -70,7 +70,7 @@ function generateSubtractionOption(num1: number, num2: number): string {
       const lastDigit1 = num1 % 10;
 
       // Проверяем, не будет ли нулевого компонента при разложении
-      if (lastDigit1 === 0 || num2 - lastDigit1 <= 0) {
+      if (lastDigit1 === 0 || num2 - lastDigit1 <= 0 || num2 === lastDigit1) {
         // Если будет нулевой компонент, не раскладываем
         return `${num1} - ${num2}`;
       }
@@ -278,7 +278,7 @@ export function generateDecompositionProblem(maxNumber: number | null = null): M
   // Если maxNumber не указан, используем 99 для двузначных чисел
   const effectiveMax = maxNumber || 99;
   const minNumber = 10; // Минимум 10 для двузначных чисел
-  const maxAttempts = 10; // Максимальное количество попыток генерации
+  const maxAttempts = 50; // Увеличим количество попыток для нахождения подходящих чисел
 
   for (let attempt = 0; attempt < maxAttempts; attempt++) {
     // Выбираем операцию
@@ -287,33 +287,65 @@ export function generateDecompositionProblem(maxNumber: number | null = null): M
     let num1: number, num2: number, correctOption: string, wrongOptions: string[];
 
     if (isAddition) {
-      // Генерируем сложение
+      // Генерируем сложение с переходом через десяток
+      // Создаем число с последней цифрой > 0
       num1 = Math.floor(Math.random() * (effectiveMax - minNumber)) + minNumber;
-      num2 = Math.floor(Math.random() * (effectiveMax - 1)) + 1;
+      const lastDigit = num1 % 10;
+
+      if (lastDigit === 0) {
+        // Если последняя цифра 0, делаем её случайной от 1 до 8
+        num1 = Math.floor(num1 / 10) * 10 + Math.floor(Math.random() * 8) + 1;
+      }
+
+      // Генерируем num2 такое, чтобы был переход через десяток
+      const minNeeded = 10 - (num1 % 10) + 1; // Минимальное число для перехода через десяток
+      const maxPossible = Math.min(9, effectiveMax - num1); // Максимальное однозначное число
+
+      if (minNeeded <= maxPossible) {
+        num2 = Math.floor(Math.random() * (maxPossible - minNeeded + 1)) + minNeeded;
+      } else {
+        // Если не можем найти однозначное число, пробуем двузначное
+        num2 = Math.floor(Math.random() * 9) + 11; // от 11 до 19
+      }
 
       // Убедимся, что сумма не превышает максимум
       while (num1 + num2 > effectiveMax) {
-        num2 = Math.floor(Math.random() * (effectiveMax - num1));
+        num2 = Math.max(1, num2 - 1);
       }
 
       correctOption = generateAdditionOption(num1, num2);
       wrongOptions = generateWrongAdditionOptions(num1, num2, correctOption);
     } else {
-      // Генерируем вычитание
+      // Генерируем вычитание с переходом через десяток
       num1 = Math.floor(Math.random() * (effectiveMax - minNumber)) + minNumber;
-      num2 = Math.floor(Math.random() * (num1 - 1)) + 1;
+      const lastDigit = num1 % 10;
+
+      if (lastDigit === 0) {
+        // Если последняя цифра 0, делаем её случайной от 1 до 8
+        num1 = Math.floor(num1 / 10) * 10 + Math.floor(Math.random() * 8) + 1;
+      }
+
+      // Генерируем num2 такое, чтобы был переход через десяток при вычитании
+      const maxForTransition = num1 % 10; // Максимальное число для перехода через десяток
+
+      if (maxForTransition > 0) {
+        num2 = Math.floor(Math.random() * maxForTransition) + 1;
+      } else {
+        num2 = Math.floor(Math.random() * (num1 - 11)) + 11; // Двузначное число
+      }
 
       correctOption = generateSubtractionOption(num1, num2);
       wrongOptions = generateWrongSubtractionOptions(num1, num2, correctOption);
     }
 
-    // Проверяем, что ни один из вариантов не содержит нулей
+    // Проверяем, что есть разложение и нет нулей
+    const hasDecomposition = correctOption.split(isAddition ? ' + ' : ' - ').length > 2;
     const hasNoZeros = !correctOption.includes('+ 0') && !correctOption.includes(' - 0');
     const wrongOptionsHaveNoZeros = wrongOptions.every(
       opt => !opt.includes('+ 0') && !opt.includes(' - 0')
     );
 
-    if (hasNoZeros && wrongOptionsHaveNoZeros) {
+    if (hasDecomposition && hasNoZeros && wrongOptionsHaveNoZeros) {
       const allOptions = [correctOption, ...wrongOptions];
       const shuffled = shuffleArray(allOptions);
       const correctIndex = shuffled.indexOf(correctOption);
@@ -332,11 +364,11 @@ export function generateDecompositionProblem(maxNumber: number | null = null): M
     }
   }
 
-  // Если не удалось сгенерировать без нулей, используем простой пример
-  const num1 = 20;
-  const num2 = 5;
-  const correctOption = `${num1} + ${num2}`;
-  const wrongOptions = [`${num1 + 1} + ${num2}`, `${num1} + ${num2 + 1}`, `${num1 - 1} + ${num2}`];
+  // Если не удалось сгенерировать, используем гарантированный пример с переходом через десяток
+  const num1 = 19;
+  const num2 = 3;
+  const correctOption = `${num1} + 1 + 2`;
+  const wrongOptions = [`${num1} + 1 + ${num2 + 1}`, `${num1} + 2 + 1`, `${num1} + ${num2}`];
   const allOptions = [correctOption, ...wrongOptions];
   const shuffled = shuffleArray(allOptions);
   const correctIndex = shuffled.indexOf(correctOption);

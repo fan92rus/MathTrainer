@@ -196,7 +196,7 @@ export function getAvailableExercises(grade: GradeLevel, quarter: number): Avail
       description: 'Изучай таблицу умножения постепенно'
     },
     equations: {
-      available: (grade === 2 && quarter >= 3) || grade > 2, // Уравнения доступны для 2 класса со 2 четверти и далее
+      available: (grade === 2 && quarter >= 2) || grade > 2, // Уравнения доступны для 2 класса со 2 четверти и далее
       title: 'Простые уравнения',
       description: 'Решай простые уравнения с неизвестным'
     }

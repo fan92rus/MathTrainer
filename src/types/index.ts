@@ -33,6 +33,12 @@ export interface MathProblem {
   correctIndex: number;
   /** Уровень сложности задачи (1-10) */
   difficulty: number;
+  /** Детали разложения для ручного режима (опционально) */
+  decompositionDetails?: {
+    firstPart: number;
+    secondPart: number;
+    intermediateResult: number;
+  };
 }
 
 /**

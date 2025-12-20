@@ -22,3 +22,6 @@ export type {
   EquationsLevelConfig,
   NextLevelInfo
 } from '@/types';
+
+// Экспорт функции для ручного режима уравнений
+export { generateEquationProblemManual } from './equations';

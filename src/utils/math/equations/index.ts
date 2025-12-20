@@ -359,6 +359,23 @@ export function getNextEquationsLevel(currentScore: number): NextLevelInfo | nul
 }
 
 /**
+ * Генерирует задачу на уравнение без вариантов ответов для ручного ввода
+ */
+export function generateEquationProblemManual(
+  currentScore: number,
+  previousX: number | null = null
+): { expression: string; correctAnswer: number; difficulty: number; equationType: string } {
+  const problem = generateEquationProblem(currentScore, previousX);
+
+  return {
+    expression: problem.expression,
+    correctAnswer: problem.correctAnswer,
+    difficulty: problem.difficulty,
+    equationType: problem.equationType
+  };
+}
+
+/**
  * Возвращает все доступные уровни
  */
 export function getAllEquationsLevels(): Array<{

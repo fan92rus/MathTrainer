@@ -1,0 +1,34 @@
+### Page state
+- Page URL: http://localhost:3542/MathTrainer/manual-decomposition
+- Page Title: Математический тренажер для детей
+- Page Snapshot:
+```yaml
+- generic [ref=e6]:
+  - generic [ref=e7]:
+    - generic [ref=e8]:
+      - button "← Назад" [ref=e9] [cursor=pointer]
+      - generic [ref=e11]: "Ручной режим: Разложение чисел"
+    - heading "Реши по шагам" [level=1] [ref=e12]
+  - generic [ref=e13]:
+    - generic [ref=e14]:
+      - generic [ref=e15]:
+        - generic [ref=e16]: Текущие
+        - generic [ref=e17]: ⭐ 10
+      - generic [ref=e18]:
+        - generic [ref=e19]: Всего
+        - generic [ref=e20]: ⭐ 10
+    - generic [ref=e21]: Вопрос 2 из 5
+  - generic [ref=e61]:
+    - generic [ref=e62]: 30 + 1 = ?
+    - generic [ref=e63]: 📝 Теперь прибавь оставшееся число
+    - generic [ref=e64]:
+      - text: "30"
+      - generic [ref=e65]: +
+      - text: 1 =
+      - spinbutton [ref=e66]: "31"
+    - button "Проверить" [ref=e67] [cursor=pointer]
+  - generic [ref=e35]:
+    - generic [ref=e36]: ★
+    - generic [ref=e37]: ★
+    - generic [ref=e38]: ★
+```

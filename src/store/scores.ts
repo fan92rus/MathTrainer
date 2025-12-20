@@ -9,6 +9,10 @@ export interface ScoresState {
   multiplicationScore: number;
   equationsScore: number;
   currentMultiplicationLevel: number;
+  manualEquationsSolved: number;
+  totalEquationsAttempted: number;
+  manualDecompositionSolved: number;
+  totalDecompositionAttempted: number;
 }
 
 // Интерфейс для всех очков
@@ -27,7 +31,11 @@ export const useScoresStore = defineStore('scores', {
     firstGradeDecompositionScore: 0,
     multiplicationScore: 0,
     equationsScore: 0,
-    currentMultiplicationLevel: 2 // Текущий открытый уровень таблицы умножения
+    currentMultiplicationLevel: 2, // Текущий открытый уровень таблицы умножения
+    manualEquationsSolved: 0, // Количество решенных уравнений в ручном режиме
+    totalEquationsAttempted: 0, // Общее количество попыток решения уравнений
+    manualDecompositionSolved: 0, // Количество решенных разложений в ручном режиме
+    totalDecompositionAttempted: 0 // Общее количество попыток разложения
   }),
 
   getters: {
@@ -39,6 +47,14 @@ export const useScoresStore = defineStore('scores', {
       state.equationsScore,
 
     getEquationsScore: (state): number => state.equationsScore,
+
+    getManualEquationsSolved: (state): number => state.manualEquationsSolved,
+
+    getTotalEquationsAttempted: (state): number => state.totalEquationsAttempted,
+
+    getManualDecompositionSolved: (state): number => state.manualDecompositionSolved,
+
+    getTotalDecompositionAttempted: (state): number => state.totalDecompositionAttempted,
 
     getAllScores: (state): AllScores => ({
       countingScore: state.countingScore,
@@ -81,6 +97,26 @@ export const useScoresStore = defineStore('scores', {
       const currentLevelSaved = getItem('currentMultiplicationLevel');
       if (currentLevelSaved !== null) {
         this.currentMultiplicationLevel = parseInt(currentLevelSaved, 10);
+      }
+
+      const manualEquationsSaved = getItem('manualEquationsSolved');
+      if (manualEquationsSaved !== null) {
+        this.manualEquationsSolved = parseInt(manualEquationsSaved, 10);
+      }
+
+      const totalEquationsSaved = getItem('totalEquationsAttempted');
+      if (totalEquationsSaved !== null) {
+        this.totalEquationsAttempted = parseInt(totalEquationsSaved, 10);
+      }
+
+      const manualDecompositionSaved = getItem('manualDecompositionSolved');
+      if (manualDecompositionSaved !== null) {
+        this.manualDecompositionSolved = parseInt(manualDecompositionSaved, 10);
+      }
+
+      const totalDecompositionSaved = getItem('totalDecompositionAttempted');
+      if (totalDecompositionSaved !== null) {
+        this.totalDecompositionAttempted = parseInt(totalDecompositionSaved, 10);
       }
     },
 
@@ -161,12 +197,60 @@ export const useScoresStore = defineStore('scores', {
       this.multiplicationScore = 0;
       this.equationsScore = 0;
       this.currentMultiplicationLevel = 2;
+      this.manualEquationsSolved = 0;
+      this.totalEquationsAttempted = 0;
+      this.manualDecompositionSolved = 0;
+      this.totalDecompositionAttempted = 0;
       this.saveCountingScore();
       this.saveDecompositionScore();
       this.saveFirstGradeDecompositionScore();
       this.saveMultiplicationScore();
       this.saveEquationsScore();
       this.saveCurrentMultiplicationLevel();
+      this.saveManualEquationsSolved();
+      this.saveTotalEquationsAttempted();
+      this.saveManualDecompositionSolved();
+      this.saveTotalDecompositionAttempted();
+    },
+
+    incrementManualEquationsSolved(): void {
+      this.manualEquationsSolved++;
+      this.saveManualEquationsSolved();
+    },
+
+    incrementTotalEquationsAttempted(): void {
+      this.totalEquationsAttempted++;
+      this.saveTotalEquationsAttempted();
+    },
+
+    saveManualEquationsSolved(): void {
+      const { setItem } = useStorage();
+      setItem('manualEquationsSolved', this.manualEquationsSolved.toString());
+    },
+
+    saveTotalEquationsAttempted(): void {
+      const { setItem } = useStorage();
+      setItem('totalEquationsAttempted', this.totalEquationsAttempted.toString());
+    },
+
+    incrementManualDecompositionSolved(): void {
+      this.manualDecompositionSolved++;
+      this.saveManualDecompositionSolved();
+    },
+
+    incrementTotalDecompositionAttempted(): void {
+      this.totalDecompositionAttempted++;
+      this.saveTotalDecompositionAttempted();
+    },
+
+    saveManualDecompositionSolved(): void {
+      const { setItem } = useStorage();
+      setItem('manualDecompositionSolved', this.manualDecompositionSolved.toString());
+    },
+
+    saveTotalDecompositionAttempted(): void {
+      const { setItem } = useStorage();
+      setItem('totalDecompositionAttempted', this.totalDecompositionAttempted.toString());
     }
   }
 });

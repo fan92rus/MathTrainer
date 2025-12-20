@@ -62,73 +62,55 @@ describe('Math Helpers - Decomposition', () => {
       }
     });
 
-    test('сложение без перехода через десяток не должно раскладываться', () => {
-      // Пример: 30 + 5 = 35 (нет перехода через десяток)
-      mockMathRandom([0.5, 0.1, 0.5]); // num1=30, num2=5, isAddition=true
+    test('генерируются только задачи с переходом через десяток', () => {
+      // Теперь генерируем только задачи, которые требуют разложения
+      for (let i = 0; i < 10; i++) {
+        const problem: MathProblem = generateDecompositionProblem(50);
+        const correctOption = problem.options[problem.correctIndex];
 
-      const problem: MathProblem = generateDecompositionProblem(50);
-      const correctOption = problem.options[problem.correctIndex];
-
-      // Если нет перехода через десяток, не должно быть разложения
-      if (correctOption.includes('+')) {
-        expect(correctOption.split('+').length).toBe(2);
-      }
-    });
-
-    test('вычитание с переходом через десяток должно раскладываться', () => {
-      // Пример: 61 - 3 = 58 (переход с 6 десятков к 5)
-      mockMathRandom([0.5, 0.2, 0.2]); // num1=61, num2=3, isAddition=false
-
-      const problem: MathProblem = generateDecompositionProblem(70);
-      const expression = problem.expression;
-      const correctOption = problem.options[problem.correctIndex];
-
-      // Проверяем, что это вычитание
-      expect(expression).toContain('-');
-
-      // Проверяем, что есть переход через десяток
-      const match = expression.match(/(\d+)\s*-\s*(\d+)/);
-      if (match) {
-        const num1 = parseInt(match[1]);
-        const num2 = parseInt(match[2]);
-        const difference = num1 - num2;
-        const tensBefore = Math.floor(num1 / 10);
-        const tensAfter = Math.floor(difference / 10);
-
-        if (tensAfter < tensBefore) {
-          // Если есть переход через десяток, должен быть разложенный ответ
-          // Но только если разложение не приведет к нулевым компонентам
-          const lastDigit1 = num1 % 10;
-          if (lastDigit1 > 0 && num2 - lastDigit1 > 0) {
-            expect(correctOption.split('-').length).toBeGreaterThan(2);
-          }
+        // Все сгенерированные задачи должны иметь разложение
+        if (correctOption.includes('+')) {
+          expect(correctOption.split('+').length).toBeGreaterThan(2);
+        } else if (correctOption.includes('-')) {
+          expect(correctOption.split('-').length).toBeGreaterThan(2);
         }
       }
     });
 
-    test('вычитание без перехода через десяток не должно раскладываться', () => {
-      // Пример: 69 - 5 = 64 (нет перехода через десяток)
-      mockMathRandom([0.8, 0.1, 0.2]); // num1=69, num2=5, isAddition=false
+    test('все сгенерированные задачи должны иметь разложение', () => {
+      // Проверяем, что все задачи имеют разложение (и сложение, и вычитание)
+      for (let i = 0; i < 20; i++) {
+        const problem: MathProblem = generateDecompositionProblem(99);
+        const correctOption = problem.options[problem.correctIndex];
 
-      const problem: MathProblem = generateDecompositionProblem(70);
-      const expression = problem.expression;
-      const correctOption = problem.options[problem.correctIndex];
-
-      // Проверяем, что это вычитание без перехода через десяток
-      const match = expression.match(/(\d+)\s*-\s*(\d+)/);
-      if (match) {
-        const num1 = parseInt(match[1]);
-        const num2 = parseInt(match[2]);
-        const difference = num1 - num2;
-        const tensBefore = Math.floor(num1 / 10);
-        const tensAfter = Math.floor(difference / 10);
-
-        // Если нет перехода через десяток, не должно быть разложения
-        if (tensAfter >= tensBefore) {
-          if (correctOption.includes('-')) {
-            expect(correctOption.split('-').length).toBe(2);
-          }
+        // Все задачи должны быть разложены
+        if (problem.expression.includes('+')) {
+          expect(correctOption.split('+').length).toBeGreaterThan(2);
+        } else if (problem.expression.includes('-')) {
+          expect(correctOption.split('-').length).toBeGreaterThan(2);
         }
+
+        // И не содержать нулей
+        expect(correctOption).not.toContain('+ 0');
+        expect(correctOption).not.toContain(' - 0');
+      }
+    });
+
+    test('проверка отсутствия нулей в разложении', () => {
+      // Генерируем несколько задач и проверяем, что нет нулевых компонентов
+      for (let i = 0; i < 20; i++) {
+        const problem: MathProblem = generateDecompositionProblem(99);
+        const correctOption = problem.options[problem.correctIndex];
+
+        // Правильный ответ не должен содержать нулей
+        expect(correctOption).not.toContain('+ 0');
+        expect(correctOption).not.toContain(' - 0');
+
+        // Неправильные ответы тоже не должны содержать нулей
+        problem.options.forEach(option => {
+          expect(option).not.toContain('+ 0');
+          expect(option).not.toContain(' - 0');
+        });
       }
     });
 
