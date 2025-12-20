@@ -1,32 +1,56 @@
+import type { GradeLevel } from '@/types';
+
+// Интерфейс для настроек сложности
+export interface DifficultySettings {
+  maxCountingNumber: number;
+  maxDecompositionNumber: number;
+  description: string;
+}
+
+// Интерфейс для доступных упражнений
+export interface ExerciseInfo {
+  available: boolean;
+  title: string;
+  description: string;
+}
+
+export interface AvailableExercises {
+  counting: ExerciseInfo;
+  firstGradeDecomposition: ExerciseInfo;
+  decomposition: ExerciseInfo;
+  multiplication: ExerciseInfo;
+  equations: ExerciseInfo;
+}
+
 // Функция для определения текущей четверти учебного года
-export function getCurrentQuarter() {
-  const now = new Date()
-  const month = now.getMonth() + 1 // Месяцы от 1 до 12
-  
+export function getCurrentQuarter(): number {
+  const now = new Date();
+  const month = now.getMonth() + 1; // Месяцы от 1 до 12
+
   // Учебный год в России обычно начинается 1 сентября
   // 1 четверть: сентябрь - октябрь (9-10 месяцы)
   // 2 четверть: ноябрь - декабрь (11-12 месяцы)
   // 3 четверть: январь - март (1-3 месяцы)
   // 4 четверть: апрель - май (4-5 месяцы)
   // Июнь-август (6-8 месяцы) - каникулы
-  
+
   if (month >= 9 && month <= 10) {
-    return 1
+    return 1;
   } else if (month >= 11 && month <= 12) {
-    return 2
+    return 2;
   } else if (month >= 1 && month <= 3) {
-    return 3
+    return 3;
   } else if (month >= 4 && month <= 5) {
-    return 4
+    return 4;
   } else {
-    // Летние месяцы, считаем что начинается новая учебная год
-    return 1
+    // Летние месяцы, считаем что начинается новая учебный год
+    return 1;
   }
 }
 
 // Функция для получения настроек сложности в зависимости от класса и четверти
-export function getDifficultySettings(grade, quarter) {
-  const settings = {
+export function getDifficultySettings(grade: GradeLevel, quarter: number): DifficultySettings {
+  const settings: Record<GradeLevel, Record<number, DifficultySettings>> = {
     // 1 класс
     1: {
       1: {
@@ -119,38 +143,38 @@ export function getDifficultySettings(grade, quarter) {
         description: '4 класс, 4 четверть: числа до 100'
       }
     }
-  }
-  
-  return settings[grade] ? settings[grade][quarter] : settings[1][1]
+  };
+
+  return settings[grade]?.[quarter] || settings[1][1];
 }
 
 // Функция для получения названия класса
-export function getGradeName(grade) {
-  const gradeNames = {
+export function getGradeName(grade: GradeLevel): string {
+  const gradeNames: Record<GradeLevel, string> = {
     1: '1 класс',
     2: '2 класс',
     3: '3 класс',
     4: '4 класс'
-  }
-  
-  return gradeNames[grade] || 'Неизвестный класс'
+  };
+
+  return gradeNames[grade] || 'Неизвестный класс';
 }
 
 // Функция для получения названия четверти
-export function getQuarterName(quarter) {
-  const quarterNames = {
+export function getQuarterName(quarter: number): string {
+  const quarterNames: Record<number, string> = {
     1: '1 четверть',
     2: '2 четверть',
     3: '3 четверть',
     4: '4 четверть'
-  }
-  
-  return quarterNames[quarter] || 'Неизвестная четверть'
+  };
+
+  return quarterNames[quarter] || 'Неизвестная четверть';
 }
 
 // Функция для определения доступности упражнений в зависимости от класса и четверти
-export function getAvailableExercises(grade, quarter) {
-  const exercises = {
+export function getAvailableExercises(grade: GradeLevel, quarter: number): AvailableExercises {
+  const exercises: AvailableExercises = {
     counting: {
       available: true, // Счет доступен с 1 класса с 1 четверти
       title: 'Тренажер счета',
@@ -176,25 +200,25 @@ export function getAvailableExercises(grade, quarter) {
       title: 'Простые уравнения',
       description: 'Решай простые уравнения с неизвестным'
     }
-  }
-  
-  return exercises
+  };
+
+  return exercises;
 }
 
 // Функция для расчета очков за упражнение в зависимости от количества ошибок
-export function calculateExercisePoints(errors) {
+export function calculateExercisePoints(errors: number): number {
   // Базовые очки за упражнение без ошибок
-  const basePoints = 10
-  
+  const basePoints = 10;
+
   // Если ошибок больше 2, очки не начисляются
   if (errors > 2) {
-    return 0
+    return 0;
   }
-  
+
   // Уменьшаем очки в зависимости от количества ошибок
   // 0 ошибок = 10 очков
   // 1 ошибка = 5 очков
   // 2 ошибки = 0 очков
   // 3+ ошибок = 0 очков
-  return errors === 0 ? basePoints : errors === 1 ? 5 : 0
+  return errors === 0 ? basePoints : errors === 1 ? 5 : 0;
 }

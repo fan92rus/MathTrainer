@@ -1,17 +1,15 @@
-import { 
-  generateCountingProblem
-} from '../mathHelpers.js'
+import { generateCountingProblem } from '../mathHelpers.js';
 
 describe('Math Helpers - Counting Isolated Tests', () => {
   test('generateCountingProblem', () => {
-    const problem = generateCountingProblem(100, 1, 20)
-    
-    expect(problem).toHaveProperty('expression')
-    expect(problem).toHaveProperty('options')
-    expect(problem).toHaveProperty('correctIndex')
-    expect(Array.isArray(problem.options)).toBe(true)
-    expect(problem.options.length).toBe(4)
-    expect(problem.correctIndex).toBeGreaterThanOrEqual(0)
-    expect(problem.correctIndex).toBeLessThan(4)
-  })
-})
+    const problem = generateCountingProblem(100, 1, 20);
+
+    expect(problem).toHaveProperty('expression');
+    expect(problem).toHaveProperty('options');
+    expect(problem).toHaveProperty('correctIndex');
+    expect(Array.isArray(problem.options)).toBe(true);
+    expect(problem.options.length).toBe(4);
+    expect(problem.correctIndex).toBeGreaterThanOrEqual(0);
+    expect(problem.correctIndex).toBeLessThan(4);
+  });
+});

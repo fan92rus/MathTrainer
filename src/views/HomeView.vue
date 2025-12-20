@@ -7,9 +7,7 @@
             <span class="grade-label">Текущий класс:</span>
             <span class="grade-value">{{ gradeName }}, {{ quarterName }}</span>
           </div>
-          <button class="change-grade-button" @click="changeGrade">
-            Изменить класс
-          </button>
+          <button class="change-grade-button" @click="changeGrade">Изменить класс</button>
         </div>
         <div class="games-container">
           <div
@@ -21,7 +19,9 @@
               <div class="game-icon">🔢</div>
               <div class="game-info">
                 <div class="game-title">{{ availableExercises.firstGradeDecomposition.title }}</div>
-                <div class="game-description">{{ availableExercises.firstGradeDecomposition.description }}</div>
+                <div class="game-description">
+                  {{ availableExercises.firstGradeDecomposition.description }}
+                </div>
                 <div class="game-score">⭐ {{ firstGradeDecompositionScore }}</div>
               </div>
             </div>
@@ -35,16 +35,14 @@
               <div class="game-icon">➕</div>
               <div class="game-info">
                 <div class="game-title">{{ availableExercises.decomposition.title }}</div>
-                <div class="game-description">{{ availableExercises.decomposition.description }}</div>
+                <div class="game-description">
+                  {{ availableExercises.decomposition.description }}
+                </div>
                 <div class="game-score">⭐ {{ decompositionScore }}</div>
               </div>
             </div>
           </div>
-          <div
-            v-if="availableExercises.counting.available"
-            class="game-card"
-            @click="goToCounting"
-          >
+          <div v-if="availableExercises.counting.available" class="game-card" @click="goToCounting">
             <div class="game-content">
               <div class="game-icon">🔢</div>
               <div class="game-info">
@@ -63,7 +61,9 @@
               <div class="game-icon">✖️</div>
               <div class="game-info">
                 <div class="game-title">{{ availableExercises.multiplication.title }}</div>
-                <div class="game-description">{{ availableExercises.multiplication.description }}</div>
+                <div class="game-description">
+                  {{ availableExercises.multiplication.description }}
+                </div>
                 <div class="game-score">⭐ {{ multiplicationScore }}</div>
               </div>
             </div>
@@ -83,431 +83,450 @@
             </div>
           </div>
         </div>
-
       </div>
     </div>
   </div>
 </template>
 
 <script>
-import { computed, ref } from 'vue'
-import { useRouter } from 'vue-router'
-import { useScoresStore } from '../store/scores'
-import { useSettingsStore } from '../store/settings'
-import { getGradeName, getQuarterName, getCurrentQuarter, getAvailableExercises } from '../utils/gradeHelpers'
+  import { computed } from 'vue';
+  import { useRouter } from 'vue-router';
+  import { useScoresStore } from '../store/scores';
+  import { useSettingsStore } from '../store/settings';
+  import {
+    getGradeName,
+    getQuarterName,
+    getCurrentQuarter,
+    getAvailableExercises
+  } from '../utils/gradeHelpers';
 
-export default {
-  name: 'HomeView',
-  setup() {
-    const router = useRouter()
-    const scoresStore = useScoresStore()
-    const settingsStore = useSettingsStore()
-    
-    // Загружаем очки и настройки при монтировании компонента
-    scoresStore.loadScores()
-    settingsStore.loadSettings()
-    
-    // Вычисляемые свойства
-    const countingScore = computed(() => scoresStore.countingScore)
-   const decompositionScore = computed(() => scoresStore.decompositionScore)
-   const firstGradeDecompositionScore = computed(() => scoresStore.firstGradeDecompositionScore)
-   const multiplicationScore = computed(() => scoresStore.multiplicationScore)
-   const equationsScore = computed(() => scoresStore.equationsScore)
-    const isGradeSelected = computed(() => settingsStore.isGradeSelected)
-    const selectedGrade = computed(() => settingsStore.selectedGrade)
-    const gradeName = computed(() => getGradeName(selectedGrade.value))
-    const difficultySettings = computed(() => settingsStore.difficultySettings)
-    
-    // Получаем текущую четверть напрямую, а не из хранилища
-    const currentQuarter = computed(() => getCurrentQuarter())
-    const quarterName = computed(() => getQuarterName(currentQuarter.value))
-    
-    // Получаем доступные упражнения для текущего класса и четверти
-    const availableExercises = computed(() => {
-      if (!selectedGrade.value) {
-        return {
-          counting: { available: true, title: 'Тренажер счета', description: 'Решай примеры на сложение и вычитание' },
-          firstGradeDecomposition: { available: false, title: 'Состав числа (1 класс)', description: 'Изучи состав чисел до 10' },
-          decomposition: { available: false, title: 'Состав числа', description: 'Выбирай правильный способ разложения чисел' },
-          multiplication: { available: false, title: 'Таблица умножения', description: 'Изучай таблицу умножения постепенно' },
-          equations: { available: false, title: 'Простые уравнения', description: 'Решай простые уравнения с неизвестным' }
+  export default {
+    name: 'HomeView',
+    setup() {
+      const router = useRouter();
+      const scoresStore = useScoresStore();
+      const settingsStore = useSettingsStore();
+
+      // Загружаем очки и настройки при монтировании компонента
+      scoresStore.loadScores();
+      settingsStore.loadSettings();
+
+      // Вычисляемые свойства
+      const countingScore = computed(() => scoresStore.countingScore);
+      const decompositionScore = computed(() => scoresStore.decompositionScore);
+      const firstGradeDecompositionScore = computed(() => scoresStore.firstGradeDecompositionScore);
+      const multiplicationScore = computed(() => scoresStore.multiplicationScore);
+      const equationsScore = computed(() => scoresStore.equationsScore);
+      const isGradeSelected = computed(() => settingsStore.isGradeSelected);
+      const selectedGrade = computed(() => settingsStore.selectedGrade);
+      const gradeName = computed(() => getGradeName(selectedGrade.value));
+      
+      // Получаем текущую четверть напрямую, а не из хранилища
+      const currentQuarter = computed(() => getCurrentQuarter());
+      const quarterName = computed(() => getQuarterName(currentQuarter.value));
+
+      // Получаем доступные упражнения для текущего класса и четверти
+      const availableExercises = computed(() => {
+        if (!selectedGrade.value) {
+          return {
+            counting: {
+              available: true,
+              title: 'Тренажер счета',
+              description: 'Решай примеры на сложение и вычитание'
+            },
+            firstGradeDecomposition: {
+              available: false,
+              title: 'Состав числа (1 класс)',
+              description: 'Изучи состав чисел до 10'
+            },
+            decomposition: {
+              available: false,
+              title: 'Состав числа',
+              description: 'Выбирай правильный способ разложения чисел'
+            },
+            multiplication: {
+              available: false,
+              title: 'Таблица умножения',
+              description: 'Изучай таблицу умножения постепенно'
+            },
+            equations: {
+              available: false,
+              title: 'Простые уравнения',
+              description: 'Решай простые уравнения с неизвестным'
+            }
+          };
         }
-      }
-      return getAvailableExercises(selectedGrade.value, currentQuarter.value)
-    })
-    
-    // Методы
-    const goToCounting = () => {
-      router.push('/counting')
+        return getAvailableExercises(selectedGrade.value, currentQuarter.value);
+      });
+
+      // Методы
+      const goToCounting = () => {
+        router.push('/counting');
+      };
+
+      const goToDecomposition = () => {
+        router.push('/decomposition');
+      };
+
+      const goToFirstGradeDecomposition = () => {
+        router.push('/first-grade-decomposition');
+      };
+
+      const goToMultiplication = () => {
+        router.push('/multiplication');
+      };
+
+      const goToEquations = () => {
+        router.push('/equations');
+      };
+
+      const changeGrade = () => {
+        settingsStore.resetSettings();
+        // После сброса настроек компонент GradeSelection покажется автоматически
+      };
+
+      return {
+        countingScore,
+        decompositionScore,
+        firstGradeDecompositionScore,
+        multiplicationScore,
+        equationsScore,
+        isGradeSelected,
+        gradeName,
+        quarterName,
+        availableExercises,
+        goToCounting,
+        goToDecomposition,
+        goToFirstGradeDecomposition,
+        goToMultiplication,
+        goToEquations,
+        changeGrade
+      };
     }
-    
-    const goToDecomposition = () => {
-      router.push('/decomposition')
-    }
-    
-    const goToFirstGradeDecomposition = () => {
-      router.push('/first-grade-decomposition')
-    }
-    
-    const goToMultiplication = () => {
-      router.push('/multiplication')
-    }
-   
-   const goToEquations = () => {
-     router.push('/equations')
-   }
-   
-   const changeGrade = () => {
-     settingsStore.resetSettings()
-     // После сброса настроек компонент GradeSelection покажется автоматически
-   }
-   
-   
-   return {
-     countingScore,
-     decompositionScore,
-     firstGradeDecompositionScore,
-     multiplicationScore,
-     equationsScore,
-     isGradeSelected,
-     gradeName,
-     quarterName,
-     availableExercises,
-     goToCounting,
-     goToDecomposition,
-     goToFirstGradeDecomposition,
-     goToMultiplication,
-     goToEquations,
-     changeGrade
-   }
-  }
-}
+  };
 </script>
 
 <style scoped>
-.main-container {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  padding: 20px;
-  flex: 1;
-}
-
-.grade-info-container {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  width: 100%;
-  max-width: 500px;
-  margin-bottom: 20px;
-  background: linear-gradient(135deg, #ffffff, #f8f9ff);
-  border-radius: 15px;
-  padding: 15px 20px;
-  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
-}
-
-.grade-info {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-}
-
-.grade-label {
-  font-size: 14px;
-  color: #666;
-  margin-bottom: 5px;
-}
-
-.grade-value {
-  font-size: 18px;
-  font-weight: 600;
-  color: #333;
-}
-
-.change-grade-button {
-  background: linear-gradient(135deg, #667eea, #764ba2);
-  color: white;
-  border: none;
-  border-radius: 20px;
-  padding: 8px 16px;
-  font-size: 14px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  box-shadow: 0 3px 8px rgba(102, 126, 234, 0.3);
-}
-
-.change-grade-button:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 5px 12px rgba(102, 126, 234, 0.4);
-}
-
-.buttons-container {
-  display: flex;
-  gap: 15px;
-  flex-wrap: wrap;
-  justify-content: center;
-  margin-top: 40px;
-}
-
-.difficulty-info-button {
-  padding: 10px 20px;
-  background: linear-gradient(135deg, #4CAF50, #45a049);
-  color: white;
-  border: none;
-  border-radius: 30px;
-  font-size: clamp(14px, 3vw, 16px);
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  box-shadow: 0 4px 8px rgba(76, 175, 80, 0.3);
-}
-
-.difficulty-info-button:hover {
-  transform: scale(1.05);
-  box-shadow: 0 6px 12px rgba(76, 175, 80, 0.4);
-}
-
-.main-title {
-  font-size: clamp(32px, 6vw, 48px);
-  font-weight: 700;
-  margin-bottom: 30px;
-  text-align: center;
-  background: linear-gradient(135deg, #667eea, #764ba2);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-}
-
-.scores-container {
-  display: flex;
-  gap: 20px;
-  flex-wrap: wrap;
-  justify-content: center;
-}
-
-.score-card-title {
-  background: linear-gradient(135deg, #ffffff, #f8f9ff);
-  border-radius: 20px;
-  padding: 10px;
-  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
-  text-align: center;
-  min-width: 70px;
-  transition: transform 0.3s ease;
-  font-size: clamp(16px, 3vw, 20px);
-  color: #666;
-  margin-bottom: 10px;
-}
-
-.games-container {
-  display: flex;
-  gap: 30px;
-  flex-wrap: wrap;
-  justify-content: center;
-}
-
-.game-card {
-  background: linear-gradient(135deg, #ffffff, #f8f9ff);
-  border-radius: 20px;
-  padding: 20px;
-  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
-  transition: all 0.3s ease;
-  cursor: pointer;
-  width: 600px;
-  position: relative;
-  overflow: hidden;
-}
-
-.game-card::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 5px;
-  background: linear-gradient(90deg, #FF9A8B, #FF6A88, #FF99AC);
-}
-
-.game-card:hover {
-  transform: translateY(-10px);
-  box-shadow: 0 15px 30px rgba(0, 0, 0, 0.15);
-}
-
-.game-content {
-  display: flex;
-  align-items: flex-start;
-  gap: 15px;
-}
-
-.game-icon {
-  font-size: clamp(40px, 8vw, 60px);
-  flex-shrink: 0;
-  margin-top: 5px;
-}
-
-.game-info {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-}
-
-.game-title {
-  font-size: clamp(18px, 4vw, 22px);
-  font-weight: 700;
-  color: #333;
-  margin-bottom: 8px;
-}
-
-.game-description {
-  font-size: clamp(14px, 2.5vw, 16px);
-  color: #666;
-  margin-bottom: 8px;
-}
-
-.game-score {
-  font-size: clamp(16px, 3vw, 18px);
-  font-weight: 700;
-  color: #ff9800;
-  background: rgba(255, 152, 0, 0.1);
-  border-radius: 15px;
-  padding: 6px 12px;
-  display: inline-block;
-  align-self: flex-start;
-}
-
-
-@media (max-width: 768px) {
   .main-container {
-    padding: 15px;
-  }
-
-  .grade-info-container {
-    margin-bottom: 15px;
-    padding: 12px 15px;
-  }
-
-  .grade-value {
-    font-size: 16px;
-  }
-
-  .change-grade-button {
-    padding: 6px 12px;
-    font-size: 12px;
-  }
-
-  .scores-container {
-    gap: 10px;
-    margin-bottom: 15px;
-  }
-
-  .score-card-title {
-    min-width: 120px;
-    padding: 8px 12px;
-    font-size: 14px;
-  }
-
-  .games-container {
-    gap: 15px;
-    margin-bottom: 20px;
-  }
-
-  .game-card {
-    width: 400px;
-    padding: 15px;
-  }
-
-  .game-content {
-    gap: 12px;
-  }
-
-  .game-icon {
-    font-size: 36px;
-  }
-
-  .game-title {
-    font-size: 16px;
-    margin-bottom: 6px;
-  }
-
-  .game-description {
-    font-size: 13px;
-    margin-bottom: 6px;
-  }
-
-  .game-score {
-    font-size: 14px;
-    padding: 5px 10px;
-  }
-
-}
-
-/* Для очень маленьких экранов */
-@media (max-width: 480px) {
-  .main-container {
-    padding: 10px;
-  }
-
-  .grade-info-container {
+    display: flex;
     flex-direction: column;
-    gap: 10px;
-    padding: 10px;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    flex: 1;
+  }
+
+  .grade-info-container {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    max-width: 500px;
+    margin-bottom: 20px;
+    background: linear-gradient(135deg, #ffffff, #f8f9ff);
+    border-radius: 15px;
+    padding: 15px 20px;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
   }
 
   .grade-info {
-    align-items: center;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .grade-label {
+    font-size: 14px;
+    color: #666;
+    margin-bottom: 5px;
+  }
+
+  .grade-value {
+    font-size: 18px;
+    font-weight: 600;
+    color: #333;
   }
 
   .change-grade-button {
-    width: 100%;
-    max-width: 200px;
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    color: white;
+    border: none;
+    border-radius: 20px;
+    padding: 8px 16px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 3px 8px rgba(102, 126, 234, 0.3);
+  }
+
+  .change-grade-button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 12px rgba(102, 126, 234, 0.4);
+  }
+
+  .buttons-container {
+    display: flex;
+    gap: 15px;
+    flex-wrap: wrap;
+    justify-content: center;
+    margin-top: 40px;
+  }
+
+  .difficulty-info-button {
+    padding: 10px 20px;
+    background: linear-gradient(135deg, #4caf50, #45a049);
+    color: white;
+    border: none;
+    border-radius: 30px;
+    font-size: clamp(14px, 3vw, 16px);
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 8px rgba(76, 175, 80, 0.3);
+  }
+
+  .difficulty-info-button:hover {
+    transform: scale(1.05);
+    box-shadow: 0 6px 12px rgba(76, 175, 80, 0.4);
+  }
+
+  .main-title {
+    font-size: clamp(32px, 6vw, 48px);
+    font-weight: 700;
+    margin-bottom: 30px;
+    text-align: center;
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
   }
 
   .scores-container {
-    gap: 8px;
-    margin-bottom: 12px;
+    display: flex;
+    gap: 20px;
+    flex-wrap: wrap;
+    justify-content: center;
   }
 
   .score-card-title {
-    min-width: 100px;
-    padding: 6px 10px;
-    font-size: 12px;
+    background: linear-gradient(135deg, #ffffff, #f8f9ff);
+    border-radius: 20px;
+    padding: 10px;
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+    text-align: center;
+    min-width: 70px;
+    transition: transform 0.3s ease;
+    font-size: clamp(16px, 3vw, 20px);
+    color: #666;
+    margin-bottom: 10px;
   }
 
   .games-container {
-    flex-direction: column;
-    gap: 12px;
-    width: 100%;
+    display: flex;
+    gap: 30px;
+    flex-wrap: wrap;
+    justify-content: center;
   }
 
   .game-card {
-    width: 100%;
-    max-width: 300px;
-    padding: 12px;
+    background: linear-gradient(135deg, #ffffff, #f8f9ff);
+    border-radius: 20px;
+    padding: 20px;
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+    transition: all 0.3s ease;
+    cursor: pointer;
+    width: 600px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .game-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 5px;
+    background: linear-gradient(90deg, #ff9a8b, #ff6a88, #ff99ac);
+  }
+
+  .game-card:hover {
+    transform: translateY(-10px);
+    box-shadow: 0 15px 30px rgba(0, 0, 0, 0.15);
   }
 
   .game-content {
-    gap: 10px;
+    display: flex;
+    align-items: flex-start;
+    gap: 15px;
   }
 
   .game-icon {
-    font-size: 32px;
+    font-size: clamp(40px, 8vw, 60px);
+    flex-shrink: 0;
+    margin-top: 5px;
+  }
+
+  .game-info {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
   }
 
   .game-title {
-    font-size: 16px;
-    margin-bottom: 6px;
+    font-size: clamp(18px, 4vw, 22px);
+    font-weight: 700;
+    color: #333;
+    margin-bottom: 8px;
   }
 
   .game-description {
-    font-size: 12px;
-    margin-bottom: 6px;
+    font-size: clamp(14px, 2.5vw, 16px);
+    color: #666;
+    margin-bottom: 8px;
   }
 
   .game-score {
-    font-size: 12px;
-    padding: 4px 8px;
+    font-size: clamp(16px, 3vw, 18px);
+    font-weight: 700;
+    color: #ff9800;
+    background: rgba(255, 152, 0, 0.1);
+    border-radius: 15px;
+    padding: 6px 12px;
+    display: inline-block;
+    align-self: flex-start;
   }
 
-}
+  @media (max-width: 768px) {
+    .main-container {
+      padding: 15px;
+    }
+
+    .grade-info-container {
+      margin-bottom: 15px;
+      padding: 12px 15px;
+    }
+
+    .grade-value {
+      font-size: 16px;
+    }
+
+    .change-grade-button {
+      padding: 6px 12px;
+      font-size: 12px;
+    }
+
+    .scores-container {
+      gap: 10px;
+      margin-bottom: 15px;
+    }
+
+    .score-card-title {
+      min-width: 120px;
+      padding: 8px 12px;
+      font-size: 14px;
+    }
+
+    .games-container {
+      gap: 15px;
+      margin-bottom: 20px;
+    }
+
+    .game-card {
+      width: 400px;
+      padding: 15px;
+    }
+
+    .game-content {
+      gap: 12px;
+    }
+
+    .game-icon {
+      font-size: 36px;
+    }
+
+    .game-title {
+      font-size: 16px;
+      margin-bottom: 6px;
+    }
+
+    .game-description {
+      font-size: 13px;
+      margin-bottom: 6px;
+    }
+
+    .game-score {
+      font-size: 14px;
+      padding: 5px 10px;
+    }
+  }
+
+  /* Для очень маленьких экранов */
+  @media (max-width: 480px) {
+    .main-container {
+      padding: 10px;
+    }
+
+    .grade-info-container {
+      flex-direction: column;
+      gap: 10px;
+      padding: 10px;
+    }
+
+    .grade-info {
+      align-items: center;
+    }
+
+    .change-grade-button {
+      width: 100%;
+      max-width: 200px;
+    }
+
+    .scores-container {
+      gap: 8px;
+      margin-bottom: 12px;
+    }
+
+    .score-card-title {
+      min-width: 100px;
+      padding: 6px 10px;
+      font-size: 12px;
+    }
+
+    .games-container {
+      flex-direction: column;
+      gap: 12px;
+      width: 100%;
+    }
+
+    .game-card {
+      width: 100%;
+      max-width: 300px;
+      padding: 12px;
+    }
+
+    .game-content {
+      gap: 10px;
+    }
+
+    .game-icon {
+      font-size: 32px;
+    }
+
+    .game-title {
+      font-size: 16px;
+      margin-bottom: 6px;
+    }
+
+    .game-description {
+      font-size: 12px;
+      margin-bottom: 6px;
+    }
+
+    .game-score {
+      font-size: 12px;
+      padding: 4px 8px;
+    }
+  }
 </style>

@@ -10,32 +10,22 @@
         <div class="score-value total-score-value">⭐ {{ totalScore }}</div>
       </div>
     </div>
-    <div class="progress-info">
-      Вопрос {{ currentQuestion + 1 }} из {{ totalQuestions }}
-    </div>
+    <div class="progress-info">Вопрос {{ currentQuestion + 1 }} из {{ totalQuestions }}</div>
   </div>
 </template>
 
-<script>
-export default {
-  name: 'ScoreDisplay',
-  props: {
-    currentScore: {
-      type: Number,
-      default: 0
-    },
-    totalScore: {
-      type: Number,
-      default: 0
-    },
-    currentQuestion: {
-      type: Number,
-      default: 0
-    },
-    totalQuestions: {
-      type: Number,
-      default: 10
-    }
+<script setup lang="ts">
+  interface Props {
+    currentScore?: number;
+    totalScore?: number;
+    currentQuestion?: number;
+    totalQuestions?: number;
   }
-}
+
+  withDefaults(defineProps<Props>(), {
+    currentScore: 0,
+    totalScore: 0,
+    currentQuestion: 0,
+    totalQuestions: 10
+  });
 </script>

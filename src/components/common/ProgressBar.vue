@@ -4,14 +4,12 @@
   </div>
 </template>
 
-<script>
-export default {
-  name: 'ProgressBar',
-  props: {
-    progressPercent: {
-      type: Number,
-      default: 0
-    }
+<script setup lang="ts">
+  interface Props {
+    progressPercent?: number;
   }
-}
+
+  withDefaults(defineProps<Props>(), {
+    progressPercent: 0
+  });
 </script>

@@ -41,13 +41,17 @@ npm run test:coverage
 ## Проблемы с памятью и их решения
 
 ### Обнаруженные проблемы
+
 Некоторые тестовые файлы вызывают переполнение памяти JavaScript heap:
+
 - `mathHelpers.test.js` - избыточные циклы с большим количеством итераций
 - `mathHelpers.counting.test.js` - проблемы с функциями генерации неправильных ответов
 - `mathHelpers.multiplication.test.js` - проблемы с функциями генерации неправильных ответов
 
 ### Рабочие тестовые файлы
+
 Следующие файлы работают корректно:
+
 - `mathHelpers.decomposition.test.js` - тесты разложения чисел
 - `mathHelpers.levels.test.js` - тесты уровней умножения
 - `mathHelpers.wrongOptions.test.js` - тесты генерации неправильных вариантов
@@ -59,12 +63,15 @@ npm run test:coverage
 - `mathHelpers.memory.test.js` - тесты функций с проблемами памяти
 
 ### Рекомендации по запуску тестов
+
 1. Используйте команду с увеличенным лимитом памяти:
+
    ```bash
    set NODE_OPTIONS=--max-old-space-size=4096 && npx jest --maxWorkers=1
    ```
 
 2. Запускайте тесты по одному файлу для отладки:
+
    ```bash
    set NODE_OPTIONS=--max-old-space-size=4096 && npx jest src/utils/__tests__/mathHelpers.memory.test.js --maxWorkers=1
    ```

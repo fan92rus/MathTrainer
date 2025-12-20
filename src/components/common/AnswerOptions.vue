@@ -16,32 +16,24 @@
   </div>
 </template>
 
-<script>
-export default {
-  name: 'AnswerOptions',
-  props: {
-    options: {
-      type: Array,
-      required: true
-    },
-    correctIndex: {
-      type: Number,
-      required: true
-    },
-    answered: {
-      type: Boolean,
-      default: false
-    },
-    selectedIndex: {
-      type: Number,
-      default: null
-    }
-  },
-  emits: ['answer-selected'],
-  methods: {
-    selectAnswer(index) {
-      this.$emit('answer-selected', index)
-    }
+<script setup lang="ts">
+  interface Props {
+    options: (string | number)[];
+    correctIndex: number;
+    answered?: boolean;
+    selectedIndex?: number | null;
   }
-}
+
+  withDefaults(defineProps<Props>(), {
+    answered: false,
+    selectedIndex: null
+  });
+
+  const emit = defineEmits<{
+    answerSelected: [index: number];
+  }>();
+
+  const selectAnswer = (index: number): void => {
+    emit('answerSelected', index);
+  };
 </script>

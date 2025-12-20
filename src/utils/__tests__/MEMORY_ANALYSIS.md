@@ -3,11 +3,13 @@
 ## Обнаруженные проблемы
 
 ### 1. Проблемы с памятью в исходных тестовых файлах
+
 - `mathHelpers.test.js` - вызывал переполнение памяти
 - `mathHelpers.counting.test.js` - вызывал переполнение памяти
 - `mathHelpers.multiplication.test.js` - вызывал переполнение памяти
 
 ### 2. Успешные тестовые файлы
+
 - `mathHelpers.decomposition.test.js` - работает корректно
 - `mathHelpers.levels.test.js` - работает корректно
 - `mathHelpers.wrongOptions.test.js` - работает корректно
@@ -15,23 +17,30 @@
 ## Анализ причин
 
 ### 1. Избыточные циклы в тестах
+
 В исходных файлах было найдено множество циклов с большим количеством итераций:
+
 - `mathHelpers.test.js`: циклы с 10 итерациями для проверки генерации задач
 - Это приводило к многократному вызову функций генерации без очистки памяти
 
 ### 2. Сложные функции генерации неправильных ответов
+
 Функции `generateWrongOptions`, `generateWrongCountingAnswers`, `generateWrongMultiplicationAnswers` содержат:
+
 - Вложенные циклы while с потенциально долгим выполнением
 - Множественные вспомогательные функции
 - Генерацию случайных чисел в циклах
 
 ### 3. Проблема с количеством вариантов ответов
+
 Функция `generateDecompositionProblem` возвращает 3 варианта ответа вместо ожидаемых 4, что указывает на проблему в функциях `generateWrongAdditionOptions` или `generateWrongSubtractionOptions`.
 
 ## Решения
 
 ### 1. Создание изолированных тестов
+
 Были созданы минималистичные тестовые файлы:
+
 - `mathHelpers.minimal.test.js` - базовые функции без сложной логики
 - `mathHelpers.isolated.test.js` - тест для `generateFirstGradeDecompositionProblem`
 - `mathHelpers.counting.isolated.test.js` - тест для `generateCountingProblem`
@@ -39,10 +48,13 @@
 - `mathHelpers.multiplication.isolated.test.js` - тест для `generateMultiplicationProblem`
 
 ### 2. Уменьшение количества итераций
+
 В исходных тестах количество итераций было уменьшено с 10 до 3 для снижения нагрузки на память.
 
 ### 3. Настройка Jest для работы с ограниченной памятью
+
 Добавлены настройки для увеличения лимита памяти:
+
 ```bash
 set NODE_OPTIONS=--max-old-space-size=4096 && npx jest --maxWorkers=1
 ```
@@ -50,6 +62,7 @@ set NODE_OPTIONS=--max-old-space-size=4096 && npx jest --maxWorkers=1
 ## Результаты
 
 После применения решений все тесты успешно проходят:
+
 - 8 тестовых наборов
 - 24 теста
 - Время выполнения: ~2.4 секунды
