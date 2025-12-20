@@ -105,7 +105,7 @@
 
       // Вычисляемые свойства
       const multiplicationScore = computed(() => scoresStore.multiplicationScore);
-      
+
       // Определяем максимальный множитель на основе очков
       const maxMultiplier = computed(() => {
         const score = multiplicationScore.value;

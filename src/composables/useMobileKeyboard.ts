@@ -11,21 +11,68 @@ export function useMobileKeyboard() {
 
   // Функция обновления размеров viewport
   const updateViewport = () => {
+    console.log('=== UPDATE VIEWPORT START ===');
+
     if (window.visualViewport) {
+      const oldKeyboardState = {
+        height: keyboardHeight.value,
+        isOpen: isKeyboardOpen.value
+      };
+
       visualViewport.value = {
         width: window.visualViewport.width,
         height: window.visualViewport.height,
         offsetTop: window.visualViewport.offsetTop
       };
 
-      // Определяем высоту клавиатуры
+      // Определение высоты клавиатуры для портретного режима
       const heightDiff = window.innerHeight - window.visualViewport.height;
-      keyboardHeight.value = heightDiff > 150 ? heightDiff : 0;
-      isKeyboardOpen.value = keyboardHeight.value > 0;
+      const minKeyboardHeight = 150; // Стандартный порог для цифровой клавиатуры в портрете
+
+      console.log('Viewport debug:', {
+        'window.innerHeight': window.innerHeight,
+        'window.visualViewport.height': window.visualViewport.height,
+        heightDiff: heightDiff,
+        minKeyboardHeight: minKeyboardHeight,
+        'window.visualViewport.offsetTop': window.visualViewport.offsetTop,
+        'window.innerWidth': window.innerWidth,
+        'window.visualViewport.width': window.visualViewport.width
+      });
+
+      // Обнаружение клавиатуры - упрощенная логика для портретного режима
+      if (heightDiff > minKeyboardHeight) {
+        keyboardHeight.value = heightDiff;
+        isKeyboardOpen.value = true;
+        console.log('📱 Клавиатура обнаружена по высоте:', heightDiff);
+      } else if (window.visualViewport.offsetTop > 30) {
+        // Если клавиатура появилась, но не изменила высоту viewport (некоторые Android)
+        keyboardHeight.value = window.visualViewport.offsetTop;
+        isKeyboardOpen.value = true;
+        console.log('📱 Клавиатура обнаружена по offsetTop:', window.visualViewport.offsetTop);
+      } else {
+        keyboardHeight.value = 0;
+        isKeyboardOpen.value = false;
+        console.log('📱 Клавиатура не обнаружена');
+      }
 
       // Обновляем CSS переменную
       document.documentElement.style.setProperty('--keyboard-height', `${keyboardHeight.value}px`);
+
+      // Логируем изменения
+      if (
+        oldKeyboardState.height !== keyboardHeight.value ||
+        oldKeyboardState.isOpen !== isKeyboardOpen.value
+      ) {
+        console.log('⌨️ Изменение состояния клавиатуры:', {
+          было: oldKeyboardState,
+          стало: {
+            height: keyboardHeight.value,
+            isOpen: isKeyboardOpen.value
+          }
+        });
+      }
     } else {
+      console.log('❌ Visual Viewport API не поддерживается');
       // Fallback для старых браузеров
       visualViewport.value = {
         width: window.innerWidth,
@@ -35,6 +82,8 @@ export function useMobileKeyboard() {
       keyboardHeight.value = 0;
       isKeyboardOpen.value = false;
     }
+
+    console.log('=== UPDATE VIEWPORT END ===');
   };
 
   // Функция прокрутки к элементу
@@ -67,9 +116,22 @@ export function useMobileKeyboard() {
     }, 300);
   };
 
+  // Функция блокировки ориентации (если поддерживается)
+  const lockOrientation = () => {
+    if (screen.orientation && screen.orientation.lock) {
+      screen.orientation.lock('portrait').catch(() => {
+        // Игнорируем ошибки блокировки ориентации
+        console.log('Не удалось заблокировать ориентацию экрана');
+      });
+    }
+  };
+
   // Инициализация
   onMounted(() => {
     updateViewport();
+
+    // Пытаемся заблокировать портретный режим
+    lockOrientation();
 
     if (window.visualViewport) {
       window.visualViewport.addEventListener('resize', updateViewport);

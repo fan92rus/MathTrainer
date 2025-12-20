@@ -2,7 +2,7 @@
  * Утилиты для упражнений на уравнения (нахождение X)
  */
 
-import type { MathOperation, EquationsLevelConfig, EquationProblem, NextLevelInfo } from '@/types';
+import type { EquationsLevelConfig, EquationProblem, NextLevelInfo } from '@/types';
 import { shuffleArray } from '../common';
 
 /**
@@ -223,9 +223,7 @@ export function generateEquationProblem(
 
   // Выбираем случайный тип уравнения из доступных для этого уровня
   const equationType =
-    levelConfig.equationTypes[
-      Math.floor(Math.random() * levelConfig.equationTypes.length)
-    ];
+    levelConfig.equationTypes[Math.floor(Math.random() * levelConfig.equationTypes.length)];
 
   let expression: string;
   let correctAnswer: number;
@@ -277,14 +275,16 @@ export function generateEquationProblem(
       case 'with-multiplication':
         if (Math.random() > 0.5) {
           // n × x = result
-          const multiplier = Math.floor(Math.random() * Math.min(10, levelConfig.maxNumber / 10)) + 1;
+          const multiplier =
+            Math.floor(Math.random() * Math.min(10, levelConfig.maxNumber / 10)) + 1;
           x = Math.floor(Math.random() * 10) + 1;
           const result = multiplier * x;
           expression = `${multiplier} × x = ${result}`;
         } else {
           // x × n = result
           x = Math.floor(Math.random() * 10) + 1;
-          const multiplier = Math.floor(Math.random() * Math.min(10, levelConfig.maxNumber / x)) + 1;
+          const multiplier =
+            Math.floor(Math.random() * Math.min(10, levelConfig.maxNumber / x)) + 1;
           const result = x * multiplier;
           expression = `x × ${multiplier} = ${result}`;
         }
@@ -294,10 +294,13 @@ export function generateEquationProblem(
       default:
         // Простой fallback
         x = Math.floor(Math.random() * (levelConfig.maxNumber - 1)) + 1;
-        const defaultA = Math.floor(Math.random() * (levelConfig.maxNumber - 1)) + 1;
-        const defaultB = Math.floor(Math.random() * (levelConfig.maxNumber - defaultA)) + defaultA;
-        expression = `x + ${defaultA} = ${defaultB}`;
-        correctAnswer = defaultB - defaultA;
+        {
+          const defaultA = Math.floor(Math.random() * (levelConfig.maxNumber - 1)) + 1;
+          const defaultB =
+            Math.floor(Math.random() * (levelConfig.maxNumber - defaultA)) + defaultA;
+          expression = `x + ${defaultA} = ${defaultB}`;
+          correctAnswer = defaultB - defaultA;
+        }
     }
 
     // Извлекаем значение X из выражения для возврата

@@ -44,19 +44,14 @@ function generateWrongOptions(
   correctSecondPart: number
 ): string[] {
   const wrongOptions: string[] = [];
-  const maxAttempts = 10;
-
-  // Проверяем, что дает правильную сумму
-  const hasCorrectSum = (part1: number, part2: number): boolean => part1 + part2 === targetNumber;
-
-  // Проверяет, что это не правильный вариант
-  const isCorrectVariant = (part1: number, part2: number): boolean =>
-    part1 === correctFirstPart && part2 === correctSecondPart;
+  const _maxAttempts = 10;
 
   // Проверяет, что вариант еще не добавлен
   const isNotAlreadyAdded = (part1: number, part2: number): boolean => {
     const option = `${part1} и ${part2}`;
-    return !wrongOptions.includes(option) && option !== `${correctFirstPart} и ${correctSecondPart}`;
+    return (
+      !wrongOptions.includes(option) && option !== `${correctFirstPart} и ${correctSecondPart}`
+    );
   };
 
   // Стратегия 1: Неправильная сумма (больше)

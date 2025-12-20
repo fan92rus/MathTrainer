@@ -145,7 +145,7 @@ function generateWrongAdditionOptions(num1: number, num2: number, correctOption:
   // Стратегия 3: Используем другие числа близкие к правильным
   if (num2 > 2) {
     // Создаем варианты с небольшими изменениями
-    for (let offset of [-1, 1, 2]) {
+    for (const offset of [-1, 1, 2]) {
       const modifiedNum2 = num2 + offset;
       if (modifiedNum2 > 0 && modifiedNum2 !== num2) {
         // Проверяем, не создает ли это переход через десяток
@@ -165,7 +165,7 @@ function generateWrongAdditionOptions(num1: number, num2: number, correctOption:
   }
 
   // Фильтруем и возвращаем до 3 уникальных вариантов
-  let filtered = wrongOptions.filter((opt, index, arr) => arr.indexOf(opt) === index);
+  const filtered = wrongOptions.filter((opt, index, arr) => arr.indexOf(opt) === index);
 
   // Если вариантов меньше 3, добавляем простые варианты
   while (filtered.length < 3) {
@@ -245,7 +245,7 @@ export function generateWrongSubtractionOptions(
 
   // Стратегия 5: Изменить вычитаемое на небольшую величину
   if (num2 > 1) {
-    for (let offset of [1, -1, 2]) {
+    for (const offset of [1, -1, 2]) {
       const modifiedNum2 = num2 + offset;
       if (modifiedNum2 > 0 && modifiedNum2 < num1 && modifiedNum2 !== num2) {
         const option = `${num1} - ${modifiedNum2}`;
@@ -258,7 +258,7 @@ export function generateWrongSubtractionOptions(
   }
 
   // Фильтруем и возвращаем до 3 уникальных вариантов
-  let filtered = wrongOptions.filter((opt, index, arr) => arr.indexOf(opt) === index);
+  const filtered = wrongOptions.filter((opt, index, arr) => arr.indexOf(opt) === index);
 
   // Если вариантов меньше 3, добавляем простые варианты
   while (filtered.length < 3) {
@@ -274,11 +274,28 @@ export function generateWrongSubtractionOptions(
 /**
  * Генерирует задачу на разложение чисел
  */
-export function generateDecompositionProblem(maxNumber: number | null = null): MathProblem {
-  // Если maxNumber не указан, используем 99 для двузначных чисел
-  const effectiveMax = maxNumber || 99;
+export function generateDecompositionProblem(
+  maxNumber: number | null = null,
+  level: number = 1
+): MathProblem {
+  // Если maxNumber не указан, используем 100 для двузначных чисел
+  const effectiveMax = maxNumber || 100;
   const minNumber = 10; // Минимум 10 для двузначных чисел
   const maxAttempts = 50; // Увеличим количество попыток для нахождения подходящих чисел
+
+  // Вычисляем вероятность двузначного второго числа на основе уровня (плавное увеличение)
+  const twoDigitProbabilities: Record<number, number> = {
+    1: 0.05, // Уровень 1: 5% (0-49 очков)
+    2: 0.1, // Уровень 2: 10% (50-99 очков)
+    3: 0.15, // Уровень 3: 15% (100-149 очков)
+    4: 0.2, // Уровень 4: 20% (150-199 очков)
+    5: 0.25, // Уровень 5: 25% (200-249 очков)
+    6: 0.35, // Уровень 6: 35% (250-299 очков)
+    7: 0.45, // Уровень 7: 45% (300-349 очков)
+    8: 0.55, // Уровень 8: 55% (350-399 очков)
+    9: 0.65 // Уровень 9: 65% (400+ очков)
+  };
+  const twoDigitProbability = twoDigitProbabilities[level] || 0.05;
 
   for (let attempt = 0; attempt < maxAttempts; attempt++) {
     // Выбираем операцию
@@ -301,7 +318,14 @@ export function generateDecompositionProblem(maxNumber: number | null = null): M
       const minNeeded = 10 - (num1 % 10) + 1; // Минимальное число для перехода через десяток
       const maxPossible = Math.min(9, effectiveMax - num1); // Максимальное однозначное число
 
-      if (minNeeded <= maxPossible) {
+      // Решаем, будет ли num2 двузначным на основе уровня
+      const useTwoDigit = Math.random() < twoDigitProbability;
+
+      if (useTwoDigit && minNeeded > maxPossible) {
+        // Генерируем двузначное число без ограничений (только чтобы сумма не превышала максимум)
+        const maxTwoDigit = effectiveMax - num1;
+        num2 = Math.floor(Math.random() * (maxTwoDigit - 11)) + 11;
+      } else if (minNeeded <= maxPossible) {
         num2 = Math.floor(Math.random() * (maxPossible - minNeeded + 1)) + minNeeded;
       } else {
         // Если не можем найти однозначное число, пробуем двузначное
@@ -328,7 +352,14 @@ export function generateDecompositionProblem(maxNumber: number | null = null): M
       // Генерируем num2 такое, чтобы был переход через десяток при вычитании
       const maxForTransition = num1 % 10; // Максимальное число для перехода через десяток
 
-      if (maxForTransition > 0) {
+      // Решаем, будет ли num2 двузначным на основе уровня
+      const useTwoDigit = Math.random() < twoDigitProbability;
+
+      if (useTwoDigit && maxForTransition === 0) {
+        // Генерируем двузначное число без ограничений (только чтобы num2 < num1)
+        const maxTwoDigit = num1 - 1;
+        num2 = Math.floor(Math.random() * (maxTwoDigit - 11)) + 11;
+      } else if (maxForTransition > 0) {
         num2 = Math.floor(Math.random() * maxForTransition) + 1;
       } else {
         num2 = Math.floor(Math.random() * (num1 - 11)) + 11; // Двузначное число
@@ -342,7 +373,7 @@ export function generateDecompositionProblem(maxNumber: number | null = null): M
     const hasDecomposition = correctOption.split(isAddition ? ' + ' : ' - ').length > 2;
     const hasNoZeros = !correctOption.includes('+ 0') && !correctOption.includes(' - 0');
     const wrongOptionsHaveNoZeros = wrongOptions.every(
-      opt => !opt.includes('+ 0') && !opt.includes(' - 0')
+      (opt) => !opt.includes('+ 0') && !opt.includes(' - 0')
     );
 
     if (hasDecomposition && hasNoZeros && wrongOptionsHaveNoZeros) {

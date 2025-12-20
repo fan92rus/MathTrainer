@@ -62,12 +62,14 @@
           <div :class="['feedback', isCorrect ? 'correct' : 'incorrect']">
             <div class="feedback-icon">{{ isCorrect ? '✓' : '✗' }}</div>
             <div class="feedback-text">
-              {{ isCorrect ? 'Правильно!' : `Неправильно. Правильный ответ: ${currentProblem?.correctAnswer}` }}
+              {{
+                isCorrect
+                  ? 'Правильно!'
+                  : `Неправильно. Правильный ответ: ${currentProblem?.correctAnswer}`
+              }}
             </div>
           </div>
-          <button class="next-button" @click="nextQuestion">
-            Следующий вопрос
-          </button>
+          <button class="next-button" @click="nextQuestion">Следующий вопрос</button>
         </div>
 
         <ProgressBar :progress-percent="progressPercent" />
@@ -93,7 +95,6 @@
   import { useScoresStore } from '../store/scores';
   import { useGameLogic } from '../composables/useGameLogic';
   import {
-    generateEquationProblem,
     getEquationsLevelConfig,
     getNextEquationsLevel,
     generateEquationProblemManual
@@ -131,9 +132,7 @@
         totalAnswers,
         initializeGame,
         selectAnswer,
-        generateAllProblems,
         problems,
-        manualMode,
         setManualMode
       } = useGameLogic(totalQuestions);
 
@@ -180,7 +179,7 @@
           points * (currentLevelConfig.value.pointsPerCorrect / 10)
         );
 
-        selectAnswer(0, 0, (points) => {
+        selectAnswer(0, 0, () => {
           scoresStore.updateEquationsScore(adjustedPoints);
         });
 

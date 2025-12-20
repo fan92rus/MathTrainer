@@ -1,7 +1,4 @@
-import {
-  generateDecompositionProblem,
-  generateFirstGradeDecompositionProblem
-} from '../math';
+import { generateDecompositionProblem, generateFirstGradeDecompositionProblem } from '../math';
 import type { FirstGradeDecompositionProblem } from '../math';
 
 describe('Math Helpers  - Zero Values in Decomposition', () => {

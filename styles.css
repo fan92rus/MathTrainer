@@ -505,5 +505,37 @@ body {
     .options-grid {
         margin: 15px 0;
     }
-    
+
+}
+
+/* Responsive стили для мобильных устройств */
+@media (max-width: 768px) {
+    /* app-container - убираем padding и делаем полную ширину */
+    .app-container {
+        width: 100vw;
+        padding: 0;
+    }
+
+    /* game-container - полная ширина на мобильных */
+    .game-container {
+        width: 100vw;
+        max-width: none;
+        border-radius: 0;
+        padding: 15px;
+        margin: 0;
+        height: 100vh;
+        max-height: 100vh;
+    }
+
+    /* Убираем декоративную линию на мобильных */
+    .game-container::before {
+        display: none;
+    }
+}
+
+/* Максимально мобильные устройства (меньше 480px) */
+@media (max-width: 480px) {
+    .game-container {
+        padding: 10px;
+    }
 }

@@ -2,7 +2,7 @@
  * Утилиты для упражнений на умножение
  */
 
-import type { MathOperation, MultiplicationProblem, MultiplicationLevel } from '@/types';
+import type { MultiplicationProblem, MultiplicationLevel } from '@/types';
 import { shuffleArray } from '../common';
 
 /**
@@ -66,11 +66,7 @@ function generateWrongMultiplicationAnswers(
     }
 
     // Проверяем, что ответ не дублируется и не отрицательный
-    if (
-      wrongAnswer >= 0 &&
-      !wrongAnswers.includes(wrongAnswer) &&
-      wrongAnswer !== correctAnswer
-    ) {
+    if (wrongAnswer >= 0 && !wrongAnswers.includes(wrongAnswer) && wrongAnswer !== correctAnswer) {
       wrongAnswers.push(wrongAnswer);
     }
   }
@@ -137,7 +133,7 @@ export function getAvailableMultiplicationLevels(totalScore: number): Multiplica
   }
 
   // Add all levels with appropriate availability flag
-  levelConfigs.forEach(config => {
+  levelConfigs.forEach((config) => {
     levels.push({
       ...config,
       available: totalScore >= config.requiredScore

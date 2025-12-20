@@ -120,7 +120,7 @@
       const isGradeSelected = computed(() => settingsStore.isGradeSelected);
       const selectedGrade = computed(() => settingsStore.selectedGrade);
       const gradeName = computed(() => getGradeName(selectedGrade.value));
-      
+
       // Получаем текущую четверть напрямую, а не из хранилища
       const currentQuarter = computed(() => getCurrentQuarter());
       const quarterName = computed(() => getQuarterName(currentQuarter.value));

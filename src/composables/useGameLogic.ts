@@ -3,10 +3,13 @@ import type { MathProblem, EquationProblem, GameResult } from '@/types';
 import { calculateExercisePoints } from '@/utils/gradeHelpers';
 
 // Тип для функции-генератора задач
-type ProblemGenerator = (previousX?: number | null) => MathProblem | EquationProblem;
+type ProblemGenerator = (
+  previousX?: number | null,
+  questionIndex?: number
+) => MathProblem | EquationProblem;
 
 // Тип для колбэка при правильном ответе
- 
+
 type OnCorrectCallback = (_points: number) => void;
 
 export interface UseGameLogic {
@@ -151,12 +154,12 @@ export function useGameLogic(totalQuestions: number = 10): UseGameLogic {
     let previousX: number | null = null;
 
     for (let i = 0; i < totalQuestions; i++) {
-      // Передаем предыдущее значение X в генератор
-      const problem = generator(previousX);
+      // Передаем предыдущее значение X и индекс вопроса в генератор
+      const problem = generator(previousX, i);
       addProblem(problem);
 
       // Обновляем предыдущее значение X для следующей итерации
-      previousX = ('xValue' in problem) ? (problem as EquationProblem).xValue : null;
+      previousX = 'xValue' in problem ? (problem as EquationProblem).xValue : null;
     }
   };
 
@@ -278,7 +281,7 @@ export function useSound(options: Partial<UseSoundOptions> = {}) {
 
     // Создаем аудио контекст для генерации звуков
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-const AudioContext = window.AudioContext || (window as any).webkitAudioContext;
+    const AudioContext = window.AudioContext || (window as any).webkitAudioContext;
     const audioContext = new AudioContext();
     const oscillator = audioContext.createOscillator();
     const gainNode = audioContext.createGain();

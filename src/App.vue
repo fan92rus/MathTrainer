@@ -43,7 +43,7 @@
 </script>
 
 <style>
-@import './assets/css/main.css';
+  @import './assets/css/main.css';
 
   .app-container {
     font-family: 'Rubik', sans-serif;

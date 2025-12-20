@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Тест клавиатуры</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            background: #f0f0f0;
+        }
+        .info {
+            background: white;
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .test-input {
+            width: 100%;
+            padding: 15px;
+            font-size: 18px;
+            margin: 10px 0;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+        }
+        .test-input:focus {
+            border-color: #007bff;
+            outline: none;
+        }
+        button {
+            padding: 15px 30px;
+            font-size: 16px;
+            background: #007bff;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            margin: 10px 0;
+        }
+        .hidden {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <h1>🧪 Тестирование мобильной клавиатуры</h1>
+
+    <div class="info">
+        <h2>Информация об устройстве:</h2>
+        <div id="device-info"></div>
+    </div>
+
+    <div class="info">
+        <h2>Состояние Visual Viewport:</h2>
+        <div id="viewport-info"></div>
+    </div>
+
+    <div class="info">
+        <h2>Тестовое поле ввода:</h2>
+        <input type="number" class="test-input" placeholder="Нажмите сюда, чтобы открыть клавиатуру" id="testInput">
+
+        <button id="testButton">Кнопка Проверить (должна скрываться)</button>
+    </div>
+
+    <div class="info">
+        <h2>Лог событий:</h2>
+        <div id="event-log" style="max-height: 200px; overflow-y: auto; font-family: monospace; font-size: 12px;"></div>
+    </div>
+
+    <script>
+        let keyboardHeight = 0;
+        let isKeyboardOpen = false;
+
+        const log = (message) => {
+            const timestamp = new Date().toLocaleTimeString();
+            const logElement = document.getElementById('event-log');
+            logElement.innerHTML += `<div>[${timestamp}] ${message}</div>`;
+            logElement.scrollTop = logElement.scrollHeight;
+        };
+
+        const updateDeviceInfo = () => {
+            const info = document.getElementById('device-info');
+            info.innerHTML = `
+                <strong>User Agent:</strong> ${navigator.userAgent}<br>
+                <strong>Touch:</strong> ${'ontouchstart' in window ? 'Да' : 'Нет'}<br>
+                <strong>Max Touch Points:</strong> ${navigator.maxTouchPoints}<br>
+                <strong>Внутренняя высота:</strong> ${window.innerHeight}px<br>
+                <strong>Внутренняя ширина:</strong> ${window.innerWidth}px<br>
+                <strong>Visual Viewport API:</strong> ${window.visualViewport ? 'Поддерживается' : 'Не поддерживается'}<br>
+                <strong>Screen Orientation API:</strong> ${screen.orientation ? 'Поддерживается' : 'Не поддерживается'}
+            `;
+        };
+
+        const updateViewportInfo = () => {
+            const info = document.getElementById('viewport-info');
+
+            if (window.visualViewport) {
+                const heightDiff = window.innerHeight - window.visualViewport.height;
+                const minKeyboardHeight = 150;
+
+                keyboardHeight = heightDiff > minKeyboardHeight ? heightDiff :
+                               (window.visualViewport.offsetTop > 30 ? window.visualViewport.offsetTop : 0);
+                isKeyboardOpen = keyboardHeight > 0;
+
+                info.innerHTML = `
+                    <strong>Visual Viewport ширина:</strong> ${window.visualViewport.width}px<br>
+                    <strong>Visual Viewport высота:</strong> ${window.visualViewport.height}px<br>
+                    <strong>Visual Viewport offsetTop:</strong> ${window.visualViewport.offsetTop}px<br>
+                    <strong>Разница высот:</strong> ${heightDiff}px<br>
+                    <strong>Высота клавиатуры:</strong> ${keyboardHeight}px<br>
+                    <strong>Клавиатура открыта:</strong> ${isKeyboardOpen ? 'Да' : 'Нет'}
+                `;
+            } else {
+                info.innerHTML = '<strong>Visual Viewport API не поддерживается</strong>';
+                keyboardHeight = 0;
+                isKeyboardOpen = false;
+            }
+
+            // Обновляем видимость кнопки
+            const button = document.getElementById('testButton');
+            const isMobile = /Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+            const hasTouch = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+            const isPortrait = window.innerHeight >= window.innerWidth;
+
+            const shouldHide = (isMobile || hasTouch) && isPortrait && isKeyboardOpen && keyboardHeight >= 150;
+
+            button.classList.toggle('hidden', shouldHide);
+
+            log(`Кнопка ${shouldHide ? 'скрыта' : 'показана'} (мобильный: ${isMobile || hasTouch}, портрет: ${isPortrait}, клавиатура: ${isKeyboardOpen}, высота: ${keyboardHeight}px)`);
+        };
+
+        const updateViewport = () => {
+            log('Обновление viewport...');
+            updateViewportInfo();
+        };
+
+        // Инициализация
+        document.addEventListener('DOMContentLoaded', () => {
+            updateDeviceInfo();
+            updateViewportInfo();
+            log('Страница загружена');
+
+            // Слушатели событий
+            if (window.visualViewport) {
+                window.visualViewport.addEventListener('resize', updateViewport);
+                window.visualViewport.addEventListener('scroll', updateViewport);
+                log('Visual Viewport слушатели добавлены');
+            }
+
+            window.addEventListener('resize', updateViewport);
+            window.addEventListener('scroll', updateViewport);
+
+            // Слушатели фокуса на input
+            document.getElementById('testInput').addEventListener('focus', () => {
+                log('Input получил фокус');
+                setTimeout(updateViewport, 100); // Даем время на появление клавиатуры
+            });
+
+            document.getElementById('testInput').addEventListener('blur', () => {
+                log('Input потерял фокус');
+                setTimeout(updateViewport, 100);
+            });
+
+            // Блокировка ориентации если возможно
+            if (screen.orientation && screen.orientation.lock) {
+                screen.orientation.lock('portrait').catch(() => {
+                    log('Не удалось заблокировать ориентацию');
+                });
+            }
+        });
+    </script>
+</body>
+</html>

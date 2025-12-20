@@ -141,7 +141,7 @@ export function isTooCloseToOthers(
   existingAnswers: number[],
   minDistance: number = 2
 ): boolean {
-  return existingAnswers.some(existing => Math.abs(answer - existing) < minDistance);
+  return existingAnswers.some((existing) => Math.abs(answer - existing) < minDistance);
 }
 
 /**

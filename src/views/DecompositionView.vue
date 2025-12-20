@@ -64,7 +64,7 @@
   </div>
 </template>
 
-<script>
+<script lang="ts">
   import { onMounted, computed } from 'vue';
   import { useRouter } from 'vue-router';
   import { useScoresStore } from '../store/scores';
@@ -112,10 +112,26 @@
       } = useGameLogic(totalQuestions);
 
       // Загружаем общий счет
-      const totalScore = scoresStore.decompositionScore;
+      const totalScore = computed(() => scoresStore.decompositionScore);
 
       // Получаем максимальное число из настроек класса
       const maxNumber = computed(() => settingsStore.maxDecompositionNumber);
+
+      // Определяем уровень на основе общего количества очков (как в уравнениях)
+      const getLevelByScore = (score: number): number => {
+        if (score >= 400) return 9;    // 400+ очков: уровень 9
+        if (score >= 350) return 8;    // 350-399 очков: уровень 8
+        if (score >= 300) return 7;    // 300-349 очков: уровень 7
+        if (score >= 250) return 6;    // 250-299 очков: уровень 6
+        if (score >= 200) return 5;    // 200-249 очков: уровень 5
+        if (score >= 150) return 4;    // 150-199 очков: уровень 4
+        if (score >= 100) return 3;    // 100-149 очков: уровень 3
+        if (score >= 50) return 2;     // 50-99 очков: уровень 2
+        return 1;                      // 0-49 очков: уровень 1
+      };
+
+      // Текущий уровень на основе общего счета
+      const currentLevelByScore = computed(() => getLevelByScore(totalScore.value));
 
       // Обработчик выбора ответа
       const handleAnswerSelected = (index) => {
@@ -128,7 +144,11 @@
       // Перезапуск игры
       const restartGame = () => {
         initializeGame();
-        generateAllProblems(() => generateDecompositionProblem(maxNumber.value));
+        // Генерируем задачи с учетом уровня на основе очков
+        const level = currentLevelByScore.value;
+        generateAllProblems(() =>
+          generateDecompositionProblem(maxNumber.value, level)
+        );
       };
 
       // Переход на главную

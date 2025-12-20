@@ -107,7 +107,7 @@ describe('Math Helpers - Decomposition', () => {
         expect(correctOption).not.toContain(' - 0');
 
         // Неправильные ответы тоже не должны содержать нулей
-        problem.options.forEach(option => {
+        problem.options.forEach((option) => {
           expect(option).not.toContain('+ 0');
           expect(option).not.toContain(' - 0');
         });

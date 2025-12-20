@@ -13,8 +13,8 @@ import { shuffleArray } from '../common';
  * @returns Объект математической задачи
  */
 export function generateCountingProblem(
-  currentScore: number,
-  minNum: number = 1,
+  _currentScore: number,
+  _minNum: number = 1,
   maxNum: number = 10
 ): MathProblem {
   // Генерируем числа с учетом ограничений
@@ -65,7 +65,7 @@ export function generateCountingProblem(
  * @param _isAddition Является ли операция сложением (не используется)
  * @returns Массив неправильных ответов
  */
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
+
 export function generateWrongCountingAnswers(
   correctAnswer: number,
   _isAddition: boolean = true
@@ -132,11 +132,7 @@ export function generateWrongCountingAnswers(
     }
 
     // Проверяем, что ответ не отрицательный и не дублируется
-    if (
-      wrongAnswer >= 0 &&
-      !wrongAnswers.includes(wrongAnswer) &&
-      wrongAnswer !== correctAnswer
-    ) {
+    if (wrongAnswer >= 0 && !wrongAnswers.includes(wrongAnswer) && wrongAnswer !== correctAnswer) {
       wrongAnswers.push(wrongAnswer);
     }
   }

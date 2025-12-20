@@ -1,9 +1,7 @@
 <template>
   <transition name="slide-fade">
     <div v-if="show" class="step-by-step-solution">
-      <div class="solution-title">
-        📋 Пошаговое решение:
-      </div>
+      <div class="solution-title">📋 Пошаговое решение:</div>
       <div class="solution-steps">
         <div v-for="(step, index) in steps" :key="index" class="step">
           <span class="step-number">{{ index + 1 }}.</span>

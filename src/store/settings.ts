@@ -42,10 +42,10 @@ export const useSettingsStore = defineStore('settings', {
 
     // Получает максимальное число для примеров на разложение
     maxDecompositionNumber: (state): number => {
-      if (!state.selectedGrade) return 20;
+      if (!state.selectedGrade) return 100;
 
       const settings = getDifficultySettings(state.selectedGrade, state.currentQuarter);
-      return settings ? settings.maxDecompositionNumber : 20;
+      return settings ? settings.maxDecompositionNumber : 100;
     }
   },
 
