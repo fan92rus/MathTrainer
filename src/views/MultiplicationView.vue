@@ -77,7 +77,7 @@
   import { ref, computed, onMounted } from 'vue';
   import { useRouter } from 'vue-router';
   import { useScoresStore } from '../store/scores';
-  import { generateMultiplicationProblem } from '../utils/mathHelpers';
+  import { generateMultiplicationProblem } from '../utils/math';
   import { calculateExercisePoints } from '../utils/gradeHelpers';
   import GameOver from '../components/common/GameOver.vue';
 

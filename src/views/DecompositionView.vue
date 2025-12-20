@@ -52,7 +52,7 @@
   import { useScoresStore } from '../store/scores';
   import { useSettingsStore } from '../store/settings';
   import { useGameLogic } from '../composables/useGameLogic';
-  import { generateDecompositionProblem } from '../utils/mathHelpers';
+  import { generateDecompositionProblem } from '../utils/math';
     import ScoreDisplay from '../components/common/ScoreDisplay.vue';
   import ProgressBar from '../components/common/ProgressBar.vue';
   import StarRating from '../components/common/StarRating.vue';

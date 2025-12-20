@@ -7,8 +7,8 @@ import {
   generateWrongSubtractionOptions,
   getAvailableMultiplicationLevels,
   shuffleArray
-} from '../mathHelpers';
-import type { FirstGradeDecompositionProblem, MultiplicationLevel } from '../mathHelpers';
+} from '../math';
+import type { FirstGradeDecompositionProblem, MultiplicationLevel } from '../math';
 
 // Мокаем Math.random для предсказуемых результатов
 const mockMathRandom = (values: number[]): void => {

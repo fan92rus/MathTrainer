@@ -51,7 +51,7 @@
   import { useRouter } from 'vue-router';
   import { useScoresStore } from '../store/scores';
   import { useGameLogic } from '../composables/useGameLogic';
-  import { generateFirstGradeDecompositionProblem } from '../utils/mathHelpers';
+  import { generateFirstGradeDecompositionProblem } from '../utils/math';
     import ScoreDisplay from '../components/common/ScoreDisplay.vue';
   import ProgressBar from '../components/common/ProgressBar.vue';
   import StarRating from '../components/common/StarRating.vue';

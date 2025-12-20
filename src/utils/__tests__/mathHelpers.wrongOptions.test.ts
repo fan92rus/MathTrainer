@@ -1,4 +1,4 @@
-import { generateWrongSubtractionOptions } from '../mathHelpers';
+import { generateWrongSubtractionOptions } from '../math';
 
 describe('Math Helpers  - Wrong Options Generation', () => {
   beforeEach(() => {

@@ -2,7 +2,7 @@
  * Базовые типы для математических операций
  * Определяет четыре основных математических действия
  */
-export type MathOperation = 'addition' | 'subtraction' | 'multiplication' | 'division';
+export type MathOperation = 'addition' | 'subtraction' | 'multiplication' | 'division' | 'equation';
 
 /**
  * Доступные классы обучения
@@ -174,4 +174,85 @@ export interface WrongAnswerStrategy {
   type: 'close' | 'digit_error' | 'tens_error' | 'double_half' | 'deceptive';
   /** Вес стратегии (от 0 до 1) для частоты использования */
   weight: number;
+}
+
+/**
+ * Тип для результата генерации разложения числа для 1 класса
+ */
+export interface FirstGradeDecompositionProblem {
+  expression: string;
+  options: string[];
+  correctIndex: number;
+  targetNumber: number;
+  correctDecomposition: [number, number];
+}
+
+/**
+ * Тип для конфигурации уровня умножения
+ */
+export interface MultiplicationLevel {
+  multiplier: number;
+  maxMultiplier: number;
+  requiredScore: number;
+  level: number;
+  description: string;
+  examples: string[];
+  available: boolean;
+  name: string;
+  pointsPerCorrect: number;
+}
+
+/**
+ * Интерфейс для задачи на умножение
+ */
+export interface MultiplicationProblem {
+  expression: string;
+  operation: MathOperation;
+  num1: number;
+  num2: number;
+  correctAnswer: number;
+  options: string[];
+  correctIndex: number;
+  difficulty: number;
+  maxMultiplier: number;
+}
+
+/**
+ * Интерфейс для конфигурации уровня уравнений
+ */
+export interface EquationsLevelConfig {
+  level: number;
+  maxNumber: number;
+  minNumber: number;
+  equationTypes: Array<'simple' | 'with-parentheses' | 'with-multiplication'>;
+  description: string;
+  example: string;
+  complexity: number;
+  requiredScore?: number;
+}
+
+/**
+ * Интерфейс для информации о следующем уровне
+ */
+export interface NextLevelInfo {
+  currentLevel: number;
+  nextLevel: number | null;
+  scoreNeeded: number;
+  nextLevelConfig: EquationsLevelConfig | null;
+}
+
+/**
+ * Интерфейс для задачи на уравнение
+ */
+export interface EquationProblem {
+  expression: string;
+  operation: MathOperation;
+  num1: number;
+  num2: number;
+  correctAnswer: number;
+  options: string[];
+  correctIndex: number;
+  difficulty: number;
+  xValue: number;
+  equationType: string;
 }

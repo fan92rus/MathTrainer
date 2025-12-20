@@ -1,5 +1,5 @@
-import { generateCountingProblem } from '../mathHelpers';
-import type { MathProblem } from '@/types';
+import { generateCountingProblem } from '../math';
+import type { MathProblem } from '../math';
 
 describe('Math Helpers  - Counting Isolated Tests', () => {
   test('generateCountingProblem', () => {

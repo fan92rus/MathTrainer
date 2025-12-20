@@ -2,8 +2,8 @@ import {
   generateDecompositionProblem,
   generateFirstGradeDecompositionProblem,
   shuffleArray
-} from '../mathHelpers';
-import type { MathProblem } from '@/types';
+} from '../math';
+import type { MathProblem } from '../math';
 
 // Мокаем Math.random для предсказуемых результатов
 const mockMathRandom = (values: number[]): void => {

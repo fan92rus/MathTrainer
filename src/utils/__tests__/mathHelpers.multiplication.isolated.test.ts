@@ -1,5 +1,5 @@
-import { generateMultiplicationProblem } from '../mathHelpers';
-import type { MultiplicationProblem } from '../mathHelpers';
+import { generateMultiplicationProblem } from '../math';
+import type { MultiplicationProblem } from '../math';
 
 describe('Math Helpers  - Multiplication Isolated Tests', () => {
   test('generateMultiplicationProblem', () => {

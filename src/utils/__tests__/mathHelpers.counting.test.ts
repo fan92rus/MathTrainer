@@ -1,5 +1,5 @@
-import { generateCountingProblem, generateWrongCountingAnswers } from '../mathHelpers';
-import type { MathProblem } from '@/types';
+import { generateCountingProblem, generateWrongCountingAnswers } from '../math';
+import type { MathProblem } from '../math';
 
 // Мокаем Math.random для предсказуемых результатов
 const mockMathRandom = (values: number[]): void => {

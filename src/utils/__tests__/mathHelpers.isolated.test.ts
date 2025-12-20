@@ -1,5 +1,5 @@
-import { generateFirstGradeDecompositionProblem } from '../mathHelpers';
-import type { FirstGradeDecompositionProblem } from '../mathHelpers';
+import { generateFirstGradeDecompositionProblem } from '../math';
+import type { FirstGradeDecompositionProblem } from '../math';
 
 describe('Math Helpers  - Isolated Tests', () => {
   test('generateFirstGradeDecompositionProblem', () => {

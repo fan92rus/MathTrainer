@@ -1,4 +1,4 @@
-import { generateWrongCountingAnswers, generateWrongSubtractionOptions } from '../mathHelpers';
+import { generateWrongCountingAnswers, generateWrongSubtractionOptions } from '../math';
 
 describe('Math Helpers  - Memory Tests', () => {
   test('generateWrongCountingAnswers', () => {

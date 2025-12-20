@@ -1,8 +1,8 @@
 import {
   generateDecompositionProblem,
   generateFirstGradeDecompositionProblem
-} from '../mathHelpers';
-import type { FirstGradeDecompositionProblem } from '../mathHelpers';
+} from '../math';
+import type { FirstGradeDecompositionProblem } from '../math';
 
 describe('Math Helpers  - Zero Values in Decomposition', () => {
   test('генерация разложения не должна содержать нули в выражениях', () => {

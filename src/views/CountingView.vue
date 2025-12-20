@@ -50,7 +50,7 @@
   import { useScoresStore } from '../store/scores';
   import { useSettingsStore } from '../store/settings';
   import { useGameLogic } from '../composables/useGameLogic';
-  import { generateCountingProblem } from '../utils/mathHelpers';
+  import { generateCountingProblem } from '../utils/math';
     import ScoreDisplay from '../components/common/ScoreDisplay.vue';
   import ProgressBar from '../components/common/ProgressBar.vue';
   import StarRating from '../components/common/StarRating.vue';

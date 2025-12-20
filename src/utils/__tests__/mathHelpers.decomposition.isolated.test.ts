@@ -1,5 +1,5 @@
-import { generateDecompositionProblem } from '../mathHelpers';
-import type { MathProblem } from '@/types';
+import { generateDecompositionProblem } from '../math';
+import type { MathProblem } from '../math';
 
 describe('Math Helpers  - Decomposition Isolated Tests', () => {
   test('generateDecompositionProblem', () => {

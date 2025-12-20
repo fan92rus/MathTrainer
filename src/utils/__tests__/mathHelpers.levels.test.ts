@@ -1,5 +1,5 @@
-import { getAvailableMultiplicationLevels } from '../mathHelpers';
-import type { MultiplicationLevel } from '../mathHelpers';
+import { getAvailableMultiplicationLevels } from '../math';
+import type { MultiplicationLevel } from '../math';
 
 describe('Math Helpers  - Multiplication Levels', () => {
   describe('getAvailableMultiplicationLevels', () => {
@@ -23,16 +23,16 @@ describe('Math Helpers  - Multiplication Levels', () => {
       const levels: MultiplicationLevel[] = getAvailableMultiplicationLevels(100);
 
       // Уровень 2 всегда доступен
-      const level2 = levels.find((l: MultiplicationLevel) => l.multiplier === 2);
-      expect(level2?.available).toBe(true);
+      const level2 = levels.find((l: MultiplicationLevel) => l.maxMultiplier === 2);
+      expect(level2?.requiredScore).toBe(0);
 
-      // Уровень 3 доступен после 50 очков
-      const level3 = levels.find((l: MultiplicationLevel) => l.multiplier === 3);
-      expect(level3?.requiredScore).toBe(50);
+      // Уровень 3 доступен после 30 очков
+      const level3 = levels.find((l: MultiplicationLevel) => l.maxMultiplier === 3);
+      expect(level3?.requiredScore).toBe(30);
 
-      // Уровень 4 доступен после 150 очков
-      const level4 = levels.find((l: MultiplicationLevel) => l.multiplier === 4);
-      expect(level4?.requiredScore).toBe(150);
+      // Уровень 4 доступен после 60 очков
+      const level4 = levels.find((l: MultiplicationLevel) => l.maxMultiplier === 4);
+      expect(level4?.requiredScore).toBe(60);
     });
 
     test('правильно определяет количество уровней', () => {

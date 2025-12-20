@@ -3,8 +3,8 @@
  */
 
 // Импортируем необходимые функции
-import { shuffleArray, generateFirstGradeDecompositionProblem } from '@/utils/mathHelpers';
-import type { FirstGradeDecompositionProblem } from '@/utils/mathHelpers';
+import { shuffleArray, generateFirstGradeDecompositionProblem } from '@/utils/math';
+import type { FirstGradeDecompositionProblem } from '@/types';
 
 describe('Math Functions Tests', () => {
   describe('shuffleArray', () => {
