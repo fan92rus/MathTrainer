@@ -10,6 +10,9 @@ module.exports = {
   transform: {
     '^.+\\.vue$': '@vue/vue3-jest',
     '^.+\\.(js|jsx)$': 'babel-jest',
+    '^.+\\.(ts|tsx)$': ['ts-jest', {
+      tsconfig: 'tsconfig.test.json'
+    }]
   },
   moduleFileExtensions: ['js', 'json', 'vue', 'ts', 'tsx'],
   collectCoverageFrom: [

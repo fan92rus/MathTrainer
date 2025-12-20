@@ -1,8 +1,9 @@
-import { generateFirstGradeDecompositionProblem } from '../mathHelpers.js';
+import { generateFirstGradeDecompositionProblem } from '../mathHelpers';
+import type { FirstGradeDecompositionProblem } from '../mathHelpers';
 
-describe('Math Helpers - Isolated Tests', () => {
+describe('Math Helpers  - Isolated Tests', () => {
   test('generateFirstGradeDecompositionProblem', () => {
-    const problem = generateFirstGradeDecompositionProblem();
+    const problem: FirstGradeDecompositionProblem = generateFirstGradeDecompositionProblem();
 
     expect(problem).toHaveProperty('targetNumber');
     expect(problem).toHaveProperty('correctDecomposition');

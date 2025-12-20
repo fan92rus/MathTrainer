@@ -3,21 +3,22 @@
  */
 
 // Импортируем функции для тестирования
-const { getGradeName, getQuarterName, calculateExercisePoints } = require('../utils/gradeHelpers');
+import { getGradeName, getQuarterName, calculateExercisePoints } from '@/utils/gradeHelpers';
 
 describe('Simple Tests', () => {
   test('should return correct grade name for grade 1', () => {
-    const result = getGradeName(1);
+    const result: string = getGradeName(1);
     expect(result).toBe('1 класс');
   });
 
   test('should return correct grade name for grade 2', () => {
-    const result = getGradeName(2);
+    const result: string = getGradeName(2);
     expect(result).toBe('2 класс');
   });
 
   test('should return unknown for invalid grade', () => {
-    const result = getGradeName(0);
+    // GradeLevel is 1 | 2 | 3 | 4, so we test with type assertion
+    const result: string = getGradeName(0 as any);
     expect(result).toBe('Неизвестный класс');
   });
 
@@ -29,7 +30,7 @@ describe('Simple Tests', () => {
   });
 
   test('should return unknown quarter for invalid quarter', () => {
-    const result = getQuarterName(0);
+    const result: string = getQuarterName(0);
     expect(result).toBe('Неизвестная четверть');
   });
 
@@ -40,7 +41,7 @@ describe('Simple Tests', () => {
   });
 
   test('should handle custom max points', () => {
-    expect(calculateExercisePoints(0, 20)).toBe(10); // функция использует базовые очки
-    expect(calculateExercisePoints(1, 20)).toBeLessThan(10);
+    expect(calculateExercisePoints(0)).toBe(10); // функция использует базовые очки
+    expect(calculateExercisePoints(1)).toBeLessThan(10);
   });
 });

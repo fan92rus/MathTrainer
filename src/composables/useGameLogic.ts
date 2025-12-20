@@ -6,6 +6,7 @@ import { calculateExercisePoints } from '@/utils/gradeHelpers';
 type ProblemGenerator = () => MathProblem;
 
 // Тип для колбэка при правильном ответе
+ 
 type OnCorrectCallback = (_points: number) => void;
 
 export interface UseGameLogic {
@@ -27,9 +28,12 @@ export interface UseGameLogic {
 
   // Методы
   initializeGame: () => void;
+   
   selectAnswer: (_index: number, _correctIndex: number, _onCorrect?: OnCorrectCallback) => void;
   nextQuestion: () => void;
+   
   addProblem: (_problem: MathProblem) => void;
+   
   generateAllProblems: (_generator: ProblemGenerator) => void;
   getGameResult: () => GameResult;
 }
@@ -145,7 +149,7 @@ export function useGameLogic(totalQuestions: number = 10): UseGameLogic {
       addProblem(problem);
 
       // Обновляем предыдущее значение X для следующей итерации
-      previousX = (problem as any).xValue || null;
+      previousX = ('xValue' in problem) ? problem.xValue : null;
     }
   };
 
@@ -260,7 +264,9 @@ export function useSound(options: Partial<UseSoundOptions> = {}) {
     if (!soundOptions.enabled) return;
 
     // Создаем аудио контекст для генерации звуков
-    const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+const AudioContext = window.AudioContext || (window as any).webkitAudioContext;
+    const audioContext = new AudioContext();
     const oscillator = audioContext.createOscillator();
     const gainNode = audioContext.createGain();
 

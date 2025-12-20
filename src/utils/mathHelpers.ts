@@ -155,10 +155,11 @@ interface StrategyResult {
 }
 
 // Вспомогательная функция для генерации неправильного варианта по заданной стратегии
+ 
 function generateWrongOptionByStrategy(
   wrongOptions: string[],
   strategyFn: () => StrategyResult,
-  _isNotAlreadyAdded: (part1: number, part2: number) => boolean,
+  _isNotAlreadyAdded: (_part1: number, _part2: number) => boolean,
   maxAttempts: number
 ): void {
   let attempts = 0;
@@ -262,6 +263,7 @@ export function generateCountingProblem(
   };
 }
 
+ 
 export function generateWrongCountingAnswers(
   correctAnswer: number,
   _isAddition: boolean = true
@@ -500,7 +502,7 @@ function generateWrongAdditionOptions(num1: number, num2: number, correctOption:
     }
 
     // Вариант с разложением на 2 числа, дающий правильную сумму
-    if (num2 - 1 !== 0 && 1 !== 0) {
+    if (num2 - 1 !== 0) {
       wrongOptions.push(`${mainNum} + ${num2 - 1} + 1`);
     }
 

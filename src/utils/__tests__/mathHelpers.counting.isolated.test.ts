@@ -1,8 +1,9 @@
-import { generateMultiplicationProblem } from '../mathHelpers.js';
+import { generateCountingProblem } from '../mathHelpers';
+import type { MathProblem } from '@/types';
 
-describe('Math Helpers - Multiplication Isolated Tests', () => {
-  test('generateMultiplicationProblem', () => {
-    const problem = generateMultiplicationProblem(5);
+describe('Math Helpers  - Counting Isolated Tests', () => {
+  test('generateCountingProblem', () => {
+    const problem: MathProblem = generateCountingProblem(100, 1, 20);
 
     expect(problem).toHaveProperty('expression');
     expect(problem).toHaveProperty('options');

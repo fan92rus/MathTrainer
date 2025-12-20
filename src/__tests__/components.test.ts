@@ -2,6 +2,25 @@
  * Тесты для Vue компонентов
  */
 
+// Интерфейс для пропсов компонента
+interface ComponentProps {
+  [key: string]: unknown;
+}
+
+// Интерфейс для вычисляемого состояния компонента
+interface ComputedState {
+  isActive: boolean;
+  count: number;
+  doubleCount: number;
+}
+
+// Интерфейс для слотов компонента
+interface ComponentSlots {
+  default?: string;
+  header?: string;
+  footer?: string;
+}
+
 // Базовые тесты без Vue Test Utils из-за проблем с конфигурацией
 describe('Vue Component Tests', () => {
   test('should test basic component structure', () => {
@@ -13,7 +32,7 @@ describe('Vue Component Tests', () => {
 
   test('should handle component props validation', () => {
     // Тестируем валидацию пропсов
-    const validateProps = (props, requiredProps) => {
+    const validateProps = (props: ComponentProps, requiredProps: string[]): boolean => {
       for (const prop of requiredProps) {
         if (!Object.prototype.hasOwnProperty.call(props, prop)) {
           return false;
@@ -22,8 +41,8 @@ describe('Vue Component Tests', () => {
       return true;
     };
 
-    const props = { message: 'Hello', type: 'button' };
-    const requiredProps = ['message', 'type'];
+    const props: ComponentProps = { message: 'Hello', type: 'button' };
+    const requiredProps: string[] = ['message', 'type'];
 
     expect(validateProps(props, requiredProps)).toBe(true);
     expect(validateProps({ message: 'Hello' }, requiredProps)).toBe(false);
@@ -31,7 +50,7 @@ describe('Vue Component Tests', () => {
 
   test('should compute component state correctly', () => {
     // Тестируем вычисляемые свойства
-    const computedState = {
+    const computedState: ComputedState = {
       isActive: true,
       count: 5,
       doubleCount: 5 * 2
@@ -43,9 +62,9 @@ describe('Vue Component Tests', () => {
 
   test('should handle component events', () => {
     // Тестируем обработку событий
-    let eventTriggered = false;
+    let eventTriggered: boolean = false;
 
-    const mockEventHandler = () => {
+    const mockEventHandler = (): void => {
       eventTriggered = true;
     };
 
@@ -55,7 +74,7 @@ describe('Vue Component Tests', () => {
 
   test('should validate component slots', () => {
     // Тестируем слоты
-    const slots = {
+    const slots: ComponentSlots = {
       default: 'Default content',
       header: 'Header content'
     };

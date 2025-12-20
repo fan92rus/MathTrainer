@@ -1,8 +1,9 @@
-import { generateDecompositionProblem } from '../mathHelpers.js';
+import { generateDecompositionProblem } from '../mathHelpers';
+import type { MathProblem } from '@/types';
 
-describe('Math Helpers - Decomposition Isolated Tests', () => {
+describe('Math Helpers  - Decomposition Isolated Tests', () => {
   test('generateDecompositionProblem', () => {
-    const problem = generateDecompositionProblem(50);
+    const problem: MathProblem = generateDecompositionProblem(50);
 
     expect(problem).toHaveProperty('expression');
     expect(problem).toHaveProperty('options');

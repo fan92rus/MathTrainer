@@ -2,10 +2,11 @@ import {
   generateDecompositionProblem,
   generateFirstGradeDecompositionProblem,
   shuffleArray
-} from '../mathHelpers.js';
+} from '../mathHelpers';
+import type { MathProblem } from '@/types';
 
 // Мокаем Math.random для предсказуемых результатов
-const mockMathRandom = (values) => {
+const mockMathRandom = (values: number[]): void => {
   let index = 0;
   Math.random = jest.fn(() => values[index++ % values.length]);
 };
@@ -20,9 +21,9 @@ describe('Math Helpers - Decomposition', () => {
       mockMathRandom([0.1, 0.1, 0.5]); // Генерируем минимальные значения
 
       for (let i = 0; i < 10; i++) {
-        const problem = generateDecompositionProblem(50);
+        const problem: MathProblem = generateDecompositionProblem(50);
         const expression = problem.expression;
-        const match = expression.match(/(\d+)\s*[+\-]\s*(\d+)/);
+        const match = expression.match(/(\d+)\s*[+-]\s*(\d+)/);
 
         if (match) {
           const num1 = parseInt(match[1]);
@@ -38,7 +39,7 @@ describe('Math Helpers - Decomposition', () => {
       // Пример: 28 + 5 = 33 (переход с 2 десятков к 3)
       mockMathRandom([0.8, 0.8, 0.9]); // num1=28, num2=25, isAddition=true
 
-      const problem = generateDecompositionProblem(50);
+      const problem: MathProblem = generateDecompositionProblem(50);
       const expression = problem.expression;
       const correctOption = problem.options[problem.correctIndex];
 
@@ -65,7 +66,7 @@ describe('Math Helpers - Decomposition', () => {
       // Пример: 30 + 5 = 35 (нет перехода через десяток)
       mockMathRandom([0.5, 0.1, 0.5]); // num1=30, num2=5, isAddition=true
 
-      const problem = generateDecompositionProblem(50);
+      const problem: MathProblem = generateDecompositionProblem(50);
       const correctOption = problem.options[problem.correctIndex];
 
       // Если нет перехода через десяток, не должно быть разложения
@@ -78,7 +79,7 @@ describe('Math Helpers - Decomposition', () => {
       // Пример: 61 - 3 = 58 (переход с 6 десятков к 5)
       mockMathRandom([0.5, 0.2, 0.2]); // num1=61, num2=3, isAddition=false
 
-      const problem = generateDecompositionProblem(70);
+      const problem: MathProblem = generateDecompositionProblem(70);
       const expression = problem.expression;
       const correctOption = problem.options[problem.correctIndex];
 
@@ -86,7 +87,7 @@ describe('Math Helpers - Decomposition', () => {
       expect(expression).toContain('-');
 
       // Проверяем, что есть переход через десяток
-      const match = expression.match(/(\d+)\s*\-\s*(\d+)/);
+      const match = expression.match(/(\d+)\s*-\s*(\d+)/);
       if (match) {
         const num1 = parseInt(match[1]);
         const num2 = parseInt(match[2]);
@@ -109,12 +110,12 @@ describe('Math Helpers - Decomposition', () => {
       // Пример: 69 - 5 = 64 (нет перехода через десяток)
       mockMathRandom([0.8, 0.1, 0.2]); // num1=69, num2=5, isAddition=false
 
-      const problem = generateDecompositionProblem(70);
+      const problem: MathProblem = generateDecompositionProblem(70);
       const expression = problem.expression;
       const correctOption = problem.options[problem.correctIndex];
 
       // Проверяем, что это вычитание без перехода через десяток
-      const match = expression.match(/(\d+)\s*\-\s*(\d+)/);
+      const match = expression.match(/(\d+)\s*-\s*(\d+)/);
       if (match) {
         const num1 = parseInt(match[1]);
         const num2 = parseInt(match[2]);
@@ -135,7 +136,7 @@ describe('Math Helpers - Decomposition', () => {
       // Пример: 22 + 11 = 33 (должно быть 22 + 10 + 1)
       mockMathRandom([0.2, 0.2, 0.5]); // num1=22, num2=11, isAddition=true
 
-      const problem = generateDecompositionProblem(50);
+      const problem: MathProblem = generateDecompositionProblem(50);
       const correctOption = problem.options[problem.correctIndex];
 
       // Проверяем, что это сложение с двузначным вторым числом
@@ -157,11 +158,11 @@ describe('Math Helpers - Decomposition', () => {
       // Пример: 69 - 49 = 20 (должно быть 69 - 40 - 9)
       mockMathRandom([0.5, 0.8, 0.2]); // num1=69, num2=49, isAddition=false
 
-      const problem = generateDecompositionProblem(70);
+      const problem: MathProblem = generateDecompositionProblem(70);
       const correctOption = problem.options[problem.correctIndex];
 
       // Проверяем, что это вычитание с двузначным вторым числом
-      const match = problem.expression.match(/(\d+)\s*\-\s*(\d+)/);
+      const match = problem.expression.match(/(\d+)\s*-\s*(\d+)/);
       if (match && parseInt(match[2]) >= 10) {
         const num2 = parseInt(match[2]);
         const tens = Math.floor(num2 / 10) * 10;
@@ -180,17 +181,17 @@ describe('Math Helpers - Decomposition', () => {
     test('в разложении сложения не должно быть нулевых компонентов', () => {
       // Прогоняем несколько раз, чтобы проверить разные случаи
       for (let i = 0; i < 20; i++) {
-        const problem = generateDecompositionProblem(50);
+        const problem: MathProblem = generateDecompositionProblem(50);
         const correctOption = problem.options[problem.correctIndex];
 
         // Проверяем, что это сложение
         if (problem.expression.includes('+')) {
           // Если есть разложение, проверяем отсутствие нулевых компонентов
           if (correctOption.split('+').length > 2) {
-            const parts = correctOption.split('+').map((part) => parseInt(part.trim()));
+            const parts = correctOption.split('+').map((part: string) => parseInt(part.trim()));
 
             // Все компоненты должны быть положительными числами
-            parts.forEach((part) => {
+            parts.forEach((part: number) => {
               expect(part).toBeGreaterThan(0);
             });
           }
@@ -201,17 +202,17 @@ describe('Math Helpers - Decomposition', () => {
     test('в разложении вычитания не должно быть нулевых компонентов', () => {
       // Прогоняем несколько раз, чтобы проверить разные случаи
       for (let i = 0; i < 20; i++) {
-        const problem = generateDecompositionProblem(50);
+        const problem: MathProblem = generateDecompositionProblem(50);
         const correctOption = problem.options[problem.correctIndex];
 
         // Проверяем, что это вычитание
         if (problem.expression.includes('-')) {
           // Если есть разложение, проверяем отсутствие нулевых компонентов
           if (correctOption.split('-').length > 2) {
-            const parts = correctOption.split('-').map((part) => parseInt(part.trim()));
+            const parts = correctOption.split('-').map((part: string) => parseInt(part.trim()));
 
             // Все компоненты должны быть положительными числами
-            parts.forEach((part) => {
+            parts.forEach((part: number) => {
               expect(part).toBeGreaterThan(0);
             });
           }
@@ -222,18 +223,18 @@ describe('Math Helpers - Decomposition', () => {
     test('в неправильных вариантах разложения сложения не должно быть нулевых компонентов', () => {
       // Прогоняем несколько раз, чтобы проверить разные случаи
       for (let i = 0; i < 20; i++) {
-        const problem = generateDecompositionProblem(50);
+        const problem: MathProblem = generateDecompositionProblem(50);
 
         // Проверяем, что это сложение
         if (problem.expression.includes('+')) {
           // Проверяем все варианты
-          problem.options.forEach((option) => {
+          problem.options.forEach((option: string) => {
             // Если вариант содержит разложение
             if (option.split('+').length > 2) {
-              const parts = option.split('+').map((part) => parseInt(part.trim()));
+              const parts = option.split('+').map((part: string) => parseInt(part.trim()));
 
               // Все компоненты должны быть положительными числами
-              parts.forEach((part) => {
+              parts.forEach((part: number) => {
                 expect(part).toBeGreaterThan(0);
               });
             }
@@ -245,18 +246,18 @@ describe('Math Helpers - Decomposition', () => {
     test('в неправильных вариантах разложения вычитания не должно быть нулевых компонентов', () => {
       // Прогоняем несколько раз, чтобы проверить разные случаи
       for (let i = 0; i < 20; i++) {
-        const problem = generateDecompositionProblem(50);
+        const problem: MathProblem = generateDecompositionProblem(50);
 
         // Проверяем, что это вычитание
         if (problem.expression.includes('-')) {
           // Проверяем все варианты
-          problem.options.forEach((option) => {
+          problem.options.forEach((option: string) => {
             // Если вариант содержит разложение
             if (option.split('-').length > 2) {
-              const parts = option.split('-').map((part) => parseInt(part.trim()));
+              const parts = option.split('-').map((part: string) => parseInt(part.trim()));
 
               // Все компоненты должны быть положительными числами
-              parts.forEach((part) => {
+              parts.forEach((part: number) => {
                 expect(part).toBeGreaterThan(0);
               });
             }

@@ -28,7 +28,8 @@ export default [
       'no-console': process.env.NODE_ENV === 'production' ? 'warn' : 'off',
       'no-debugger': process.env.NODE_ENV === 'production' ? 'warn' : 'off',
       'prefer-const': 'error',
-      'no-var': 'error'
+      'no-var': 'error',
+      'no-unused-vars': ['error', { argsIgnorePattern: '^_' }]
     }
   },
   {
@@ -53,7 +54,12 @@ export default [
     },
     rules: {
       // TypeScript правила
-      '@typescript-eslint/no-unused-vars': ['error', { argsIgnorePattern: '^_' }],
+      '@typescript-eslint/no-unused-vars': ['error', {
+        argsIgnorePattern: '^_',
+        varsIgnorePattern: '^_',
+        caughtErrorsIgnorePattern: '^_',
+        args: 'after-used'
+      }],
       '@typescript-eslint/no-explicit-any': 'warn',
       '@typescript-eslint/explicit-function-return-type': 'off',
       '@typescript-eslint/explicit-module-boundary-types': 'off',
@@ -90,7 +96,12 @@ export default [
     },
     rules: {
       // TypeScript правила
-      '@typescript-eslint/no-unused-vars': ['error', { argsIgnorePattern: '^_' }],
+      '@typescript-eslint/no-unused-vars': ['error', {
+        argsIgnorePattern: '^_',
+        varsIgnorePattern: '^_',
+        caughtErrorsIgnorePattern: '^_',
+        args: 'after-used'
+      }],
       '@typescript-eslint/no-explicit-any': 'warn',
       '@typescript-eslint/explicit-function-return-type': 'off',
       '@typescript-eslint/explicit-module-boundary-types': 'off',
@@ -147,6 +158,19 @@ export default [
     files: ['**/*.config.{js,ts}'],
     rules: {
       'no-console': 'off'
+    }
+  },
+  {
+    files: ['**/*.ts'],
+    rules: {
+      'no-unused-vars': 'off', // Use @typescript-eslint/no-unused-vars instead
+      '@typescript-eslint/no-unused-vars': ['error', {
+        argsIgnorePattern: '^_',
+        varsIgnorePattern: '^_',
+        caughtErrorsIgnorePattern: '^_',
+        args: 'after-used',
+        ignoreRestSiblings: true
+      }]
     }
   }
 ]

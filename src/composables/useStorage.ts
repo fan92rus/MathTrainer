@@ -1,9 +1,14 @@
 export interface UseStorage {
+   
   getItem: (key: string) => string | null;
+   
   setItem: (key: string, value: string) => void;
+   
   removeItem: (key: string) => void;
-  getObject: <T = any>(key: string) => T | null;
-  setObject: <T = any>(key: string, value: T) => void;
+   
+  getObject: <T = unknown>(key: string) => T | null;
+   
+  setObject: <T = unknown>(key: string, value: T) => void;
 }
 
 export function useStorage(): UseStorage {
@@ -32,7 +37,7 @@ export function useStorage(): UseStorage {
     }
   };
 
-  const getObject = <T = any>(key: string): T | null => {
+  const getObject = <T = unknown>(key: string): T | null => {
     try {
       const item = localStorage.getItem(key);
       return item ? JSON.parse(item) : null;
@@ -42,7 +47,7 @@ export function useStorage(): UseStorage {
     }
   };
 
-  const setObject = <T = any>(key: string, value: T): void => {
+  const setObject = <T = unknown>(key: string, value: T): void => {
     try {
       localStorage.setItem(key, JSON.stringify(value));
     } catch (error) {

@@ -129,7 +129,7 @@ export interface StorageItem {
   /** Ключ для хранения данных */
   key: string;
   /** Значение любого типа */
-  value: any;
+  value: unknown;
   /** Временная метка создания или обновления */
   timestamp?: number;
 }
@@ -139,7 +139,7 @@ export interface StorageItem {
  * Универсальный интерфейс для ответов от сервера
  * @template T - тип данных в ответе
  */
-export interface ApiResponse<T = any> {
+export interface ApiResponse<T = unknown> {
   /** Основные данные ответа */
   data: T;
   /** Флаг успешного выполнения запроса */

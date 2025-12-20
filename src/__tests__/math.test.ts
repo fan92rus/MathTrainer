@@ -3,36 +3,37 @@
  */
 
 // Импортируем необходимые функции
-const { shuffleArray, generateFirstGradeDecompositionProblem } = require('../utils/mathHelpers');
+import { shuffleArray, generateFirstGradeDecompositionProblem } from '@/utils/mathHelpers';
+import type { FirstGradeDecompositionProblem } from '@/utils/mathHelpers';
 
 describe('Math Functions Tests', () => {
   describe('shuffleArray', () => {
     test('should shuffle array and maintain same length', () => {
-      const originalArray = [1, 2, 3, 4, 5];
-      const shuffled = shuffleArray([...originalArray]);
+      const originalArray: number[] = [1, 2, 3, 4, 5];
+      const shuffled: number[] = shuffleArray([...originalArray]);
 
       expect(shuffled).toHaveLength(originalArray.length);
       expect(shuffled).toEqual(expect.arrayContaining(originalArray));
     });
 
     test('should not modify original array', () => {
-      const originalArray = [1, 2, 3, 4, 5];
-      const originalCopy = [...originalArray];
+      const originalArray: number[] = [1, 2, 3, 4, 5];
+      const originalCopy: number[] = [...originalArray];
       shuffleArray(originalArray);
 
       expect(originalArray).toEqual(originalCopy);
     });
 
     test('should handle empty array', () => {
-      const emptyArray = [];
-      const shuffled = shuffleArray(emptyArray);
+      const emptyArray: number[] = [];
+      const shuffled: number[] = shuffleArray(emptyArray);
 
       expect(shuffled).toEqual([]);
     });
 
     test('should handle single element array', () => {
-      const singleElement = [42];
-      const shuffled = shuffleArray([...singleElement]);
+      const singleElement: number[] = [42];
+      const shuffled: number[] = shuffleArray([...singleElement]);
 
       expect(shuffled).toEqual(singleElement);
     });
@@ -40,7 +41,7 @@ describe('Math Functions Tests', () => {
 
   describe('generateFirstGradeDecompositionProblem', () => {
     test('should generate valid decomposition problem', () => {
-      const problem = generateFirstGradeDecompositionProblem();
+      const problem: FirstGradeDecompositionProblem = generateFirstGradeDecompositionProblem();
 
       // Проверяем структуру объекта
       expect(problem).toHaveProperty('expression');
@@ -58,7 +59,7 @@ describe('Math Functions Tests', () => {
     });
 
     test('should generate correct decomposition', () => {
-      const problem = generateFirstGradeDecompositionProblem();
+      const problem: FirstGradeDecompositionProblem = generateFirstGradeDecompositionProblem();
       const [first, second] = problem.correctDecomposition;
 
       expect(first + second).toBe(problem.targetNumber);
@@ -67,16 +68,16 @@ describe('Math Functions Tests', () => {
     });
 
     test('should have valid correct index in options', () => {
-      const problem = generateFirstGradeDecompositionProblem();
-      const correctOption = problem.options[problem.correctIndex];
+      const problem: FirstGradeDecompositionProblem = generateFirstGradeDecompositionProblem();
+      const correctOption: string = problem.options[problem.correctIndex];
 
       expect(correctOption).toBeDefined();
       expect(correctOption).toContain(' и ');
     });
 
     test('should generate unique problems', () => {
-      const problem1 = generateFirstGradeDecompositionProblem();
-      const problem2 = generateFirstGradeDecompositionProblem();
+      const problem1: FirstGradeDecompositionProblem = generateFirstGradeDecompositionProblem();
+      const problem2: FirstGradeDecompositionProblem = generateFirstGradeDecompositionProblem();
 
       // Вероятность генерации одинаковых задач очень мала
       expect(problem1.targetNumber || problem2.targetNumber).toBeDefined();

@@ -1,28 +1,22 @@
-import { generateWrongSubtractionOptions } from '../mathHelpers.js';
+import { generateWrongSubtractionOptions } from '../mathHelpers';
 
-// Мокаем Math.random для предсказуемых результатов
-const _mockMathRandom = (values) => {
-  let index = 0;
-  Math.random = jest.fn(() => values[index++ % values.length]);
-};
-
-describe('Math Helpers - Wrong Options Generation', () => {
+describe('Math Helpers  - Wrong Options Generation', () => {
   beforeEach(() => {
     jest.restoreAllMocks();
   });
 
   describe('generateWrongSubtractionOptions', () => {
     test('генерирует уникальные неправильные варианты', () => {
-      const num1 = 69;
-      const num2 = 49;
-      const correctOption = `${num1} - 40 - 9`;
-      const wrongOptions = generateWrongSubtractionOptions(num1, num2, correctOption);
+      const num1: number = 69;
+      const num2: number = 49;
+      const correctOption: string = `${num1}  - 40  - 9`;
+      const wrongOptions: string[] = generateWrongSubtractionOptions(num1, num2, correctOption);
 
       // Проверяем, что сгенерировано 3 варианта
       expect(wrongOptions).toHaveLength(3);
 
       // Проверяем, что все варианты уникальны
-      const uniqueOptions = [...new Set(wrongOptions)];
+      const uniqueOptions: string[] = [...new Set(wrongOptions)];
       expect(uniqueOptions).toHaveLength(3);
 
       // Проверяем, что правильный вариант отсутствует

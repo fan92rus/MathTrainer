@@ -1,7 +1,8 @@
-import { generateCountingProblem, generateWrongCountingAnswers } from '../mathHelpers.js';
+import { generateCountingProblem, generateWrongCountingAnswers } from '../mathHelpers';
+import type { MathProblem } from '@/types';
 
 // Мокаем Math.random для предсказуемых результатов
-const mockMathRandom = (values) => {
+const mockMathRandom = (values: number[]): void => {
   let index = 0;
   Math.random = jest.fn(() => values[index++ % values.length]);
 };
@@ -15,8 +16,8 @@ describe('Math Helpers - Counting', () => {
     test('генерирует числа в заданных пределах', () => {
       mockMathRandom([0.1, 0.1, 0.5]); // isAddition=true
 
-      const problem = generateCountingProblem(100, 1, 20);
-      const match = problem.expression.match(/(\d+)\s*([+\-])\s*(\d+)/);
+      const problem: MathProblem = generateCountingProblem(100, 1, 20);
+      const match = problem.expression.match(/(\d+)\s*([+-])\s*(\d+)/);
 
       if (match) {
         const num1 = parseInt(match[1]);
@@ -42,15 +43,15 @@ describe('Math Helpers - Counting', () => {
     test('генерирует правильный ответ', () => {
       mockMathRandom([0.1, 0.1, 0.5]); // isAddition=true
 
-      const problem = generateCountingProblem(100, 1, 20);
-      const match = problem.expression.match(/(\d+)\s*([+\-])\s*(\d+)/);
+      const problem: MathProblem = generateCountingProblem(100, 1, 20);
+      const match = problem.expression.match(/(\d+)\s*([+-])\s*(\d+)/);
 
       if (match) {
         const num1 = parseInt(match[1]);
         const num2 = parseInt(match[3]);
         const operation = match[2];
 
-        let expectedAnswer;
+        let expectedAnswer: number;
         if (operation === '+') {
           expectedAnswer = num1 + num2;
         } else {
@@ -58,7 +59,7 @@ describe('Math Helpers - Counting', () => {
         }
 
         // Проверяем, что правильный ответ присутствует в вариантах
-        expect(problem.options).toContain(expectedAnswer);
+        expect(problem.options).toContain(expectedAnswer.toString());
         expect(problem.correctIndex).toBeGreaterThanOrEqual(0);
         expect(problem.correctIndex).toBeLessThan(problem.options.length);
       }
