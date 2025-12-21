@@ -4,7 +4,6 @@ import { createPinia, setActivePinia } from 'pinia'
 import AchievementsView from '../AchievementsView.vue'
 import { useAchievementsStore } from '@/store/achievements'
 import AchievementCard from '@/components/AchievementCard.vue'
-import BackButton from '@/components/BackButton.vue'
 
 // Мокаем компоненты
 vi.mock('@/components/BackButton.vue', () => ({
@@ -162,7 +161,6 @@ describe('AchievementsView', () => {
 
   it('должен фильтровать скрытые достижения', () => {
     const wrapper = mount(AchievementsView)
-    const store = useAchievementsStore()
 
     // Проверяем, что скрытые достижения (не разблокированные) не отображаются
     const visibleAchievements = wrapper.vm.allAchievements

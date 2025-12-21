@@ -2,7 +2,6 @@ import { describe, it, expect, beforeEach, vi } from 'vitest'
 import { mount } from '@vue/test-utils'
 import { createPinia, setActivePinia } from 'pinia'
 import DecompositionView from '../DecompositionView.vue'
-import MultiplicationView from '../MultiplicationView.vue'
 import { useScoresStore } from '@/store/scores'
 import { useAchievementsStore } from '@/store/achievements'
 
@@ -24,9 +23,6 @@ describe('Achievements Integration with Views', () => {
         plugins: [createPinia()]
       }
     })
-
-    const scoresStore = useScoresStore()
-    const achievementsStore = useAchievementsStore()
 
     // Мокаем checkAchievements
     const checkSpy = vi.fn()

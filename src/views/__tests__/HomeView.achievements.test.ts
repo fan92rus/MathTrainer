@@ -35,12 +35,6 @@ describe('HomeView - Achievements Integration', () => {
       })
     }))
 
-    const wrapper = mount(HomeView, {
-      global: {
-        plugins: [createPinia()]
-      }
-    })
-
     // Проверяем, что checkAchievements был вызван
     expect(mockCheckAchievements).toHaveBeenCalled()
   })
@@ -60,7 +54,7 @@ describe('HomeView - Achievements Integration', () => {
 
     // Пересоздаем компонент с очками
     wrapper.unmount()
-    const newWrapper = mount(HomeView, {
+    mount(HomeView, {
       global: {
         plugins: [createPinia()]
       }
@@ -79,7 +73,7 @@ describe('HomeView - Achievements Integration', () => {
     scoresStore.updateCountingScore(100)
 
     // Монтируем компонент
-    const wrapper = mount(HomeView, {
+    mount(HomeView, {
       global: {
         plugins: [createPinia()]
       }

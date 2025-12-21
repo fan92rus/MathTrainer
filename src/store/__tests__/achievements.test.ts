@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest'
 import { setActivePinia, createPinia } from 'pinia'
 import { useAchievementsStore } from '../achievements'
-import type { Achievement, ScoresStore } from '@/types/achievements'
+import type { ScoresStore } from '@/types/achievements'
 import { ACHIEVEMENTS_DATA } from '@/data/achievements'
 
 // Mock scores store
@@ -103,7 +103,7 @@ describe('Achievements Store', () => {
   describe('Проверка условий достижений', () => {
     it('должен разблокировать достижение за общие очки', () => {
       const store = useAchievementsStore()
-      const mockScoresStore = createMockScoresStore({ counting: 100 })
+      const _mockScoresStore = createMockScoresStore({ counting: 100 })
 
       // Находим достижение за 10 очков
       store.checkTotalPointsAchievements(() => 10, [])

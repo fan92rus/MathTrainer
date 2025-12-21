@@ -39,7 +39,7 @@ describe('HomeView - Simple Achievements Test', () => {
     scoresStore.updateCountingScore(50)
 
     // Первый вызов
-    const unlocked1 = checkAchievements(scoresStore, {
+    const _unlocked1 = checkAchievements(scoresStore, {
       type: 'counting',
       correct: true
     })
@@ -67,14 +67,14 @@ describe('HomeView - Simple Achievements Test', () => {
     scoresStore.updateCountingScore(1000)
 
     // Первый вызов - должно разблокировать несколько достижений
-    const unlocked1 = checkAchievements(scoresStore, {
+    const _unlocked1 = checkAchievements(scoresStore, {
       type: 'counting',
       correct: true
     })
 
     const totalUnlocked = achievementsStore.achievements.filter(a => a.unlocked).length
     expect(totalUnlocked).toBeGreaterThan(0)
-    expect(unlocked1.length).toBe(totalUnlocked)
+    expect(_unlocked1.length).toBe(totalUnlocked)
 
     // Второй вызов с теми же очками - ничего нового
     const unlocked2 = checkAchievements(scoresStore, {
