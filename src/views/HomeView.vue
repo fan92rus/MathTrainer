@@ -89,7 +89,7 @@
 </template>
 
 <script>
-  import { computed } from 'vue';
+  import { computed, onMounted, nextTick } from 'vue';
   import { useRouter } from 'vue-router';
   import { useScoresStore } from '../store/scores';
   import { useSettingsStore } from '../store/settings';
@@ -110,6 +110,51 @@
       // Загружаем очки и настройки при монтировании компонента
       scoresStore.loadScores();
       settingsStore.loadSettings();
+
+      // Функция для обеспечения snap эффекта при скролле
+      const setupScrollSnap = () => {
+        const container = document.querySelector('.games-container');
+        if (!container) return;
+
+        let isScrolling = false;
+
+        container.addEventListener('scroll', () => {
+          if (!isScrolling) {
+            window.requestAnimationFrame(() => {
+              const scrollTop = container.scrollTop;
+              const cardHeight = container.querySelector('.game-card')?.offsetHeight + 20 || 0; // +gap
+              const cardElements = container.querySelectorAll('.game-card');
+
+              if (cardHeight > 0 && cardElements.length > 0) {
+                // Находим ближайшую карточку
+                let closestCard = 0;
+                let minDistance = Infinity;
+
+                cardElements.forEach((card, index) => {
+                  const cardTop = index * cardHeight;
+                  const distance = Math.abs(scrollTop - cardTop);
+                  if (distance < minDistance) {
+                    minDistance = distance;
+                    closestCard = index;
+                  }
+                });
+
+                // Применяем snap только если скролл остановился
+                clearTimeout(window.scrollTimeout);
+                window.scrollTimeout = setTimeout(() => {
+                  container.scrollTo({
+                    top: closestCard * cardHeight,
+                    behavior: 'smooth'
+                  });
+                }, 100);
+              }
+
+              isScrolling = false;
+            });
+            isScrolling = true;
+          }
+        });
+      };
 
       // Вычисляемые свойства
       const countingScore = computed(() => scoresStore.countingScore);
@@ -184,6 +229,13 @@
         settingsStore.resetSettings();
         // После сброса настроек компонент GradeSelection покажется автоматически
       };
+
+      // Добавляем lifecycle hook для монтирования
+      onMounted(() => {
+        nextTick(() => {
+          setupScrollSnap();
+        });
+      });
 
       return {
         countingScore,
@@ -324,9 +376,34 @@
 
   .games-container {
     display: flex;
-    gap: 30px;
-    flex-wrap: wrap;
-    justify-content: center;
+    flex-direction: column;
+    gap: 20px;
+    height: 70vh;
+    overflow-y: auto;
+    scroll-snap-type: y mandatory;
+    scroll-behavior: smooth;
+    scroll-padding: 10px 0;
+    padding: 10px 0;
+    margin: 0;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(102, 126, 234, 0.3) transparent;
+  }
+
+  .games-container::-webkit-scrollbar {
+    width: 6px;
+  }
+
+  .games-container::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  .games-container::-webkit-scrollbar-thumb {
+    background-color: rgba(102, 126, 234, 0.3);
+    border-radius: 3px;
+  }
+
+  .games-container::-webkit-scrollbar-thumb:hover {
+    background-color: rgba(102, 126, 234, 0.5);
   }
 
   .game-card {
@@ -337,8 +414,11 @@
     transition: all 0.3s ease;
     cursor: pointer;
     width: 600px;
+    flex-shrink: 0;
     position: relative;
     overflow: hidden;
+    scroll-snap-align: start;
+    scroll-snap-stop: always;
   }
 
   .game-card::before {
@@ -429,13 +509,19 @@
     }
 
     .games-container {
+      height: 70vh;
       gap: 15px;
-      margin-bottom: 20px;
+      scroll-padding: 10px 0;
+      padding: 10px 0;
     }
 
     .game-card {
-      width: 400px;
+      width: 90vw;
+      max-width: 400px;
       padding: 15px;
+      flex-shrink: 0;
+      scroll-snap-align: start;
+      scroll-snap-stop: always;
     }
 
     .game-content {
@@ -495,15 +581,20 @@
     }
 
     .games-container {
-      flex-direction: column;
+      height: 70vh;
       gap: 12px;
       width: 100%;
+      scroll-padding: 10px 0;
+      padding: 10px 0;
     }
 
     .game-card {
       width: 100%;
       max-width: none;
       padding: 12px;
+      flex-shrink: 0;
+      scroll-snap-align: start;
+      scroll-snap-stop: always;
     }
 
     .game-content {
