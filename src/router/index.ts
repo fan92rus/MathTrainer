@@ -8,6 +8,7 @@ import MultiplicationView from '@/views/MultiplicationView.vue';
 import EquationsView from '@/views/EquationsView.vue';
 import ManualEquationsView from '@/views/ManualEquationsView.vue';
 import ManualDecompositionView from '@/views/ManualDecompositionView.vue';
+import AchievementsView from '@/views/AchievementsView.vue';
 import { useSettingsStore } from '@/store/settings';
 import { getAvailableExercises } from '@/utils/gradeHelpers';
 
@@ -56,6 +57,11 @@ const routes: Array<RouteRecordRaw> = [
     path: '/manual-decomposition',
     name: 'manual-decomposition',
     component: ManualDecompositionView
+  },
+  {
+    path: '/achievements',
+    name: 'achievements',
+    component: AchievementsView
   }
 ];
 

@@ -1,5 +1,6 @@
 <template>
   <div class="app-container">
+    <AchievementManager />
     <div class="game-container">
       <div class="main-container">
         <div v-if="isGradeSelected" class="grade-info-container">
@@ -7,7 +8,13 @@
             <span class="grade-label">Текущий класс:</span>
             <span class="grade-value">{{ gradeName }}, {{ quarterName }}</span>
           </div>
-          <button class="change-grade-button" @click="changeGrade">Изменить класс</button>
+          <div class="grade-actions">
+            <button class="change-grade-button" @click="changeGrade">Изменить класс</button>
+            <button class="achievements-button" @click="goToAchievements">
+              <span class="achievements-icon">🏆</span>
+              <span v-if="hasNewAchievements" class="new-achievements-count">{{ newAchievementsCount }}</span>
+            </button>
+          </div>
         </div>
         <div class="games-container">
           <div
@@ -88,28 +95,54 @@
   </div>
 </template>
 
-<script>
+<script lang="ts">
   import { computed, onMounted, nextTick } from 'vue';
   import { useRouter } from 'vue-router';
   import { useScoresStore } from '../store/scores';
   import { useSettingsStore } from '../store/settings';
+  import { useAchievementsStore } from '../store/achievements';
   import {
     getGradeName,
     getQuarterName,
     getCurrentQuarter,
     getAvailableExercises
   } from '../utils/gradeHelpers';
+  import AchievementManager from '../components/AchievementManager.vue';
+  import { useAchievements } from '../composables/useAchievements';
 
   export default {
     name: 'HomeView',
+    components: {
+      AchievementManager
+    },
     setup() {
       const router = useRouter();
       const scoresStore = useScoresStore();
       const settingsStore = useSettingsStore();
+      const achievementsStore = useAchievementsStore();
+      const { checkAchievements } = useAchievements();
 
-      // Загружаем очки и настройки при монтировании компонента
+      // Загружаем очки, настройки и ачивки при монтировании компонента
       scoresStore.loadScores();
       settingsStore.loadSettings();
+      achievementsStore.loadAchievements();
+
+      // Проверяем только неразблокированные достижения на основе текущих очков
+      // Это нужно для случаев, когда очки были получены до добавления системы достижений
+      const unlockedAchievements = achievementsStore.achievements.filter(a => a.unlocked)
+      if (unlockedAchievements.length === 0 && scoresStore.getTotalScore > 0) {
+        // Сначала проверяем общие очки
+        achievementsStore.checkTotalPointsAchievements(() => scoresStore.getTotalScore, [])
+
+        // Затем проверяем достижения для каждого типа упражнения
+        const exerciseTypes = ['counting', 'decomposition', 'firstGradeDecomposition', 'multiplication', 'equations']
+        exerciseTypes.forEach(type => {
+          checkAchievements(scoresStore, {
+            type,
+            correct: true
+          })
+        })
+      }
 
       // Функция для обеспечения snap эффекта при скролле
       const setupScrollSnap = () => {
@@ -225,10 +258,21 @@
         router.push('/equations');
       };
 
+      const goToAchievements = () => {
+        achievementsStore.markAchievementsAsViewed(); // Отмечаем ачивки как просмотренные
+        router.push('/achievements');
+      };
+
       const changeGrade = () => {
         settingsStore.resetSettings();
         // После сброса настроек компонент GradeSelection покажется автоматически
       };
+
+      // Вычисляемые свойства для ачивок
+      const unlockedCount = computed(() => achievementsStore.unlockedCount);
+      const totalCount = computed(() => achievementsStore.totalCount);
+      const hasNewAchievements = computed(() => achievementsStore.getNewAchievementsCount > 0);
+      const newAchievementsCount = computed(() => achievementsStore.getNewAchievementsCount);
 
       // Добавляем lifecycle hook для монтирования
       onMounted(() => {
@@ -247,11 +291,16 @@
         gradeName,
         quarterName,
         availableExercises,
+        unlockedCount,
+        totalCount,
+        hasNewAchievements,
+        newAchievementsCount,
         goToCounting,
         goToDecomposition,
         goToFirstGradeDecomposition,
         goToMultiplication,
         goToEquations,
+        goToAchievements,
         changeGrade
       };
     }
@@ -269,16 +318,15 @@
   }
 
   .grade-info-container {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    width: 100%;
-    max-width: 500px;
-    margin-bottom: 20px;
     background: linear-gradient(135deg, #ffffff, #f8f9ff);
     border-radius: 15px;
-    padding: 15px 20px;
+    padding: 20px;
     box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+    margin-bottom: 20px;
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
   }
 
   .grade-info {
@@ -299,12 +347,65 @@
     color: #333;
   }
 
+  .grade-actions {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+    flex-wrap: nowrap;
+  }
+
+  .achievements-button {
+    background: linear-gradient(135deg, #4CAF50, #8BC34A);
+    color: white;
+    border: none;
+    border-radius: 50%;
+    width: 48px;
+    height: 48px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 3px 8px rgba(76, 175, 80, 0.3);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    flex-shrink: 0;
+  }
+
+  .achievements-button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 12px rgba(76, 175, 80, 0.4);
+  }
+
+  .achievements-icon {
+    font-size: 24px;
+  }
+
+  .new-achievements-count {
+    position: absolute;
+    top: -4px;
+    right: -4px;
+    background: #ff4757;
+    color: white;
+    border-radius: 50%;
+    width: 20px;
+    height: 20px;
+    font-size: 11px;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 2px solid white;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  }
+
   .change-grade-button {
     background: linear-gradient(135deg, #667eea, #764ba2);
     color: white;
     border: none;
     border-radius: 20px;
-    padding: 8px 16px;
+    padding: 10px 16px;
     font-size: 14px;
     font-weight: 600;
     cursor: pointer;
@@ -485,15 +586,39 @@
 
     .grade-info-container {
       margin-bottom: 15px;
-      padding: 12px 15px;
+      padding: 15px;
+    }
+
+    .grade-info {
+      margin-bottom: 10px;
     }
 
     .grade-value {
       font-size: 16px;
     }
 
+    .grade-actions {
+      gap: 10px;
+      justify-content: flex-end;
+    }
+
+    .achievements-button {
+      width: 44px;
+      height: 44px;
+    }
+
+    .achievements-icon {
+      font-size: 22px;
+    }
+
+    .new-achievements-count {
+      width: 18px;
+      height: 18px;
+      font-size: 10px;
+    }
+
     .change-grade-button {
-      padding: 6px 12px;
+      padding: 8px 12px;
       font-size: 12px;
     }
 
@@ -564,6 +689,11 @@
       align-items: center;
     }
 
+    .grade-actions {
+      align-self: stretch;
+      justify-content: space-between;
+    }
+
     .change-grade-button {
       width: 100%;
       max-width: 200px;
@@ -620,4 +750,5 @@
       padding: 4px 8px;
     }
   }
-</style>
+
+  </style>

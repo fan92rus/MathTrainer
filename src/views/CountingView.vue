@@ -1,5 +1,6 @@
 <template>
   <div class="app-container">
+    <AchievementManager />
     <div class="game-container">
       <div v-if="!gameOver" class="game-container-inner">
         <div class="header">
@@ -45,17 +46,19 @@
 </template>
 
 <script>
-  import { onMounted, computed } from 'vue';
+  import { onMounted, computed, watch } from 'vue';
   import { useRouter } from 'vue-router';
   import { useScoresStore } from '../store/scores';
   import { useSettingsStore } from '../store/settings';
   import { useGameLogic } from '../composables/useGameLogic';
+  import { useAchievements, useSessionTimeTracker } from '../composables/useAchievements';
   import { generateCountingProblem } from '../utils/math';
   import ScoreDisplay from '../components/common/ScoreDisplay.vue';
   import ProgressBar from '../components/common/ProgressBar.vue';
   import StarRating from '../components/common/StarRating.vue';
   import AnswerOptions from '../components/common/AnswerOptions.vue';
   import GameOver from '../components/common/GameOver.vue';
+  import AchievementManager from '../components/AchievementManager.vue';
 
   export default {
     name: 'CountingView',
@@ -64,12 +67,15 @@
       ProgressBar,
       StarRating,
       AnswerOptions,
-      GameOver
+      GameOver,
+      AchievementManager
     },
     setup() {
       const router = useRouter();
       const scoresStore = useScoresStore();
       const settingsStore = useSettingsStore();
+      const { checkAchievements } = useAchievements();
+      const { startSession, addProblem, getSessionData } = useSessionTimeTracker();
       const totalQuestions = 10;
 
       // Инициализируем игру
@@ -95,17 +101,40 @@
       // Получаем максимальное число из настроек класса
       const maxNumber = computed(() => settingsStore.maxCountingNumber);
 
+      // Отслеживание текущей серии правильных ответов
+      let currentStreak = 0;
+
       // Обработчик выбора ответа
       const handleAnswerSelected = (index) => {
+        const isCorrect = index === (currentProblem.value?.correctIndex || 0);
+
+        if (isCorrect) {
+          currentStreak++;
+        } else {
+          currentStreak = 0;
+        }
+
         selectAnswer(index, currentProblem.value?.correctIndex || 0, (points) => {
           // При правильном ответе обновляем общий счет с учетом количества ошибок
           scoresStore.updateCountingScore(points);
+
+          // Проверяем ачивки после правильного ответа
+          if (isCorrect) {
+            checkAchievements(scoresStore, {
+              type: 'counting',
+              correct: true,
+              streak: currentStreak,
+              ...getSessionData()
+            });
+          }
         });
       };
 
       // Перезапуск игры
       const restartGame = () => {
         initializeGame();
+        currentStreak = 0; // Сбрасываем серию
+        startSession(); // Начинаем новую сессию
         generateAllProblems(() => {
           return generateCountingProblem(
             scoresStore.countingScore,
@@ -124,6 +153,11 @@
       onMounted(() => {
         scoresStore.loadScores();
         restartGame();
+      });
+
+      // Следим за сменой вопросов для отслеживания сессии
+      watch(currentQuestion, () => {
+        addProblem(); // Увеличиваем счетчик решенных примеров
       });
 
       return {

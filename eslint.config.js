@@ -26,6 +26,8 @@ export default [
         setTimeout: 'readonly',
         setInterval: 'readonly',
         clearInterval: 'readonly',
+        clearTimeout: 'readonly',
+        NodeJS: 'readonly',
         alert: 'readonly'
       }
     },
@@ -55,6 +57,8 @@ export default [
         setTimeout: 'readonly',
         setInterval: 'readonly',
         clearInterval: 'readonly',
+        clearTimeout: 'readonly',
+        NodeJS: 'readonly',
         alert: 'readonly'
       }
     },
@@ -102,6 +106,8 @@ export default [
         setTimeout: 'readonly',
         setInterval: 'readonly',
         clearInterval: 'readonly',
+        clearTimeout: 'readonly',
+        NodeJS: 'readonly',
         alert: 'readonly'
       }
     },
