@@ -1,14 +1,24 @@
 <template>
   <div class="app-container">
+    <!-- Анимация монеток -->
+    <CoinAnimation
+      v-if="showCoinAnimation"
+      :amount="coinsEarned"
+      @animationEnd="showCoinAnimation = false"
+    />
+
     <div class="game-container">
       <div v-if="!gameOver" class="game-container-inner">
         <div class="header">
           <div style="display: flex; justify-content: space-between; align-items: center">
             <button class="back-button" @click="goToMain">← Назад</button>
-            <div class="level-info">
-              <span class="level-indicator"
-                >Уровень {{ currentLevelConfig.level }}: {{ currentLevelConfig.description }}</span
-              >
+            <div style="display: flex; align-items: center; gap: 15px;">
+              <div class="level-info">
+                <span class="level-indicator"
+                  >Уровень {{ currentLevelConfig.level }}: {{ currentLevelConfig.description }}</span
+                >
+              </div>
+              <CurrencyDisplay />
             </div>
           </div>
           <h1 class="title">Реши уравнение</h1>
@@ -72,7 +82,9 @@
   import { onMounted, computed } from 'vue';
   import { useRouter } from 'vue-router';
   import { useScoresStore } from '../store/scores';
+  import { usePlayerStore } from '../store/player';
   import { useGameLogic } from '../composables/useGameLogic';
+  import { useCoins } from '../composables/useCoins';
   import {
     generateEquationProblem,
     getEquationsLevelConfig,
@@ -83,6 +95,8 @@
   import StarRating from '../components/common/StarRating.vue';
   import AnswerOptions from '../components/common/AnswerOptions.vue';
   import GameOver from '../components/common/GameOver.vue';
+  import CoinAnimation from '../components/common/CoinAnimation.vue';
+  import CurrencyDisplay from '../components/player/CurrencyDisplay.vue';
 
   export default {
     name: 'EquationsView',
@@ -91,11 +105,15 @@
       ProgressBar,
       StarRating,
       AnswerOptions,
-      GameOver
+      GameOver,
+      CoinAnimation,
+      CurrencyDisplay
     },
     setup() {
       const router = useRouter();
       const scoresStore = useScoresStore();
+      const playerStore = usePlayerStore();
+      const { showCoinAnimation, coinsEarned, awardCoins } = useCoins();
       const totalQuestions = 5;
 
       // Инициализируем игру
@@ -110,6 +128,7 @@
         currentProblem,
         correctAnswers,
         totalAnswers,
+        errorsPerQuestion,
         initializeGame,
         selectAnswer,
         generateAllProblems
@@ -140,12 +159,20 @@
 
       // Обработчик выбора ответа
       const handleAnswerSelected = (index) => {
+        const isCorrect = index === (currentProblem.value?.correctIndex || 0);
+
         selectAnswer(index, currentProblem.value?.correctIndex || 0, (points) => {
           // При правильном ответе обновляем общий счет
           // Используем базовые очки с учетом сложности уровня
           const levelMultiplier = currentLevelConfig.value.complexity || 1;
           const adjustedPoints = Math.round(points * levelMultiplier);
           scoresStore.updateEquationsScore(adjustedPoints);
+
+          // Выдаем монетки за правильный ответ
+          if (isCorrect) {
+            const errors = errorsPerQuestion.value[currentQuestion.value] || 0;
+            awardCoins('equations', currentLevelConfig.value.level || 1, errors);
+          }
         });
       };
 
@@ -168,6 +195,7 @@
       // Инициализация при монтировании
       onMounted(() => {
         scoresStore.loadScores();
+        playerStore.generateDailyTasks(); // Генерируем ежедневные задания
         restartGame();
       });
 
@@ -190,7 +218,9 @@
         handleAnswerSelected,
         restartGame,
         goToMain,
-        goToManualMode
+        goToManualMode,
+        showCoinAnimation,
+        coinsEarned
       };
     }
   };

@@ -1,12 +1,22 @@
 <template>
   <div class="app-container">
+    <!-- Анимация монеток -->
+    <CoinAnimation
+      v-if="showCoinAnimation"
+      :amount="coinsEarned"
+      @animationEnd="showCoinAnimation = false"
+    />
+
     <div class="game-container">
       <div class="main-container">
         <div class="header-container">
           <button class="back-button" @click="goBack">← Назад</button>
-          <div class="score-container">
-            <div class="score-label">Очки:</div>
-            <div class="score-value">⭐ {{ multiplicationScore }}</div>
+          <div style="display: flex; align-items: center; gap: 20px;">
+            <div class="score-container">
+              <div class="score-label">Очки:</div>
+              <div class="score-value">⭐ {{ multiplicationScore }}</div>
+            </div>
+            <CurrencyDisplay />
           </div>
         </div>
 
@@ -77,18 +87,26 @@
   import { ref, computed, onMounted } from 'vue';
   import { useRouter } from 'vue-router';
   import { useScoresStore } from '../store/scores';
+  import { usePlayerStore } from '../store/player';
+  import { useCoins } from '../composables/useCoins';
   import { generateMultiplicationProblem } from '../utils/math';
   import { calculateExercisePoints } from '../utils/gradeHelpers';
   import GameOver from '../components/common/GameOver.vue';
+  import CoinAnimation from '../components/common/CoinAnimation.vue';
+  import CurrencyDisplay from '../components/player/CurrencyDisplay.vue';
 
   export default {
     name: 'MultiplicationView',
     components: {
-      GameOver
+      GameOver,
+      CoinAnimation,
+      CurrencyDisplay
     },
     setup() {
       const router = useRouter();
       const scoresStore = useScoresStore();
+      const playerStore = usePlayerStore();
+      const { showCoinAnimation, coinsEarned, awardCoins } = useCoins();
 
       // Состояние игры
       const currentProblem = ref(null);
@@ -184,6 +202,11 @@
 
           scoreGained.value += finalPoints;
           scoresStore.updateMultiplicationScore(finalPoints);
+
+          // Выдаем монетки за правильный ответ
+          const level = Math.ceil(maxMultiplier.value / 2); // Определяем уровень на основе множителя
+          awardCoins('multiplication', level, errors);
+
           problemsSolved.value++;
 
           // Автоматический переход к следующему примеру при правильном ответе
@@ -228,6 +251,7 @@
       // Загружаем очки при монтировании компонента
       onMounted(() => {
         scoresStore.loadScores();
+        playerStore.generateDailyTasks(); // Генерируем ежедневные задания
         generateNewProblem();
       });
 
@@ -247,7 +271,9 @@
         goBack,
         checkAnswer,
         nextProblem,
-        restartGame
+        restartGame,
+        showCoinAnimation,
+        coinsEarned
       };
     }
   };

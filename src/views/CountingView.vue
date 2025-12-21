@@ -1,12 +1,23 @@
 <template>
   <div class="app-container">
     <AchievementManager />
+
+    <!-- Анимация монеток -->
+    <CoinAnimation
+      v-if="showCoinAnimation"
+      :amount="coinsEarned"
+      @animationEnd="showCoinAnimation = false"
+    />
+
     <div class="game-container">
       <div v-if="!gameOver" class="game-container-inner">
         <div class="header">
           <div style="display: flex; justify-content: space-between; align-items: center">
             <button class="back-button" @click="goToMain">← Назад</button>
-            <span class="level-indicator">Уровень {{ currentLevel }}</span>
+            <div style="display: flex; align-items: center; gap: 15px;">
+              <span class="level-indicator">Уровень {{ currentLevel }}</span>
+              <CurrencyDisplay />
+            </div>
           </div>
           <h1 class="title">Реши пример</h1>
         </div>
@@ -50,8 +61,10 @@
   import { useRouter } from 'vue-router';
   import { useScoresStore } from '../store/scores';
   import { useSettingsStore } from '../store/settings';
+  import { usePlayerStore } from '../store/player';
   import { useGameLogic } from '../composables/useGameLogic';
   import { useAchievements, useSessionTimeTracker } from '../composables/useAchievements';
+  import { useCoins } from '../composables/useCoins';
   import { generateCountingProblem } from '../utils/math';
   import ScoreDisplay from '../components/common/ScoreDisplay.vue';
   import ProgressBar from '../components/common/ProgressBar.vue';
@@ -59,6 +72,8 @@
   import AnswerOptions from '../components/common/AnswerOptions.vue';
   import GameOver from '../components/common/GameOver.vue';
   import AchievementManager from '../components/AchievementManager.vue';
+  import CoinAnimation from '../components/common/CoinAnimation.vue';
+  import CurrencyDisplay from '../components/player/CurrencyDisplay.vue';
 
   export default {
     name: 'CountingView',
@@ -68,14 +83,18 @@
       StarRating,
       AnswerOptions,
       GameOver,
-      AchievementManager
+      AchievementManager,
+      CoinAnimation,
+      CurrencyDisplay
     },
     setup() {
       const router = useRouter();
       const scoresStore = useScoresStore();
       const settingsStore = useSettingsStore();
+      const playerStore = usePlayerStore();
       const { checkAchievements } = useAchievements();
       const { startSession, addProblem, getSessionData } = useSessionTimeTracker();
+      const { showCoinAnimation, coinsEarned, awardCoins } = useCoins();
       const totalQuestions = 10;
 
       // Инициализируем игру
@@ -90,6 +109,7 @@
         currentProblem,
         correctAnswers,
         totalAnswers,
+        errorsPerQuestion,
         initializeGame,
         selectAnswer,
         generateAllProblems
@@ -118,8 +138,12 @@
           // При правильном ответе обновляем общий счет с учетом количества ошибок
           scoresStore.updateCountingScore(points);
 
-          // Проверяем ачивки после правильного ответа
+          // Выдаем монетки за правильный ответ
           if (isCorrect) {
+            const errors = errorsPerQuestion.value[currentQuestion.value] || 0;
+            awardCoins('counting', currentLevel.value, errors);
+
+            // Проверяем ачивки после правильного ответа
             checkAchievements(scoresStore, {
               type: 'counting',
               correct: true,
@@ -152,6 +176,7 @@
       // Инициализация при монтировании
       onMounted(() => {
         scoresStore.loadScores();
+        playerStore.generateDailyTasks(); // Генерируем ежедневные задания
         restartGame();
       });
 
@@ -176,7 +201,9 @@
         maxNumber,
         handleAnswerSelected,
         restartGame,
-        goToMain
+        goToMain,
+        showCoinAnimation,
+        coinsEarned
       };
     }
   };

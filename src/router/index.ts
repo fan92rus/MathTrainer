@@ -9,6 +9,8 @@ import EquationsView from '@/views/EquationsView.vue';
 import ManualEquationsView from '@/views/ManualEquationsView.vue';
 import ManualDecompositionView from '@/views/ManualDecompositionView.vue';
 import AchievementsView from '@/views/AchievementsView.vue';
+import CityView from '@/views/CityView.vue';
+import DailyTasksView from '@/views/DailyTasksView.vue';
 import { useSettingsStore } from '@/store/settings';
 import { getAvailableExercises } from '@/utils/gradeHelpers';
 
@@ -62,6 +64,16 @@ const routes: Array<RouteRecordRaw> = [
     path: '/achievements',
     name: 'achievements',
     component: AchievementsView
+  },
+  {
+    path: '/city',
+    name: 'city',
+    component: CityView
+  },
+  {
+    path: '/daily-tasks',
+    name: 'daily-tasks',
+    component: DailyTasksView
   }
 ];
 
@@ -78,7 +90,7 @@ declare module 'vue-router' {
 }
 
 // Навигационные guard'ы для проверки доступа
-router.beforeEach((to, from, next) => {
+router.beforeEach((to, _from, next) => {
   // Проверяем, есть ли у маршрута мета-информация о типе упражнения
   if (to.meta.exerciseType) {
     const settingsStore = useSettingsStore();

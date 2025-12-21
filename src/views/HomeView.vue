@@ -14,6 +14,21 @@
               <span class="achievements-icon">🏆</span>
               <span v-if="hasNewAchievements" class="new-achievements-count">{{ newAchievementsCount }}</span>
             </button>
+            <button class="daily-tasks-button" @click="goToDailyTasks" title="Ежедневные задания">
+              <span class="daily-tasks-icon">📅</span>
+              <span v-if="hasUncompletedTasks" class="pending-tasks-count">{{ uncompletedTasksCount }}</span>
+            </button>
+            <button class="crystals-button" v-if="crystals > 0" @click="goToCity" title="Кристаллы">
+              <span class="crystals-icon">💎</span>
+              <span class="crystals-count">{{ formatNumber(crystals) }}</span>
+            </button>
+            <button class="city-button" @click="goToCity" title="Мой город">
+              <span class="city-icon">🏙️</span>
+            </button>
+            <div title="Монетки">
+              <span class="coins-icon">🪙</span>
+            <span class="coins-count">{{ formatNumber(coins) }}</span>
+            </div>
           </div>
         </div>
         <div class="games-container">
@@ -109,6 +124,7 @@
   } from '../utils/gradeHelpers';
   import AchievementManager from '../components/AchievementManager.vue';
   import { useAchievements } from '../composables/useAchievements';
+  import { usePlayerStore } from '../store/player';
 
   export default {
     name: 'HomeView',
@@ -120,12 +136,16 @@
       const scoresStore = useScoresStore();
       const settingsStore = useSettingsStore();
       const achievementsStore = useAchievementsStore();
+      const playerStore = usePlayerStore();
       const { checkAchievements } = useAchievements();
 
       // Загружаем очки, настройки и ачивки при монтировании компонента
       scoresStore.loadScores();
       settingsStore.loadSettings();
       achievementsStore.loadAchievements();
+
+      // Генерируем ежедневные задания при необходимости
+      playerStore.generateDailyTasks();
 
       // Проверяем только неразблокированные достижения на основе текущих очков
       // Это нужно для случаев, когда очки были получены до добавления системы достижений
@@ -155,7 +175,7 @@
           if (!isScrolling) {
             window.requestAnimationFrame(() => {
               const scrollTop = container.scrollTop;
-              const cardHeight = container.querySelector('.game-card')?.offsetHeight + 20 || 0; // +gap
+              const cardHeight = (container.querySelector('.game-card') as HTMLElement)?.offsetHeight + 20 || 0; // +gap
               const cardElements = container.querySelectorAll('.game-card');
 
               if (cardHeight > 0 && cardElements.length > 0) {
@@ -163,7 +183,7 @@
                 let closestCard = 0;
                 let minDistance = Infinity;
 
-                cardElements.forEach((card, index) => {
+                cardElements.forEach((_card, index) => {
                   const cardTop = index * cardHeight;
                   const distance = Math.abs(scrollTop - cardTop);
                   if (distance < minDistance) {
@@ -173,8 +193,10 @@
                 });
 
                 // Применяем snap только если скролл остановился
-                clearTimeout(window.scrollTimeout);
-                window.scrollTimeout = setTimeout(() => {
+                if ((window as any).scrollTimeout) {
+                  clearTimeout((window as any).scrollTimeout);
+                }
+                (window as any).scrollTimeout = setTimeout(() => {
                   container.scrollTo({
                     top: closestCard * cardHeight,
                     behavior: 'smooth'
@@ -197,7 +219,7 @@
       const equationsScore = computed(() => scoresStore.equationsScore);
       const isGradeSelected = computed(() => settingsStore.isGradeSelected);
       const selectedGrade = computed(() => settingsStore.selectedGrade);
-      const gradeName = computed(() => getGradeName(selectedGrade.value));
+      const gradeName = computed(() => selectedGrade.value ? getGradeName(selectedGrade.value) : '');
 
       // Получаем текущую четверть напрямую, а не из хранилища
       const currentQuarter = computed(() => getCurrentQuarter());
@@ -263,6 +285,14 @@
         router.push('/achievements');
       };
 
+      const goToCity = () => {
+        router.push('/city');
+      };
+
+      const goToDailyTasks = () => {
+        router.push('/daily-tasks');
+      };
+
       const changeGrade = () => {
         settingsStore.resetSettings();
         // После сброса настроек компонент GradeSelection покажется автоматически
@@ -273,6 +303,28 @@
       const totalCount = computed(() => achievementsStore.totalCount);
       const hasNewAchievements = computed(() => achievementsStore.getNewAchievementsCount > 0);
       const newAchievementsCount = computed(() => achievementsStore.getNewAchievementsCount);
+
+      // Вычисляемые свойства для монеток и ежедневных заданий
+      const coins = computed(() => playerStore.currency.coins);
+      const crystals = computed(() => playerStore.currency.crystals);
+
+      const hasUncompletedTasks = computed(() => {
+        return playerStore.dailyTasks.some(task => !task.completed);
+      });
+
+      const uncompletedTasksCount = computed(() => {
+        return playerStore.dailyTasks.filter(task => !task.completed).length;
+      });
+
+      // Функция форматирования чисел
+      const formatNumber = (num: number): string => {
+        if (num >= 1000000) {
+          return (num / 1000000).toFixed(1) + 'M';
+        } else if (num >= 1000) {
+          return (num / 1000).toFixed(1) + 'K';
+        }
+        return num.toString();
+      };
 
       // Добавляем lifecycle hook для монтирования
       onMounted(() => {
@@ -295,12 +347,19 @@
         totalCount,
         hasNewAchievements,
         newAchievementsCount,
+        coins,
+        crystals,
+        hasUncompletedTasks,
+        uncompletedTasksCount,
+        formatNumber,
         goToCounting,
         goToDecomposition,
         goToFirstGradeDecomposition,
         goToMultiplication,
         goToEquations,
         goToAchievements,
+        goToCity,
+        goToDailyTasks,
         changeGrade
       };
     }
@@ -314,6 +373,7 @@
     align-items: center;
     justify-content: center;
     padding: 20px;
+    gap: 20px;
     flex: 1;
   }
 
@@ -380,6 +440,159 @@
 
   .achievements-icon {
     font-size: 24px;
+  }
+
+  .city-button {
+    background: linear-gradient(135deg, #FF9800, #F57C00);
+    color: white;
+    border: none;
+    border-radius: 50%;
+    width: 48px;
+    height: 48px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 3px 8px rgba(255, 152, 0, 0.3);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+
+  .city-button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 12px rgba(255, 152, 0, 0.4);
+  }
+
+  .city-icon {
+    font-size: 24px;
+  }
+
+  .daily-tasks-button {
+    background: linear-gradient(135deg, #8b5cf6, #7c3aed);
+    color: white;
+    border: none;
+    border-radius: 50%;
+    width: 48px;
+    height: 48px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 3px 8px rgba(139, 92, 246, 0.3);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    flex-shrink: 0;
+  }
+
+  .daily-tasks-button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 12px rgba(139, 92, 246, 0.4);
+  }
+
+  .daily-tasks-icon {
+    font-size: 24px;
+  }
+
+  .pending-tasks-count {
+    position: absolute;
+    top: -4px;
+    right: -4px;
+    background: #ff4757;
+    color: white;
+    border-radius: 50%;
+    width: 18px;
+    height: 18px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 11px;
+    font-weight: bold;
+  }
+
+  .coins-button {
+    background: linear-gradient(135deg, #fbbf24, #f59e0b, #d97706);
+    color: white;
+    border: none;
+    border-radius: 2rem;
+    padding: 0.5rem 1rem;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 6px rgba(251, 191, 36, 0.3), inset 0 -2px 4px rgba(0, 0, 0, 0.1);
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    position: relative;
+    flex-shrink: 0;
+  }
+
+  .coins-button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 12px rgba(251, 191, 36, 0.4), inset 0 -2px 4px rgba(0, 0, 0, 0.1);
+  }
+
+  .coins-button:active {
+    transform: translateY(0);
+    box-shadow: 0 2px 4px rgba(251, 191, 36, 0.3), inset 0 1px 2px rgba(0, 0, 0, 0.2);
+  }
+
+  .coins-icon {
+    font-size: 24px;
+    line-height: 1;
+    filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.2));
+  }
+
+  .coins-count {
+    font-size: 14px;
+    font-weight: bold;
+    line-height: 1;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+  }
+
+  .crystals-button {
+    background: linear-gradient(135deg, #818cf8, #6366f1, #4f46e5);
+    color: white;
+    border: none;
+    border-radius: 2rem;
+    padding: 0.5rem 1rem;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 6px rgba(129, 140, 248, 0.3), inset 0 -2px 4px rgba(0, 0, 0, 0.1);
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    position: relative;
+    flex-shrink: 0;
+  }
+
+  .crystals-button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 12px rgba(129, 140, 248, 0.4), inset 0 -2px 4px rgba(0, 0, 0, 0.1);
+  }
+
+  .crystals-button:active {
+    transform: translateY(0);
+    box-shadow: 0 2px 4px rgba(129, 140, 248, 0.3), inset 0 1px 2px rgba(0, 0, 0, 0.2);
+  }
+
+  .crystals-icon {
+    font-size: 24px;
+    line-height: 1;
+    filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.2));
+  }
+
+  .crystals-count {
+    font-size: 14px;
+    font-weight: bold;
+    line-height: 1;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
   }
 
   .new-achievements-count {
@@ -510,7 +723,7 @@
   .game-card {
     background: linear-gradient(135deg, #ffffff, #f8f9ff);
     border-radius: 20px;
-    padding: 20px;
+    padding: 10px;
     box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
     transition: all 0.3s ease;
     cursor: pointer;
@@ -587,6 +800,22 @@
     .grade-info-container {
       margin-bottom: 15px;
       padding: 15px;
+    }
+
+    .coins-button,
+    .crystals-button {
+      padding: 0.4rem 0.8rem;
+      font-size: 13px;
+    }
+
+    .coins-icon,
+    .crystals-icon {
+      font-size: 20px;
+    }
+
+    .coins-count,
+    .crystals-count {
+      font-size: 12px;
     }
 
     .grade-info {
@@ -683,6 +912,27 @@
       flex-direction: column;
       gap: 10px;
       padding: 10px;
+    }
+
+    .grade-actions {
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+
+    .coins-button,
+    .crystals-button {
+      padding: 0.3rem 0.6rem;
+      font-size: 12px;
+    }
+
+    .coins-icon,
+    .crystals-icon {
+      font-size: 18px;
+    }
+
+    .coins-count,
+    .crystals-count {
+      font-size: 11px;
     }
 
     .grade-info {
