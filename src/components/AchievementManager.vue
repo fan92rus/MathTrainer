@@ -7,14 +7,6 @@
       :achievement="currentAchievement"
       @close="handleModalClose"
     />
-
-    <!-- Индикатор новых ачивок (можно разместить в главном меню) -->
-    <div v-if="hasNewAchievements" class="achievements-indicator">
-      <button class="achievements-button" @click="handleViewAllAchievements">
-        <span class="achievements-icon">🏆</span>
-        <span class="achievements-badge">{{ totalNewAchievements }}</span>
-      </button>
-    </div>
   </div>
 </template>
 
@@ -104,13 +96,6 @@ const handleViewAllAchievements = () => {
 </script>
 
 <style scoped>
-.achievements-indicator {
-  position: fixed;
-  top: 20px;
-  right: 20px;
-  z-index: 1000;
-}
-
 .achievements-button {
   position: relative;
   background: linear-gradient(135deg, #4CAF50, #45a049);
@@ -182,11 +167,6 @@ const handleViewAllAchievements = () => {
 
 /* Мобильная адаптация */
 @media (max-width: 768px) {
-  .achievements-indicator {
-    top: 15px;
-    right: 15px;
-  }
-
   .achievements-button {
     width: 50px;
     height: 50px;

@@ -15,7 +15,7 @@ export const usePlayerStore = defineStore('player', () => {
 
   // Валюта
   const currency = useLocalStorage<Currency>('currency', {
-    coins: 0,
+    coins: 100, // Даем стартовые монетки для теста
     crystals: 0,
   });
 
