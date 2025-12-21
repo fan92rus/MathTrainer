@@ -58,4 +58,19 @@
     padding: 0;
     overflow: hidden;
   }
+
+  #math-trainer-app {
+  width: 100%;
+}
+
+/* Mobile styles */
+@media (max-width: 768px) {
+  .app-container {
+    width: 100vw;
+  }
+
+  #math-trainer-app {
+    width: 100vw;
+  }
+}
 </style>
