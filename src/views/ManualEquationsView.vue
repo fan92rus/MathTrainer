@@ -175,9 +175,8 @@
         // Вычисляем очки
         const errors = 0; // В ручном режиме одна попытка
         const points = errors === 0 ? 10 : errors === 1 ? 5 : 0;
-        const adjustedPoints = Math.round(
-          points * (currentLevelConfig.value.pointsPerCorrect / 10)
-        );
+        const levelMultiplier = currentLevelConfig.value.complexity || 1;
+        const adjustedPoints = Math.round(points * levelMultiplier);
 
         selectAnswer(0, 0, () => {
           scoresStore.updateEquationsScore(adjustedPoints);

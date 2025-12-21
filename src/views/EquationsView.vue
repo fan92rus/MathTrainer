@@ -128,24 +128,23 @@
       const progressToNextLevelPercent = computed(() => {
         if (!nextLevelInfo.value) return 100; // Уже максимальный уровень
 
-        const currentLevelMin = currentLevelConfig.value.minScore;
-        const nextLevelMin = nextLevelInfo.value.minScore;
+        const currentLevelRequired = currentLevelConfig.value.requiredScore || 0;
+        const nextLevelRequired = nextLevelInfo.value.nextLevelConfig?.requiredScore || 0;
 
-        if (nextLevelMin <= currentLevelMin) return 100;
+        if (nextLevelRequired <= currentLevelRequired) return 100;
 
         const progress =
-          ((totalScore.value - currentLevelMin) / (nextLevelMin - currentLevelMin)) * 100;
+          ((totalScore.value - currentLevelRequired) / (nextLevelRequired - currentLevelRequired)) * 100;
         return Math.min(100, Math.max(0, progress));
       });
 
       // Обработчик выбора ответа
       const handleAnswerSelected = (index) => {
         selectAnswer(index, currentProblem.value?.correctIndex || 0, (points) => {
-          // При правильном ответе обновляем общий счет с учетом количества ошибок
-          // Применяем коэффициент уровня сложности к базовым очкам
-          const adjustedPoints = Math.round(
-            points * (currentLevelConfig.value.pointsPerCorrect / 10)
-          );
+          // При правильном ответе обновляем общий счет
+          // Используем базовые очки с учетом сложности уровня
+          const levelMultiplier = currentLevelConfig.value.complexity || 1;
+          const adjustedPoints = Math.round(points * levelMultiplier);
           scoresStore.updateEquationsScore(adjustedPoints);
         });
       };

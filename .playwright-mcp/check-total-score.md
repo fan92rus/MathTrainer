@@ -1,0 +1,32 @@
+### Page state
+- Page URL: http://localhost:3003/MathTrainer/equations
+- Page Title: Математический тренажер для детей
+- Page Snapshot:
+```yaml
+- generic [ref=e6]:
+  - generic [ref=e7]:
+    - generic [ref=e8]:
+      - button "← Назад" [ref=e9] [cursor=pointer]
+      - generic [ref=e11]: "Уровень 1: Простые уравнения (x + a = b)"
+    - heading "Реши уравнение" [level=1] [ref=e12]
+  - generic [ref=e13]:
+    - generic [ref=e14]:
+      - generic [ref=e15]:
+        - generic [ref=e16]: Текущие
+        - generic [ref=e17]: ⭐ 30
+      - generic [ref=e18]:
+        - generic [ref=e19]: Всего
+        - generic [ref=e20]: ⭐ NaN
+    - generic [ref=e21]: Вопрос 4 из 5
+  - generic [ref=e23]: "До следующего уровня: 50 баллов"
+  - generic [ref=e26]: x + 4 = 7, чему равен x?
+  - generic [ref=e28]:
+    - generic [ref=e29]: ★
+    - generic [ref=e30]: ★
+    - generic [ref=e31]: ★
+  - generic [ref=e32]:
+    - generic [ref=e33] [cursor=pointer]: "7"
+    - generic [ref=e34] [cursor=pointer]: "3"
+    - generic [ref=e35] [cursor=pointer]: "5"
+    - generic [ref=e36] [cursor=pointer]: "6"
+```

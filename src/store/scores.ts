@@ -71,52 +71,114 @@ export const useScoresStore = defineStore('scores', {
 
       const countingSaved = getItem('countingTrainerTotalScore');
       if (countingSaved !== null) {
-        this.countingScore = parseInt(countingSaved, 10);
+        const parsedScore = parseInt(countingSaved, 10);
+        if (isNaN(parsedScore) || parsedScore < 0) {
+          this.countingScore = 0;
+          this.saveCountingScore();
+        } else {
+          this.countingScore = parsedScore;
+        }
       }
 
       const decompositionSaved = getItem('mathTrainerTotalScore');
       if (decompositionSaved !== null) {
-        this.decompositionScore = parseInt(decompositionSaved, 10);
+        const parsedScore = parseInt(decompositionSaved, 10);
+        if (isNaN(parsedScore) || parsedScore < 0) {
+          this.decompositionScore = 0;
+          this.saveDecompositionScore();
+        } else {
+          this.decompositionScore = parsedScore;
+        }
       }
 
       const firstGradeDecompositionSaved = getItem('firstGradeDecompositionScore');
       if (firstGradeDecompositionSaved !== null) {
-        this.firstGradeDecompositionScore = parseInt(firstGradeDecompositionSaved, 10);
+        const parsedScore = parseInt(firstGradeDecompositionSaved, 10);
+        if (isNaN(parsedScore) || parsedScore < 0) {
+          this.firstGradeDecompositionScore = 0;
+          this.saveFirstGradeDecompositionScore();
+        } else {
+          this.firstGradeDecompositionScore = parsedScore;
+        }
       }
 
       const multiplicationSaved = getItem('multiplicationScore');
       if (multiplicationSaved !== null) {
-        this.multiplicationScore = parseInt(multiplicationSaved, 10);
+        const parsedScore = parseInt(multiplicationSaved, 10);
+        if (isNaN(parsedScore) || parsedScore < 0) {
+          this.multiplicationScore = 0;
+          this.saveMultiplicationScore();
+        } else {
+          this.multiplicationScore = parsedScore;
+        }
       }
 
       const equationsSaved = getItem('equationsScore');
       if (equationsSaved !== null) {
-        this.equationsScore = parseInt(equationsSaved, 10);
+        const parsedScore = parseInt(equationsSaved, 10);
+        // Миграция: исправляем NaN и некорректные значения
+        if (isNaN(parsedScore) || parsedScore < 0) {
+          this.equationsScore = 0;
+          // Сохраняем исправленное значение
+          this.saveEquationsScore();
+        } else {
+          this.equationsScore = parsedScore;
+        }
       }
 
       const currentLevelSaved = getItem('currentMultiplicationLevel');
       if (currentLevelSaved !== null) {
-        this.currentMultiplicationLevel = parseInt(currentLevelSaved, 10);
+        const parsedLevel = parseInt(currentLevelSaved, 10);
+        if (isNaN(parsedLevel) || parsedLevel < 1) {
+          this.currentMultiplicationLevel = 2;
+          this.saveCurrentMultiplicationLevel();
+        } else {
+          this.currentMultiplicationLevel = parsedLevel;
+        }
       }
 
       const manualEquationsSaved = getItem('manualEquationsSolved');
       if (manualEquationsSaved !== null) {
-        this.manualEquationsSolved = parseInt(manualEquationsSaved, 10);
+        const parsedCount = parseInt(manualEquationsSaved, 10);
+        if (isNaN(parsedCount) || parsedCount < 0) {
+          this.manualEquationsSolved = 0;
+          this.saveManualEquationsSolved();
+        } else {
+          this.manualEquationsSolved = parsedCount;
+        }
       }
 
       const totalEquationsSaved = getItem('totalEquationsAttempted');
       if (totalEquationsSaved !== null) {
-        this.totalEquationsAttempted = parseInt(totalEquationsSaved, 10);
+        const parsedCount = parseInt(totalEquationsSaved, 10);
+        if (isNaN(parsedCount) || parsedCount < 0) {
+          this.totalEquationsAttempted = 0;
+          this.saveTotalEquationsAttempted();
+        } else {
+          this.totalEquationsAttempted = parsedCount;
+        }
       }
 
       const manualDecompositionSaved = getItem('manualDecompositionSolved');
       if (manualDecompositionSaved !== null) {
-        this.manualDecompositionSolved = parseInt(manualDecompositionSaved, 10);
+        const parsedCount = parseInt(manualDecompositionSaved, 10);
+        if (isNaN(parsedCount) || parsedCount < 0) {
+          this.manualDecompositionSolved = 0;
+          this.saveManualDecompositionSolved();
+        } else {
+          this.manualDecompositionSolved = parsedCount;
+        }
       }
 
       const totalDecompositionSaved = getItem('totalDecompositionAttempted');
       if (totalDecompositionSaved !== null) {
-        this.totalDecompositionAttempted = parseInt(totalDecompositionSaved, 10);
+        const parsedCount = parseInt(totalDecompositionSaved, 10);
+        if (isNaN(parsedCount) || parsedCount < 0) {
+          this.totalDecompositionAttempted = 0;
+          this.saveTotalDecompositionAttempted();
+        } else {
+          this.totalDecompositionAttempted = parsedCount;
+        }
       }
     },
 

@@ -249,6 +249,7 @@ export function generateEquationProblem(
           x = b - a;
           expression = `${a} + x = ${b}`;
         }
+        correctAnswer = x; // X вычислен как b - a
         break;
 
       case 'with-parentheses':
@@ -303,16 +304,7 @@ export function generateEquationProblem(
         }
     }
 
-    // Извлекаем значение X из выражения для возврата
-    const xMatch = expression.match(/x\s*[+\-×]\s*(\d+)|(\d+)\s*[+\-×]\s*x/);
-    if (xMatch) {
-      const extractedX = xMatch[1] || xMatch[2];
-      correctAnswer = parseInt(extractedX);
-    } else {
-      // Если не удалось извлечь, используем сохраненное значение
-      correctAnswer = x;
-    }
-
+    
     // Увеличиваем количество попыток
     if (attempts >= maxAttempts) {
       break;
@@ -356,7 +348,7 @@ export function getNextEquationsLevel(currentScore: number): NextLevelInfo | nul
   return {
     currentLevel,
     nextLevel,
-    scoreNeeded: nextLevelConfig.requiredScore,
+    scoreNeeded: Math.max(0, nextLevelConfig.requiredScore - currentScore),
     nextLevelConfig
   };
 }

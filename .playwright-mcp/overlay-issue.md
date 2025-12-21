@@ -1,0 +1,50 @@
+### Page state
+- Page URL: http://localhost:3003/MathTrainer/equations
+- Page Title: Математический тренажер для детей
+- Page Snapshot:
+```yaml
+- generic [ref=e3]:
+  - generic [ref=e6]:
+    - generic [ref=e7]:
+      - generic [ref=e8]:
+        - button "← Назад" [ref=e9] [cursor=pointer]
+        - generic [ref=e11]: "Уровень 1: Простые уравнения (x + a = b)"
+      - heading "Реши уравнение" [level=1] [ref=e12]
+    - generic [ref=e13]:
+      - generic [ref=e14]:
+        - generic [ref=e15]:
+          - generic [ref=e16]: Текущие
+          - generic [ref=e17]: ⭐ 0
+        - generic [ref=e18]:
+          - generic [ref=e19]: Всего
+          - generic [ref=e20]: ⭐ 0
+      - generic [ref=e21]: Вопрос 1 из 5
+    - generic [ref=e23]: "До следующего уровня: 50 баллов"
+    - generic [ref=e26]: x + 1 = 4, чему равен x?
+    - generic [ref=e28]:
+      - generic [ref=e29]: ★
+      - generic [ref=e30]: ★
+      - generic [ref=e31]: ★
+    - generic [ref=e32]:
+      - generic [ref=e33] [cursor=pointer]: "6"
+      - generic [ref=e34] [cursor=pointer]: "5"
+      - generic [ref=e35] [cursor=pointer]: "8"
+      - generic [ref=e36] [cursor=pointer]: "3"
+  - generic [ref=e38]:
+    - generic [ref=e39]:
+      - heading "Добро пожаловать в Математический Тренажер!" [level=1] [ref=e40]
+      - paragraph [ref=e41]: Пожалуйста, выберите ваш класс, чтобы мы могли настроить задания под ваш уровень
+    - generic [ref=e42]:
+      - generic [ref=e43] [cursor=pointer]:
+        - generic [ref=e44]: 🎒
+        - generic [ref=e45]: 1 класс
+      - generic [ref=e46] [cursor=pointer]:
+        - generic [ref=e47]: 📚
+        - generic [ref=e48]: 2 класс
+      - generic [ref=e49] [cursor=pointer]:
+        - generic [ref=e50]: 📖
+        - generic [ref=e51]: 3 класс
+      - generic [ref=e52] [cursor=pointer]:
+        - generic [ref=e53]: 📝
+        - generic [ref=e54]: 4 класс
+```
