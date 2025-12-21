@@ -43,14 +43,7 @@
           @answer-selected="handleAnswerSelected"
         />
 
-        <!-- Пошаговое решение после правильного ответа -->
-        <StepByStepSolution
-          v-if="answered && selectedIndex === currentProblem?.correctIndex"
-          :expression="currentProblem?.expression || ''"
-          :correct-option="currentProblem?.options[currentProblem?.correctIndex] || ''"
-          :show="answered && selectedIndex === currentProblem?.correctIndex"
-        />
-      </div>
+              </div>
 
       <GameOver
         v-else
@@ -75,7 +68,6 @@
   import ProgressBar from '../components/common/ProgressBar.vue';
   import StarRating from '../components/common/StarRating.vue';
   import AnswerOptions from '../components/common/AnswerOptions.vue';
-  import StepByStepSolution from '../components/common/StepByStepSolution.vue';
   import GameOver from '../components/common/GameOver.vue';
 
   export default {
@@ -85,7 +77,6 @@
       ProgressBar,
       StarRating,
       AnswerOptions,
-      StepByStepSolution,
       GameOver
     },
     setup() {
