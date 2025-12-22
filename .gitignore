@@ -144,3 +144,6 @@ dist-ssr
 # Git worktrees (Crystal)
 /worktrees/
 /worktree-*/
+
+# Special Windows files
+nul
