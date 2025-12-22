@@ -1,0 +1,238 @@
+import * as BABYLON from '@babylonjs/core'
+import '@babylonjs/loaders'
+
+export interface ModelConfig {
+  id: string
+  modelPath: string
+  scale?: BABYLON.Vector3
+  rotation?: BABYLON.Vector3
+  position?: BABYLON.Vector3
+  offset?: { x: number; y: number; z: number }
+  animations?: AnimationConfig[]
+}
+
+export interface AnimationConfig {
+  name: string
+  autoPlay?: boolean
+  loop?: boolean
+  speedRatio?: number
+}
+
+export class ModelLoader {
+  private scene: BABYLON.Scene
+  private loadedModels: Map<string, BABYLON.AbstractMesh[]> = new Map()
+  private loadingPromises: Map<string, Promise<BABYLON.AbstractMesh[]>> = new Map()
+
+  constructor(scene: BABYLON.Scene) {
+    this.scene = scene
+  }
+
+  /**
+   * Загружает GLB/GLTF модель
+   */
+  public async loadModel(config: ModelConfig): Promise<BABYLON.AbstractMesh[]> {
+    // Если модель уже загружена, возвращаем кэшированный результат
+    if (this.loadedModels.has(config.id)) {
+      return this.cloneModel(config.id, config)
+    }
+
+    // Если модель в процессе загрузки, возвращаем промис
+    if (this.loadingPromises.has(config.id)) {
+      await this.loadingPromises.get(config.id)!
+      return this.cloneModel(config.id, config)
+    }
+
+    // Загружаем модель
+    const loadingPromise = this.loadGLB(config.modelPath)
+    this.loadingPromises.set(config.id, loadingPromise)
+
+    try {
+      const meshes = await loadingPromise
+      this.loadedModels.set(config.id, meshes)
+      this.loadingPromises.delete(config.id)
+
+      // Настраиваем анимации
+      this.setupAnimations(meshes, config.animations)
+
+      return meshes
+    } catch (error) {
+      this.loadingPromises.delete(config.id)
+      throw error
+    }
+  }
+
+  /**
+   * Клонирует загруженную модель
+   */
+  private async cloneModel(modelId: string, config: ModelConfig): Promise<BABYLON.AbstractMesh[]> {
+    const originalMeshes = this.loadedModels.get(modelId)
+    if (!originalMeshes) {
+      throw new Error(`Model ${modelId} not loaded`)
+    }
+
+    const clonedMeshes: BABYLON.AbstractMesh[] = []
+
+    for (const mesh of originalMeshes) {
+      const cloned = mesh.clone(`${config.id}_${Date.now()}_${Math.random()}`)
+      if (cloned) {
+        clonedMeshes.push(cloned)
+
+        // Применяем трансформации
+        if (config.scale) {
+          cloned.scaling = config.scale
+        }
+        if (config.rotation) {
+          cloned.rotation = config.rotation
+        }
+        if (config.position) {
+          cloned.position = config.position
+        }
+        if (config.offset) {
+          cloned.position.x += config.offset.x
+          cloned.position.y += config.offset.y
+          cloned.position.z += config.offset.z
+        }
+      }
+    }
+
+    return clonedMeshes
+  }
+
+  /**
+   * Загружает GLB/GLTF файл
+   */
+  private async loadGLB(modelPath: string): Promise<BABYLON.AbstractMesh[]> {
+    return new Promise((resolve, reject) => {
+      BABYLON.SceneLoader.ImportMesh(
+        '',
+        modelPath,
+        '',
+        this.scene,
+        (meshes) => {
+          // Центрируем модель
+          this.centerModel(meshes)
+          resolve(meshes)
+        },
+        null,
+        (error) => {
+          console.error('Error loading GLB model:', error)
+          reject(error)
+        }
+      )
+    })
+  }
+
+  /**
+   * Центрирует модель относительно начала координат
+   */
+  private centerModel(meshes: BABYLON.AbstractMesh[]): void {
+    if (meshes.length === 0) return
+
+    // Вычисляем центр ограничивающей коробки
+    let minX = Infinity, maxX = -Infinity
+    let minY = Infinity, maxY = -Infinity
+    let minZ = Infinity, maxZ = -Infinity
+
+    for (const mesh of meshes) {
+      if (mesh.getBoundingInfo) {
+        const boundingBox = mesh.getBoundingInfo().boundingBox
+        minX = Math.min(minX, boundingBox.minimumWorld.x)
+        maxX = Math.max(maxX, boundingBox.maximumWorld.x)
+        minY = Math.min(minY, boundingBox.minimumWorld.y)
+        maxY = Math.max(maxY, boundingBox.maximumWorld.y)
+        minZ = Math.min(minZ, boundingBox.minimumWorld.z)
+        maxZ = Math.max(maxZ, boundingBox.maximumWorld.z)
+      }
+    }
+
+    const centerX = (minX + maxX) / 2
+    const centerY = minY // Помещаем на землю
+    const centerZ = (minZ + maxZ) / 2
+
+    // Сдвигаем все меши
+    for (const mesh of meshes) {
+      mesh.position.x -= centerX
+      mesh.position.y -= centerY
+      mesh.position.z -= centerZ
+    }
+  }
+
+  /**
+   * Настраивает анимации модели
+   */
+  private setupAnimations(meshes: BABYLON.AbstractMesh[], animations?: AnimationConfig[]): void {
+    if (!animations) return
+
+    for (const config of animations) {
+      for (const mesh of meshes) {
+        const animationGroups = mesh.animationGroups || []
+
+        for (const animationGroup of animationGroups) {
+          if (animationGroup.name === config.name) {
+            if (config.autoPlay !== false) {
+              animationGroup.play(config.loop !== false)
+            }
+            if (config.speedRatio) {
+              animationGroup.speedRatio = config.speedRatio
+            }
+          }
+        }
+      }
+    }
+  }
+
+  /**
+   * Создает материал для перекраски модели
+   */
+  public createColoredMaterial(
+    baseMaterial: BABYLON.Material,
+    color: BABYLON.Color3,
+    name?: string
+  ): BABYLON.StandardMaterial {
+    const newMaterial = new BABYLON.StandardMaterial(
+      name || `colored_${Date.now()}`,
+      this.scene
+    )
+
+    if (baseMaterial instanceof BABYLON.StandardMaterial) {
+      newMaterial.diffuseColor = color
+      newMaterial.specularColor = baseMaterial.specularColor
+      newMaterial.emissiveColor = baseMaterial.emissiveColor
+      newMaterial.ambientColor = baseMaterial.ambientColor
+      newMaterial.alpha = baseMaterial.alpha
+    }
+
+    return newMaterial
+  }
+
+  /**
+   * Применяет материал к всем меши модели
+   */
+  public applyMaterialToModel(meshes: BABYLON.AbstractMesh[], material: BABYLON.Material): void {
+    for (const mesh of meshes) {
+      if (mesh.material) {
+        mesh.material = material
+      }
+      // Также применяем к дочерним меши
+      if (mesh.getChildMeshes) {
+        const children = mesh.getChildMeshes()
+        for (const child of children) {
+          child.material = material
+        }
+      }
+    }
+  }
+
+  /**
+   * Очищает все загруженные модели
+   */
+  public dispose(): void {
+    for (const [_, meshes] of this.loadedModels) {
+      for (const mesh of meshes) {
+        mesh.dispose()
+      }
+    }
+    this.loadedModels.clear()
+    this.loadingPromises.clear()
+  }
+}

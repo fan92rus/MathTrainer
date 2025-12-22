@@ -193,10 +193,10 @@
                 });
 
                 // Применяем snap только если скролл остановился
-                if ((window as any).scrollTimeout) {
-                  clearTimeout((window as any).scrollTimeout);
+                if ((window as unknown).scrollTimeout) {
+                  clearTimeout((window as unknown).scrollTimeout);
                 }
-                (window as any).scrollTimeout = setTimeout(() => {
+                (window as unknown).scrollTimeout = setTimeout(() => {
                   container.scrollTo({
                     top: closestCard * cardHeight,
                     behavior: 'smooth'

@@ -71,6 +71,7 @@
 
 <script setup lang="ts">
 import { ref, onMounted, onUnmounted, nextTick } from 'vue'
+import type { HTMLCanvasElement } from '@/types/dom'
 import { useCityStore } from '@/store/city'
 import { usePlayerStore } from '@/store/player'
 import { CityRenderer } from '@/utils/city/babylonRenderer'
@@ -139,7 +140,7 @@ const initBabylon = async () => {
     hoveredBuilding.value = building
   })
 
-  cityRenderer.on('buildRequest', (template: BuildingTemplate, x: number, y: number) => {
+  cityRenderer.on('buildRequest', async (template: BuildingTemplate, x: number, y: number) => {
     console.log('buildRequest:', template.id, x, y, 'Текущие монеты:', playerStore.currency.coins)
 
     // Проверяем можем ли мы позволить это здание
@@ -163,7 +164,9 @@ const initBabylon = async () => {
       if (result) {
         // Успешно добавили в store
         // Создаем 3D модель
-        cityRenderer?.createBuilding(template, x, y)
+        if (cityRenderer) {
+          await cityRenderer.createBuilding(template, x, y)
+        }
         console.log('Здание успешно создано и добавлено в store')
       } else {
         // Не удалось добавить в store (неизвестная ошибка)
@@ -181,9 +184,14 @@ const initBabylon = async () => {
   })
 
   // Загрузка существующих зданий
-  cityStore.city.buildings.forEach(building => {
-    cityRenderer?.addBuilding(building)
-  })
+  const loadExistingBuildings = async () => {
+    for (const building of cityStore.city.buildings) {
+      if (cityRenderer) {
+        await cityRenderer.addBuilding(building)
+      }
+    }
+  }
+  loadExistingBuildings()
 }
 
 onMounted(async () => {

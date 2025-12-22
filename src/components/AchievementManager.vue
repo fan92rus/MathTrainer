@@ -11,27 +11,18 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, watch, onMounted } from 'vue'
-import { useRouter } from 'vue-router'
+import { ref, watch, onMounted } from 'vue'
 import { useAchievementsStore } from '@/store/achievements'
 import { useAchievements } from '@/composables/useAchievements'
 import AchievementUnlockModal from './AchievementUnlockModal.vue'
 import type { Achievement } from '@/types/achievements'
 
 const achievementsStore = useAchievementsStore()
-const { newlyUnlockedAchievements, hasNewAchievements, markAllAsViewed } = useAchievements()
-
-const router = useRouter()
+const { newlyUnlockedAchievements } = useAchievements()
 const showModal = ref(false)
 const currentAchievement = ref<Achievement | null>(null)
 const queue = ref<Achievement[]>([])
 
-// Вычисляем общее количество новых ачивок
-const totalNewAchievements = computed(() => {
-  const storeCount = achievementsStore.getNewAchievementsCount
-  const queueCount = queue.value.length
-  return storeCount + queueCount
-})
 
 // Инициализация при монтировании
 onMounted(() => {
@@ -88,11 +79,6 @@ const handleModalClose = () => {
   }, 300)
 }
 
-// Перейти ко всем ачивкам
-const handleViewAllAchievements = () => {
-  markAllAsViewed()
-  router.push('/achievements')
-}
 </script>
 
 <style scoped>

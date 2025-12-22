@@ -14,6 +14,7 @@ export interface Building {
   maxLevel: number;
   x?: number;
   y?: number;
+  templateId?: string; // ID шаблона для связи с 3D моделью
   produces?: {
     type: 'coins' | 'crystals' | 'experience';
     amount: number;

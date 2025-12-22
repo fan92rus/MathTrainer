@@ -1,0 +1,54 @@
+### Page state
+- Page URL: http://localhost:3003/MathTrainer/
+- Page Title: Математический тренажер для детей
+- Page Snapshot:
+```yaml
+- generic [ref=e4]:
+  - generic [ref=e63]:
+    - generic [ref=e65]: 🔢
+    - generic [ref=e66]:
+      - heading "Достижение получено!" [level=2] [ref=e67]
+      - heading "Любитель счета" [level=3] [ref=e68]
+      - paragraph [ref=e69]: 100 очков в счете
+      - generic [ref=e70]:
+        - generic [ref=e71]: "Награда:"
+        - generic [ref=e72]: +30 ⭐
+    - generic [ref=e73]:
+      - button "Понял" [ref=e74] [cursor=pointer]
+      - button "Все достижения" [ref=e75] [cursor=pointer]
+  - generic [ref=e23]:
+    - generic [ref=e24]:
+      - generic [ref=e25]:
+        - generic [ref=e26]: "Текущий класс:"
+        - generic [ref=e27]: 2 класс, 2 четверть
+      - generic [ref=e28]:
+        - button "Изменить класс" [ref=e29] [cursor=pointer]
+        - button "🏆 6" [ref=e30] [cursor=pointer]:
+          - generic [ref=e31]: 🏆
+          - generic [ref=e32]: "6"
+        - button "📅 4" [ref=e33] [cursor=pointer]:
+          - generic [ref=e34]: 📅
+          - generic [ref=e35]: "4"
+        - button "🏙️" [ref=e36] [cursor=pointer]:
+          - generic [ref=e37]: 🏙️
+        - generic "Монетки" [ref=e38]: 🪙100
+    - generic [ref=e39]:
+      - generic [ref=e41] [cursor=pointer]:
+        - generic [ref=e42]: ➕
+        - generic [ref=e43]:
+          - generic [ref=e44]: Вычисление удобным способом
+          - generic [ref=e45]: Выбирай удобный способ вычисления
+          - generic [ref=e46]: ⭐ 30
+      - generic [ref=e48] [cursor=pointer]:
+        - generic [ref=e49]: 🔢
+        - generic [ref=e50]:
+          - generic [ref=e51]: Тренажер счета
+          - generic [ref=e52]: Решай примеры на сложение и вычитание
+          - generic [ref=e53]: ⭐ 160
+      - generic [ref=e55] [cursor=pointer]:
+        - generic [ref=e56]: 🧮
+        - generic [ref=e57]:
+          - generic [ref=e58]: Простые уравнения
+          - generic [ref=e59]: Решай простые уравнения с неизвестным
+          - generic [ref=e60]: ⭐ 1185
+```

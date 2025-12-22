@@ -12,7 +12,7 @@ const buildingTemplates: BuildingTemplate[] = [
     baseCost: 10,
     maxLevel: 3,
     icon: '🏠',
-    description: 'Маленький уютный дом для 3 жителей',
+    description: 'Маленький уютный дом для 3 жителей (с 3D моделью)',
   },
   {
     id: 'cottage',
@@ -145,12 +145,13 @@ export const useCityStore = defineStore('city', () => {
       maxLevel: template.maxLevel,
       x,
       y,
+      templateId: templateId, // Сохраняем ID шаблона для 3D модели
       miniGame: template.miniGame,
       // Жилые дома производят монеты
       produces: template.type === 'residential' ? {
         type: 'coins' as const,
         amount: template.baseCost / 10, // 10% от стоимости
-        interval: 1440, // раз в день
+        interval: 1440, // раз в день,
       } : undefined,
     };
 

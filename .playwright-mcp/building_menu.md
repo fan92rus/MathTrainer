@@ -1,0 +1,59 @@
+### Page state
+- Page URL: http://localhost:3000/MathTrainer/city
+- Page Title: Математический тренажер для детей
+- Page Snapshot:
+```yaml
+- generic [ref=e5]:
+  - generic:
+    - generic [ref=e7]:
+      - generic [ref=e8]:
+        - generic [ref=e9]: 💰
+        - generic [ref=e10]: "90"
+      - generic [ref=e11]:
+        - generic [ref=e12]: 💎
+        - generic [ref=e13]: "0"
+      - generic [ref=e14]:
+        - generic [ref=e15]: 👥
+        - generic [ref=e16]: "3"
+    - generic [ref=e59]:
+      - heading "🏗️ Постройки" [level=3] [ref=e60]
+      - generic [ref=e61]:
+        - generic [ref=e62] [cursor=pointer]:
+          - generic [ref=e63]: 🏠
+          - generic [ref=e64]: Маленький домик
+          - generic [ref=e65]: 💰 10
+        - generic [ref=e66] [cursor=pointer]:
+          - generic [ref=e67]: 🏡
+          - generic [ref=e68]: Коттедж
+          - generic [ref=e69]: 💰 25
+        - generic [ref=e70] [cursor=pointer]:
+          - generic [ref=e71]: 🏢
+          - generic [ref=e72]: Многоквартирный дом
+          - generic [ref=e73]: 💰 50
+        - generic [ref=e74] [cursor=pointer]:
+          - generic [ref=e75]: 🏫
+          - generic [ref=e76]: Школа
+          - generic [ref=e77]: 💰 30
+        - generic [ref=e78] [cursor=pointer]:
+          - generic [ref=e79]: 🏥
+          - generic [ref=e80]: Больница
+          - generic [ref=e81]: 💰 35
+        - generic [ref=e82] [cursor=pointer]:
+          - generic [ref=e83]: 🏪
+          - generic [ref=e84]: Магазин
+          - generic [ref=e85]: 💰 20
+        - generic [ref=e86] [cursor=pointer]:
+          - generic [ref=e87]: 🌳
+          - generic [ref=e88]: Парк
+          - generic [ref=e89]: 💰 15
+        - generic [ref=e90] [cursor=pointer]:
+          - generic [ref=e91]: 🎠
+          - generic [ref=e92]: Игровая площадка
+          - generic [ref=e93]: 💰 20
+      - button "✖" [ref=e94] [cursor=pointer]
+    - generic [ref=e17]:
+      - button "🏗️ Закрыть" [active] [ref=e58] [cursor=pointer]
+      - button "🎯 Центр" [ref=e19] [cursor=pointer]
+      - button "➕" [ref=e20] [cursor=pointer]
+      - button "➖" [ref=e21] [cursor=pointer]
+```

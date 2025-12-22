@@ -1,4 +1,5 @@
 // Простой аудио-менеджер для звуков в игре
+import type { HTMLAudioElement, OscillatorType } from '@/types/dom';
 export class AudioManager {
   private sounds: Map<string, HTMLAudioElement> = new Map();
   private enabled: boolean = true;
@@ -22,7 +23,7 @@ export class AudioManager {
   // Создание простого звука с помощью Web Audio API
   private createSound(name: string, frequency: number, duration: number, type: OscillatorType) {
     // Создаем аудио контекст
-    const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
+    const audioContext = new (window.AudioContext || (window as unknown).webkitAudioContext)();
 
     // Сохраняем функцию для воспроизведения
     this.sounds.set(name, {
@@ -44,7 +45,7 @@ export class AudioManager {
         oscillator.start(audioContext.currentTime);
         oscillator.stop(audioContext.currentTime + duration);
       }
-    } as any);
+    } as HTMLAudioElement);
   }
 
   // Воспроизвести звук

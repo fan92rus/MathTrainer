@@ -1,12 +1,13 @@
 import * as BABYLON from '@babylonjs/core'
+import type { HTMLCanvasElement } from '@/types/dom'
 import { BuildingManager, BuildState } from './BuildingManager'
 import type { BuildingTemplate, Building } from '@/types/gamification'
 
 // Простая реализация EventEmitter для браузера
 class EventEmitter {
-  private events: Map<string, Function[]> = new Map()
+  private events: Map<string, ((...args: unknown[]) => void)[]> = new Map()
 
-  on(event: string, listener: Function) {
+  on(event: string, listener: (...args: unknown[]) => void) {
     if (!this.events.has(event)) {
       this.events.set(event, [])
     }
@@ -14,7 +15,7 @@ class EventEmitter {
     return this
   }
 
-  emit(event: string, ...args: any[]) {
+  emit(event: string, ...args: unknown[]) {
     const listeners = this.events.get(event)
     if (listeners) {
       listeners.forEach(listener => listener(...args))
@@ -22,7 +23,7 @@ class EventEmitter {
     return listeners ? listeners.length > 0 : false
   }
 
-  off(event: string, listener: Function) {
+  off(event: string, listener: (...args: unknown[]) => void) {
     const listeners = this.events.get(event)
     if (listeners) {
       const index = listeners.indexOf(listener)
@@ -200,7 +201,7 @@ export class CityRenderer extends EventEmitter {
     })
   }
 
-  private handlePointerMove(pointerInfo: BABYLON.PointerInfo) {
+  private handlePointerMove(_pointerInfo: BABYLON.PointerInfo) {
     const pickResult = this.scene.pick(
       this.scene.pointerX,
       this.scene.pointerY,
@@ -225,7 +226,7 @@ export class CityRenderer extends EventEmitter {
     }
   }
 
-  private handlePointerClick(pointerInfo: BABYLON.PointerInfo) {
+  private handlePointerClick(_pointerInfo: BABYLON.PointerInfo) {
     const pickResult = this.scene.pick(
       this.scene.pointerX,
       this.scene.pointerY,
@@ -265,16 +266,16 @@ export class CityRenderer extends EventEmitter {
     this.buildingManager.cancelPlacement()
   }
 
-  public addBuilding(building: Building) {
+  public async addBuilding(building: Building) {
     if (building.x !== undefined && building.y !== undefined) {
-      this.buildingManager.placeBuilding(building)
+      await this.buildingManager.placeBuilding(building)
     }
   }
 
-  public createBuilding(template: BuildingTemplate, x: number, y: number) {
+  public async createBuilding(template: BuildingTemplate, x: number, y: number) {
     const building = this.buildingManager.createBuilding(template, x, y)
     if (building) {
-      this.buildingManager.placeBuilding(building)
+      await this.buildingManager.placeBuilding(building)
     }
   }
 

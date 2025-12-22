@@ -1,5 +1,7 @@
 import * as BABYLON from '@babylonjs/core'
 import type { BuildingTemplate, Building } from '@/types/gamification'
+import { ModelLoader } from './ModelLoader'
+import { BuildingPrefabs } from './BuildingPrefabs'
 
 export enum BuildState {
   IDLE = 'idle',
@@ -18,15 +20,23 @@ export class BuildingManager {
   private pendingPosition = { x: -1, y: -1 }
 
   // Управление объектами
-  private buildings: Map<string, { mesh: BABYLON.Mesh, building: Building }> = new Map()
+  private buildings: Map<string, { meshes: BABYLON.AbstractMesh[], building: Building }> = new Map()
   private previewObject: BABYLON.Mesh | null = null
   private grid: BABYLON.Mesh[][]
+
+  // 3D модели
+  private modelLoader: ModelLoader
+  private buildingPrefabs: BuildingPrefabs
 
   constructor(scene: BABYLON.Scene, gridSize: number, tileSize: number, grid: BABYLON.Mesh[][]) {
     this.scene = scene
     this.gridSize = gridSize
     this.tileSize = tileSize
     this.grid = grid
+
+    // Инициализация систем для работы с 3D моделями
+    this.modelLoader = new ModelLoader(scene)
+    this.buildingPrefabs = new BuildingPrefabs(this.modelLoader)
   }
 
   // Публичный API
@@ -93,14 +103,17 @@ export class BuildingManager {
     return { success: false }
   }
 
-  public placeBuilding(building: Building): void {
-    this.addBuildingMesh(building, building.x!, building.y!)
+  public async placeBuilding(building: Building): Promise<void> {
+    await this.addBuildingMesh(building, building.x!, building.y!)
   }
 
   public removeBuilding(buildingId: string): void {
     const buildingData = this.buildings.get(buildingId)
     if (buildingData) {
-      buildingData.mesh.dispose()
+      // Удаляем все меши здания
+      for (const mesh of buildingData.meshes) {
+        mesh.dispose()
+      }
       this.buildings.delete(buildingId)
     }
   }
@@ -225,14 +238,54 @@ export class BuildingManager {
     return building
   }
 
-  private addBuildingMesh(building: Building, x: number, y: number): void {
+  private async addBuildingMesh(building: Building, x: number, y: number): Promise<void> {
     const worldX = (x - this.gridSize / 2) * this.tileSize + this.tileSize / 2
     const worldZ = (y - this.gridSize / 2) * this.tileSize + this.tileSize / 2
 
-    // Создание 3D модели здания
-    const height = this.tileSize * (1.0 + building.level * 0.4) // Сделаем выше
+    try {
+      // Создаем 3D модель с помощью системы префабов
+      const meshes = await this.buildingPrefabs.createBuilding(building, this.tileSize, this.scene)
+
+      console.log(`Building ${building.id} at grid (${x}, ${y}) -> world (${worldX}, ${worldZ})`)
+
+      for (let i = 0; i < meshes.length; i++) {
+        const mesh = meshes[i]
+        if (!mesh) continue
+
+        // Устанавливаем позицию с учетом высоты модели
+        mesh.position = new BABYLON.Vector3(worldX, 0, worldZ)
+        
+        // Дополнительно центрируем модель по основанию
+        if (mesh.getBoundingInfo) {
+          const boundingBox = mesh.getBoundingInfo().boundingBox
+          // Опускаем модель так чтобы основание было на земле (Y=0)
+          mesh.position.y = -boundingBox.minimumWorld.y
+        }
+        mesh.metadata = { x, y, buildingId: building.id }
+
+        console.log(`  Mesh ${i}: positioned at (${mesh.position.x}, ${mesh.position.y}, ${mesh.position.z})`)
+      }
+
+      // Сохранение в мапу
+      this.buildings.set(building.id, { meshes, building })
+
+      // Анимация появления
+      this.animateBuildingAppear(meshes)
+    } catch (error) {
+      console.error('Error creating building mesh:', error)
+      // Fallback на простую геометрию
+      this.createFallbackBuildingMesh(building, x, y)
+    }
+  }
+
+  private createFallbackBuildingMesh(building: Building, x: number, y: number): void {
+    const worldX = (x - this.gridSize / 2) * this.tileSize + this.tileSize / 2
+    const worldZ = (y - this.gridSize / 2) * this.tileSize + this.tileSize / 2
+
+    // Создание fallback 3D модели здания
+    const height = this.tileSize * (1.0 + building.level * 0.4)
     const buildingMesh = BABYLON.MeshBuilder.CreateBox(
-      `building_${building.id}`,
+      `fallback_building_${building.id}`,
       {
         width: this.tileSize * 0.8,
         height: height,
@@ -245,7 +298,7 @@ export class BuildingManager {
     buildingMesh.metadata = { x, y, buildingId: building.id }
 
     // Материал в зависимости от типа
-    const material = new BABYLON.StandardMaterial(`buildingMaterial_${building.id}`, this.scene)
+    const material = new BABYLON.StandardMaterial(`fallbackBuildingMaterial_${building.id}`, this.scene)
 
     switch (building.type) {
       case 'residential':
@@ -268,29 +321,33 @@ export class BuildingManager {
     buildingMesh.material = material
 
     // Сохранение в мапу
-    this.buildings.set(building.id, { mesh: buildingMesh, building })
+    this.buildings.set(building.id, { meshes: [buildingMesh], building })
 
     // Анимация появления
-    this.animateBuildingAppear(buildingMesh)
+    this.animateBuildingAppear([buildingMesh])
   }
 
-  private animateBuildingAppear(mesh: BABYLON.Mesh): void {
-    mesh.scaling = new BABYLON.Vector3(0.1, 0, 0.1)
+  private animateBuildingAppear(meshes: BABYLON.AbstractMesh[]): void {
+    for (const mesh of meshes) {
+      // Устанавливаем начальный масштаб
+      mesh.scaling = new BABYLON.Vector3(0.1, 0, 0.1)
 
-    const animation = BABYLON.Animation.CreateAndStartAnimation(
-      'buildingAppear',
-      mesh,
-      'scaling',
-      30,
-      15,
-      new BABYLON.Vector3(0.1, 0, 0.1),
-      new BABYLON.Vector3(1, 1, 1),
-      BABYLON.Animation.ANIMATIONLOOPMODE_CONSTANT
-    )
+      // Создаем анимацию появления
+      const animation = BABYLON.Animation.CreateAndStartAnimation(
+        `buildingAppear_${mesh.id}`,
+        mesh,
+        'scaling',
+        30,
+        15,
+        new BABYLON.Vector3(0.1, 0, 0.1),
+        new BABYLON.Vector3(1, 1, 1),
+        BABYLON.Animation.ANIMATIONLOOPMODE_CONSTANT
+      )
 
-    if (animation) {
-      // Пропускаем easingFunction для совместимости
-      // animation.setEasingFunction(new BABYLON.BounceEase())
+      if (animation) {
+        // Можно добавить эффект отскока
+        // animation.setEasingFunction(new BABYLON.BounceEase())
+      }
     }
   }
 
@@ -306,9 +363,15 @@ export class BuildingManager {
   public dispose(): void {
     this.cancelPlacement()
 
+    // Удаляем все здания
     for (const [_, buildingData] of this.buildings) {
-      buildingData.mesh.dispose()
+      for (const mesh of buildingData.meshes) {
+        mesh.dispose()
+      }
     }
     this.buildings.clear()
+
+    // Удаляем 3D модели
+    this.modelLoader.dispose()
   }
 }
