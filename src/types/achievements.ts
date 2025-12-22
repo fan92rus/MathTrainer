@@ -32,4 +32,5 @@ export interface AchievementsState {
   totalCount: number
   lastUnlocked?: string[]
   newAchievements: string[] // непросмотренные ачивки
+  shownAchievements: string[] // показанные ачивки
 }

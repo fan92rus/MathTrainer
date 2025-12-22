@@ -1,4 +1,4 @@
-import { ref, computed } from 'vue'
+import { ref, computed, type Ref, type ComputedRef } from 'vue'
 import { useAchievementsStore } from '@/store/achievements'
 import type { Achievement } from '@/types/achievements'
 import type { ScoresStore } from '@/store/scores'
@@ -9,8 +9,8 @@ interface AchievementsComposable {
     exerciseData: ExerciseData
   ) => Achievement[]
   showAchievementModal: (achievement: Achievement) => void
-  newlyUnlockedAchievements: ref<Achievement[]>
-  hasNewAchievements: computed<boolean>
+  newlyUnlockedAchievements: Ref<Achievement[]>
+  hasNewAchievements: ComputedRef<boolean>
   markAllAsViewed: () => void
 }
 
@@ -26,10 +26,11 @@ interface ExerciseData {
 export function useAchievements(): AchievementsComposable {
   const achievementsStore = useAchievementsStore()
   const newlyUnlockedAchievements = ref<Achievement[]>([])
-
-  const hasNewAchievements = computed(() =>
-    achievementsStore.getNewAchievementsCount > 0 || newlyUnlockedAchievements.value.length > 0
-  )
+  
+  const hasNewAchievements = computed(() => {
+    const unshownCount = achievementsStore.getUnshownNewAchievements().length
+    return unshownCount > 0 || newlyUnlockedAchievements.value.length > 0
+  })
 
   // Проверка ачивок после упражнения
   const checkAchievements = (

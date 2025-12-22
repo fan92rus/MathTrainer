@@ -162,6 +162,9 @@
             correct: true
           })
         })
+        
+        // Сохраняем достижения после проверки
+        achievementsStore.saveAchievements()
       }
 
       // Функция для обеспечения snap эффекта при скролле
@@ -175,7 +178,8 @@
           if (!isScrolling) {
             window.requestAnimationFrame(() => {
               const scrollTop = container.scrollTop;
-              const cardHeight = (container.querySelector('.game-card') as HTMLElement)?.offsetHeight + 20 || 0; // +gap
+              const cardElement = container.querySelector('.game-card') as HTMLElement
+              const cardHeight = cardElement?.offsetHeight + 20 || 0; // +gap
               const cardElements = container.querySelectorAll('.game-card');
 
               if (cardHeight > 0 && cardElements.length > 0) {
@@ -454,7 +458,7 @@
     cursor: pointer;
     transition: all 0.3s ease;
     box-shadow: 0 3px 8px rgba(255, 152, 0, 0.3);
-    display: flex;
+    display: none;
     align-items: center;
     justify-content: center;
     flex-shrink: 0;

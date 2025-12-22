@@ -10,7 +10,8 @@ export const useAchievementsStore = defineStore('achievements', {
     unlockedCount: 0,
     totalCount: ACHIEVEMENTS_DATA.length,
     lastUnlocked: [],
-    newAchievements: []
+    newAchievements: [],
+    shownAchievements: [] // Добавляем массив для отслеживания показанных достижений
   }),
 
   getters: {
@@ -106,6 +107,15 @@ export const useAchievementsStore = defineStore('achievements', {
         }
       }
 
+      const savedShownAchievements = getItem('shownAchievements')
+      if (savedShownAchievements) {
+        try {
+          this.shownAchievements = JSON.parse(savedShownAchievements)
+        } catch (error) {
+          console.error('Error loading shown achievements:', error)
+        }
+      }
+
       this.updateUnlockedCount()
     },
 
@@ -122,6 +132,7 @@ export const useAchievementsStore = defineStore('achievements', {
 
       setItem('achievements', JSON.stringify(achievementsToSave))
       setItem('newAchievements', JSON.stringify(this.newAchievements))
+      setItem('shownAchievements', JSON.stringify(this.shownAchievements))
     },
 
     // Обновить счетчик разблокированных ачивок
@@ -140,6 +151,11 @@ export const useAchievementsStore = defineStore('achievements', {
 
       if (!this.newAchievements.includes(achievementId)) {
         this.newAchievements.push(achievementId)
+      }
+      
+      // Новое достижение еще не показано
+      if (this.shownAchievements.includes(achievementId)) {
+        this.shownAchievements = this.shownAchievements.filter(id => id !== achievementId)
       }
 
       this.lastUnlocked = [achievementId]
@@ -172,6 +188,23 @@ export const useAchievementsStore = defineStore('achievements', {
         this.newAchievements = []
       }
       this.saveAchievements()
+    },
+
+    // Отметить достижения как показанные
+    markAchievementsAsShown(achievementIds?: string[]): void {
+      if (achievementIds) {
+        achievementIds.forEach(id => {
+          if (!this.shownAchievements.includes(id)) {
+            this.shownAchievements.push(id)
+          }
+        })
+      }
+      this.saveAchievements()
+    },
+
+    // Получить непоказанные достижения
+    getUnshownNewAchievements(): string[] {
+      return this.newAchievements.filter(id => !this.shownAchievements.includes(id))
     },
 
     // Проверить условия ачивок после упражнения
@@ -334,6 +367,7 @@ export const useAchievementsStore = defineStore('achievements', {
       this.unlockedCount = 0
       this.lastUnlocked = []
       this.newAchievements = []
+      this.shownAchievements = []
       this.saveAchievements()
     }
   }

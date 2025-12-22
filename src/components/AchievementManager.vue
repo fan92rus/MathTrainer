@@ -37,14 +37,17 @@ const totalNewAchievements = computed(() => {
 onMounted(() => {
   achievementsStore.loadAchievements()
 
-  // Если есть непросмотренные ачивки в хранилище, добавляем их в очередь
-  const newAchievementIds = achievementsStore.newAchievements
-  if (newAchievementIds.length > 0) {
-    const newAchievements = newAchievementIds
+  // Добавляем в очередь только непоказанные достижения
+  const unshownAchievementIds = achievementsStore.getUnshownNewAchievements()
+  if (unshownAchievementIds.length > 0) {
+    const unshownAchievements = unshownAchievementIds
       .map(id => achievementsStore.achievements.find(a => a.id === id))
       .filter(Boolean) as Achievement[]
 
-    queue.value = [...queue.value, ...newAchievements]
+    queue.value = [...queue.value, ...unshownAchievements]
+    
+    // Отмечаем их как показанные
+    achievementsStore.markAchievementsAsShown(unshownAchievementIds)
   }
 
   // Начинаем показ ачивок из очереди
@@ -80,7 +83,14 @@ const showNextAchievement = () => {
 // Закрытие модального окна
 const handleModalClose = () => {
   showModal.value = false
+  const achievementId = currentAchievement.value?.id
+  
   currentAchievement.value = null
+
+  // Если было показано достижение, отмечаем его как показанное
+  if (achievementId) {
+    achievementsStore.markAchievementsAsShown([achievementId])
+  }
 
   // Показываем следующую ачивку через небольшую задержку
   setTimeout(() => {
