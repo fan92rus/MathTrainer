@@ -3,6 +3,23 @@
     <!-- Canvas для Babylon.js -->
     <canvas ref="canvasRef" class="city-canvas"></canvas>
 
+    <!-- Индикатор загрузки -->
+    <div v-if="isLoading" class="loading-overlay">
+      <div class="loading-spinner">
+        <div class="spinner"></div>
+        <p class="loading-text">Построение здания...</p>
+      </div>
+    </div>
+
+    <!-- Уведомления -->
+    <div v-if="notification.show" :class="['notification', notification.type]">
+      <div class="notification-content">
+        <span class="notification-icon">{{ notification.icon }}</span>
+        <span class="notification-message">{{ notification.message }}</span>
+      </div>
+      <button class="notification-close" @click="hideNotification">×</button>
+    </div>
+
     <!-- UI интерфейс -->
     <div class="city-ui">
       <!-- Верхняя панель с ресурсами -->
@@ -46,8 +63,8 @@
       <!-- Информация о здании -->
       <div class="building-info" v-if="hoveredBuilding">
         <h4>{{ hoveredBuilding.name }}</h4>
-        <p v-if="hoveredBuilding.description">{{ hoveredBuilding.description }}</p>
         <p v-if="hoveredBuilding.level">Уровень: {{ hoveredBuilding.level }}</p>
+        <p>Тип: {{ getBuildingTypeName(hoveredBuilding.type) }}</p>
       </div>
 
       <!-- Кнопки управления -->
@@ -74,16 +91,37 @@ import { ref, onMounted, onUnmounted, nextTick } from 'vue'
 import { useCityStore } from '@/store/city'
 import { usePlayerStore } from '@/store/player'
 import { CityRenderer } from '@/utils/city/babylonRenderer'
+import { useBuildingLogic } from '@/composables/useBuildingLogic'
 import type { BuildingTemplate, Building } from '@/types/gamification'
+import ErrorHandler from '@/utils/ErrorHandler'
 
 const canvasRef = ref<HTMLCanvasElement>()
 const cityStore = useCityStore()
 const playerStore = usePlayerStore()
 
+// Используем composable для логики построения
+const {
+  isLoading,
+  lastError,
+  handleBuildingRequest,
+  checkBuildingAffordability,
+  getSuccessMessage,
+  getErrorMessage,
+  clearError
+} = useBuildingLogic()
+
 // UI состояние
 const showBuildPanel = ref(false)
 const selectedBuilding = ref<BuildingTemplate | null>(null)
 const hoveredBuilding = ref<Building | null>(null)
+
+// Уведомления
+const notification = ref({
+  show: false,
+  message: '',
+  type: 'success', // 'success' | 'error'
+  icon: '✅'
+})
 
 // Babylon.js рендерер
 let cityRenderer: CityRenderer | null = null
@@ -92,12 +130,47 @@ const availableBuildings = cityStore.getAvailableBuildings()
 
 // Проверка можно ли купить здание
 const canAfford = (building: BuildingTemplate) => {
-  return playerStore.currency.coins >= building.baseCost
+  return checkBuildingAffordability(building)
+}
+
+// Показать уведомление
+const showNotification = (message: string, type: 'success' | 'error' = 'success') => {
+  notification.value = {
+    show: true,
+    message,
+    type,
+    icon: type === 'success' ? '✅' : '❌'
+  }
+  
+  // Автоматически скрыть через 3 секунды
+  setTimeout(() => {
+    hideNotification()
+  }, 3000)
+}
+
+// Скрыть уведомление
+const hideNotification = () => {
+  notification.value.show = false
+}
+
+// Получить название типа здания на русском
+const getBuildingTypeName = (type: string): string => {
+  const typeNames: Record<string, string> = {
+    'residential': 'Жилое',
+    'public': 'Общественное',
+    'entertainment': 'Развлекательное',
+    'infrastructure': 'Инфраструктура',
+    'special': 'Особое'
+  }
+  return typeNames[type] || type
 }
 
 // Выбор здания для строительства
 const selectBuilding = (building: BuildingTemplate) => {
-  if (!canAfford(building)) return
+  if (!canAfford(building)) {
+    showNotification(`Недостаточно монет для строительства "${building.name}"`, 'error')
+    return
+  }
 
   selectedBuilding.value = building
   showBuildPanel.value = false
@@ -139,45 +212,39 @@ const initBabylon = async () => {
     hoveredBuilding.value = building
   })
 
-  cityRenderer.on('buildRequest', (template: BuildingTemplate, x: number, y: number) => {
-    console.log('buildRequest:', template.id, x, y, 'Текущие монеты:', playerStore.currency.coins)
+  cityRenderer.on('buildRequest', async (template: BuildingTemplate, x: number, y: number) => {
+    ErrorHandler.log(`buildRequest: ${template.id} в позиции (${x}, ${y}), текущие монеты: ${playerStore.currency.coins}`, 'info')
 
-    // Проверяем можем ли мы позволить это здание
-    if (!canAfford(template)) {
-      console.log('Недостаточно денег для:', template.name)
-      // Недостаточно денег
-      cityRenderer?.exitBuildMode()
-      selectedBuilding.value = null
-      return
-    }
-
-    // Сначала списываем деньги
-    const paymentSuccess = playerStore.spendCoins(template.baseCost)
-    console.log('Результат списания:', paymentSuccess, 'Осталось монет:', playerStore.currency.coins)
-
-    if (paymentSuccess) {
-      // Деньги списаны успешно, создаем здание
-      const result = cityStore.buildBuilding(template.id, x, y)
-      console.log('Результат buildBuilding:', result, 'Всего зданий:', cityStore.city.buildings.length)
-
-      if (result) {
-        // Успешно добавили в store
-        // Создаем 3D модель
-        cityRenderer?.createBuilding(template, x, y)
-        console.log('Здание успешно создано и добавлено в store')
+    try {
+      // Используем composable для обработки запроса на построение
+      const result = await handleBuildingRequest(template, x, y)
+      
+      if (result.success) {
+        // Успешное построение - создаем 3D модель
+        if (cityRenderer) {
+          cityRenderer.createBuilding(template, x, y)
+        }
+        
+        // Показываем уведомление об успехе
+        showNotification(getSuccessMessage(template), 'success')
+        
+        ErrorHandler.log('Здание успешно создано и добавлено в store', 'info')
       } else {
-        // Не удалось добавить в store (неизвестная ошибка)
-        console.log('Ошибка добавления в store, возвращаем деньги')
-        playerStore.addCoins(template.baseCost)
+        // Ошибка построения
+        showNotification(result.message || 'Ошибка при построении здания', 'error')
+        ErrorHandler.log(`Ошибка построения: ${result.message}`, 'warn')
       }
-    } else {
-      console.log('Ошибка списания денег')
+    } catch (error) {
+      ErrorHandler.handle(error as Error, 'BabylonCity.buildRequest')
+      showNotification(ErrorHandler.getUserMessage(error as Error), 'error')
+    } finally {
+      // Всегда сбрасываем режим строительства
+      if (cityRenderer) {
+        cityRenderer.exitBuildMode()
+      }
+      selectedBuilding.value = null
+      ErrorHandler.log('Компонент: режим строительства сброшен', 'info')
     }
-
-    // Сбрасываем режим строительства
-    cityRenderer?.exitBuildMode()
-    selectedBuilding.value = null
-    console.log('Компонент: режим строительства сброшен')
   })
 
   // Загрузка существующих зданий
@@ -457,6 +524,134 @@ onUnmounted(() => {
     left: 0.5rem;
     right: 0.5rem;
     min-width: auto;
+  }
+}
+
+/* Стили для индикатора загрузки */
+.loading-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+  pointer-events: none;
+}
+
+.loading-spinner {
+  background: rgba(255, 255, 255, 0.95);
+  padding: 2rem;
+  border-radius: 1rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+  backdrop-filter: blur(10px);
+}
+
+.spinner {
+  width: 40px;
+  height: 40px;
+  border: 4px solid #e5e7eb;
+  border-top: 4px solid #3b82f6;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.loading-text {
+  margin: 0;
+  font-weight: 600;
+  color: #1f2937;
+}
+
+/* Стили для уведомлений */
+.notification {
+  position: absolute;
+  top: 5rem;
+  left: 50%;
+  transform: translateX(-50%);
+  min-width: 300px;
+  max-width: 90%;
+  padding: 1rem 1.5rem;
+  border-radius: 0.75rem;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+  z-index: 1001;
+  animation: slideInDown 0.3s ease-out;
+  backdrop-filter: blur(10px);
+}
+
+.notification.success {
+  background: rgba(34, 197, 94, 0.95);
+  color: white;
+}
+
+.notification.error {
+  background: rgba(239, 68, 68, 0.95);
+  color: white;
+}
+
+.notification-content {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.notification-icon {
+  font-size: 1.2rem;
+}
+
+.notification-message {
+  font-weight: 500;
+  flex: 1;
+}
+
+.notification-close {
+  background: none;
+  border: none;
+  color: inherit;
+  font-size: 1.5rem;
+  cursor: pointer;
+  padding: 0;
+  margin-left: 0.5rem;
+  opacity: 0.8;
+  transition: opacity 0.2s ease;
+}
+
+.notification-close:hover {
+  opacity: 1;
+}
+
+@keyframes slideInDown {
+  from {
+    transform: translateX(-50%) translateY(-100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(-50%) translateY(0);
+    opacity: 1;
+  }
+}
+
+/* Мобильная адаптация для уведомлений */
+@media (max-width: 768px) {
+  .notification {
+    top: 4rem;
+    min-width: 250px;
+    padding: 0.75rem 1rem;
+  }
+  
+  .loading-spinner {
+    padding: 1.5rem;
   }
 }
 </style>

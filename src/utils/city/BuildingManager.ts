@@ -1,5 +1,7 @@
 import * as BABYLON from '@babylonjs/core'
 import type { BuildingTemplate, Building } from '@/types/gamification'
+import { BuildingService } from '@/services/BuildingService'
+import ErrorHandler from '@/utils/ErrorHandler'
 
 export enum BuildState {
   IDLE = 'idle',
@@ -39,6 +41,11 @@ export class BuildingManager {
   }
 
   public startPlacing(template: BuildingTemplate): boolean {
+    // Валидация шаблона здания
+    if (!this.validateBuildingTemplate(template)) {
+      throw new Error(`BuildingManager: Неверный шаблон здания. Убедитесь, что шаблон содержит все обязательные поля (id, name, type, baseCost, maxLevel).`)
+    }
+
     if (this.buildState !== BuildState.IDLE) {
       this.cancelPlacement()
     }
@@ -57,6 +64,12 @@ export class BuildingManager {
   public updatePreview(x: number, y: number): void {
     if (this.buildState !== BuildState.PLACING) return
 
+    // Валидация координат
+    if (!this.validateCoordinates(x, y)) {
+      ErrorHandler.handle(new Error(`Неверные координаты для обновления превью: x=${x}, y=${y}`), 'BuildingManager.updatePreview')
+      return
+    }
+
     // Проверяем что не находимся в том же состоянии
     if (this.pendingPosition.x === x && this.pendingPosition.y === y) return
 
@@ -70,6 +83,12 @@ export class BuildingManager {
 
   public attemptPlace(x: number, y: number): { success: boolean, building?: Building } {
     if (this.buildState !== BuildState.PLACING || !this.selectedTemplate) {
+      return { success: false }
+    }
+
+    // Валидация координат
+    if (!this.validateCoordinates(x, y)) {
+      ErrorHandler.handle(new Error(`Неверные координаты для размещения здания: x=${x}, y=${y}`), 'BuildingManager.attemptPlace')
       return { success: false }
     }
 
@@ -94,7 +113,29 @@ export class BuildingManager {
   }
 
   public placeBuilding(building: Building): void {
-    this.addBuildingMesh(building, building.x!, building.y!)
+    // Валидация параметров здания
+    if (!building) {
+      throw new Error('BuildingManager: Здание не может быть null или undefined')
+    }
+
+    // Проверка обязательных полей
+    const requiredFields = ['id', 'name', 'type']
+    for (const field of requiredFields) {
+      if (!(field in building)) {
+        throw new Error(`BuildingManager: Отсутствует обязательное поле "${field}" в здании`)
+      }
+    }
+
+    // Проверка координат
+    if (building.x === undefined || building.y === undefined) {
+      throw new Error('BuildingManager: Здание должно иметь координаты x и y')
+    }
+
+    if (!this.validateCoordinates(building.x, building.y)) {
+      throw new Error(`BuildingManager: Неверные координаты здания: x=${building.x}, y=${building.y}`)
+    }
+
+    this.addBuildingMesh(building, building.x, building.y)
   }
 
   public removeBuilding(buildingId: string): void {
@@ -112,6 +153,60 @@ export class BuildingManager {
       }
     }
     return null
+  }
+
+  // Приватные методы валидации
+  private validateBuildingTemplate(template: BuildingTemplate): boolean {
+    if (!template) {
+      ErrorHandler.handle(new Error('Шаблон здания не может быть null или undefined'), 'BuildingManager.validateBuildingTemplate')
+      return false
+    }
+
+    // Проверка обязательных полей
+    const requiredFields = ['id', 'name', 'type', 'baseCost', 'maxLevel']
+    for (const field of requiredFields) {
+      if (!(field in template)) {
+        ErrorHandler.handle(new Error(`Отсутствует обязательное поле "${field}" в шаблоне здания`), 'BuildingManager.validateBuildingTemplate')
+        return false
+      }
+    }
+
+    // Проверка типа здания
+    const validTypes = ['residential', 'public', 'entertainment', 'infrastructure', 'special']
+    if (!validTypes.includes(template.type)) {
+      ErrorHandler.handle(new Error(`Неверный тип здания "${template.type}". Допустимые типы: ${validTypes.join(', ')}`), 'BuildingManager.validateBuildingTemplate')
+      return false
+    }
+
+    return true
+  }
+
+  private validateCoordinates(x: number, y: number): boolean {
+    // Проверка, что координаты являются числами
+    if (typeof x !== 'number' || typeof y !== 'number' || isNaN(x) || isNaN(y)) {
+      ErrorHandler.handle(new Error(`Координаты должны быть числами. Получено: x=${x}, y=${y}`), 'BuildingManager.validateCoordinates')
+      return false
+    }
+
+    // Проверка, что координаты не отрицательные
+    if (x < 0 || y < 0) {
+      ErrorHandler.handle(new Error(`Координаты не могут быть отрицательными. Получено: x=${x}, y=${y}`), 'BuildingManager.validateCoordinates')
+      return false
+    }
+
+    // Проверка, что координаты целые числа
+    if (!Number.isInteger(x) || !Number.isInteger(y)) {
+      ErrorHandler.handle(new Error(`Координаты должны быть целыми числами. Получено: x=${x}, y=${y}`), 'BuildingManager.validateCoordinates')
+      return false
+    }
+
+    // Используем BuildingService для дополнительной проверки границ
+    if (!BuildingService.validateBuildingPosition(x, y, this.gridSize)) {
+      ErrorHandler.handle(new Error(`Координаты выходят за пределы сетки. Получено: x=${x}, y=${y}, размер сетки: ${this.gridSize}`), 'BuildingManager.validateCoordinates')
+      return false
+    }
+
+    return true
   }
 
   // Приватные методы
@@ -195,8 +290,8 @@ export class BuildingManager {
   }
 
   private canBuildAt(x: number, y: number): boolean {
-    // Проверка границ
-    if (x < 0 || x >= this.gridSize || y < 0 || y >= this.gridSize) {
+    // Используем BuildingService для проверки границ
+    if (!BuildingService.validateBuildingPosition(x, y, this.gridSize)) {
       return false
     }
 
@@ -205,73 +300,80 @@ export class BuildingManager {
   }
 
   public createBuilding(template: BuildingTemplate, x: number, y: number): Building | null {
-    const building: Building = {
-      id: `${template.id}_${Date.now()}`,
-      name: template.name,
-      type: template.type,
-      cost: template.baseCost,
-      level: 1,
-      maxLevel: template.maxLevel,
-      x,
-      y,
-      miniGame: template.miniGame,
-      produces: template.type === 'residential' ? {
-        type: 'coins',
-        amount: template.baseCost / 10,
-        interval: 1440,
-      } : undefined,
+    // Добавляем валидацию координат через BuildingService
+    if (!BuildingService.validateBuildingPosition(x, y, this.gridSize)) {
+      return null
     }
 
-    return building
+    // Используем BuildingService для создания здания
+    return BuildingService.createBuilding(template, x, y)
   }
 
   private addBuildingMesh(building: Building, x: number, y: number): void {
-    const worldX = (x - this.gridSize / 2) * this.tileSize + this.tileSize / 2
-    const worldZ = (y - this.gridSize / 2) * this.tileSize + this.tileSize / 2
+    try {
+      // Валидация параметров
+      if (!building) {
+        throw new Error('BuildingManager: Здание не может быть null или undefined')
+      }
 
-    // Создание 3D модели здания
-    const height = this.tileSize * (1.0 + building.level * 0.4) // Сделаем выше
-    const buildingMesh = BABYLON.MeshBuilder.CreateBox(
-      `building_${building.id}`,
-      {
-        width: this.tileSize * 0.8,
-        height: height,
-        depth: this.tileSize * 0.8
-      },
-      this.scene
-    )
+      if (!building.id) {
+        throw new Error('BuildingManager: Здание должно иметь id')
+      }
 
-    buildingMesh.position = new BABYLON.Vector3(worldX, height / 2, worldZ)
-    buildingMesh.metadata = { x, y, buildingId: building.id }
+      if (!this.validateCoordinates(x, y)) {
+        throw new Error(`BuildingManager: Неверные координаты для добавления меша здания: x=${x}, y=${y}`)
+      }
 
-    // Материал в зависимости от типа
-    const material = new BABYLON.StandardMaterial(`buildingMaterial_${building.id}`, this.scene)
+      const worldX = (x - this.gridSize / 2) * this.tileSize + this.tileSize / 2
+      const worldZ = (y - this.gridSize / 2) * this.tileSize + this.tileSize / 2
 
-    switch (building.type) {
-      case 'residential':
-        material.diffuseColor = new BABYLON.Color3(1.0, 0.8, 0.4) // Ярко-желтый
-        material.specularColor = new BABYLON.Color3(0.2, 0.2, 0.2)
-        break
-      case 'public':
-        material.diffuseColor = new BABYLON.Color3(0.2, 0.6, 1.0) // Ярко-синий
-        material.specularColor = new BABYLON.Color3(0.2, 0.2, 0.2)
-        break
-      case 'entertainment':
-        material.diffuseColor = new BABYLON.Color3(1.0, 0.2, 0.8) // Ярко-розовый
-        material.specularColor = new BABYLON.Color3(0.2, 0.2, 0.2)
-        break
-      default:
-        material.diffuseColor = new BABYLON.Color3(0.8, 0.8, 0.8) // Светло-серый
-        material.specularColor = new BABYLON.Color3(0.2, 0.2, 0.2)
+      // Создание 3D модели здания
+      const height = this.tileSize * (1.0 + building.level * 0.4) // Сделаем выше
+      const buildingMesh = BABYLON.MeshBuilder.CreateBox(
+        `building_${building.id}`,
+        {
+          width: this.tileSize * 0.8,
+          height: height,
+          depth: this.tileSize * 0.8
+        },
+        this.scene
+      )
+
+      buildingMesh.position = new BABYLON.Vector3(worldX, height / 2, worldZ)
+      buildingMesh.metadata = { x, y, buildingId: building.id }
+
+      // Материал в зависимости от типа
+      const material = new BABYLON.StandardMaterial(`buildingMaterial_${building.id}`, this.scene)
+
+      switch (building.type) {
+        case 'residential':
+          material.diffuseColor = new BABYLON.Color3(1.0, 0.8, 0.4) // Ярко-желтый
+          material.specularColor = new BABYLON.Color3(0.2, 0.2, 0.2)
+          break
+        case 'public':
+          material.diffuseColor = new BABYLON.Color3(0.2, 0.6, 1.0) // Ярко-синий
+          material.specularColor = new BABYLON.Color3(0.2, 0.2, 0.2)
+          break
+        case 'entertainment':
+          material.diffuseColor = new BABYLON.Color3(1.0, 0.2, 0.8) // Ярко-розовый
+          material.specularColor = new BABYLON.Color3(0.2, 0.2, 0.2)
+          break
+        default:
+          material.diffuseColor = new BABYLON.Color3(0.8, 0.8, 0.8) // Светло-серый
+          material.specularColor = new BABYLON.Color3(0.2, 0.2, 0.2)
+      }
+
+      buildingMesh.material = material
+
+      // Сохранение в мапу
+      this.buildings.set(building.id, { mesh: buildingMesh, building })
+
+      // Анимация появления
+      this.animateBuildingAppear(buildingMesh)
+    } catch (error) {
+      ErrorHandler.handle(error as Error, 'BuildingManager.addBuildingMesh')
+      throw error
     }
-
-    buildingMesh.material = material
-
-    // Сохранение в мапу
-    this.buildings.set(building.id, { mesh: buildingMesh, building })
-
-    // Анимация появления
-    this.animateBuildingAppear(buildingMesh)
   }
 
   private animateBuildingAppear(mesh: BABYLON.Mesh): void {
@@ -300,7 +402,7 @@ export class BuildingManager {
     this.pendingPosition = { x: -1, y: -1 }
     this.destroyPreview()
     this.resetGridHighlights()
-    console.log('BuildingManager: возвращен в IDLE, подсветка сброшена')
+    ErrorHandler.log('BuildingManager: возвращен в IDLE, подсветка сброшена', 'info')
   }
 
   public dispose(): void {

@@ -628,6 +628,7 @@
     cursor: pointer;
     transition: all 0.3s ease;
     box-shadow: 0 3px 8px rgba(102, 126, 234, 0.3);
+    width: 100px;
   }
 
   .change-grade-button:hover {
@@ -853,6 +854,7 @@
     .change-grade-button {
       padding: 8px 12px;
       font-size: 12px;
+      width: 100px;
     }
 
     .scores-container {
@@ -949,8 +951,8 @@
     }
 
     .change-grade-button {
-      width: 100%;
-      max-width: 200px;
+      width: 100px;
+      max-width: 100px;
     }
 
     .scores-container {

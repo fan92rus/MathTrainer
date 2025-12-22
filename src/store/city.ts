@@ -1,6 +1,7 @@
 import { defineStore } from 'pinia';
 import type { Building, City, GridCell, BuildingTemplate } from '@/types/gamification';
 import { useLocalStorage } from '@vueuse/core';
+import { BuildingService } from '@/services/BuildingService';
 
 // Шаблоны зданий
 const buildingTemplates: BuildingTemplate[] = [
@@ -133,26 +134,16 @@ export const useCityStore = defineStore('city', () => {
     const template = getBuildingTemplate(templateId);
     if (!template) return false;
 
+    // Используем BuildingService для валидации координат
+    if (!BuildingService.validateBuildingPosition(x, y, gridSize)) {
+      return false;
+    }
+
     const existingBuilding = city.value.buildings.find(b => b.x === x && b.y === y);
     if (existingBuilding) return false; // Ячейка занята
 
-    const newBuilding: Building = {
-      id: `${templateId}_${Date.now()}`,
-      name: template.name,
-      type: template.type,
-      cost: template.baseCost,
-      level: 1,
-      maxLevel: template.maxLevel,
-      x,
-      y,
-      miniGame: template.miniGame,
-      // Жилые дома производят монеты
-      produces: template.type === 'residential' ? {
-        type: 'coins' as const,
-        amount: template.baseCost / 10, // 10% от стоимости
-        interval: 1440, // раз в день
-      } : undefined,
-    };
+    // Используем BuildingService для создания здания
+    const newBuilding = BuildingService.createBuilding(template, x, y);
 
     city.value.buildings.push(newBuilding);
     updateCityStats();
@@ -190,22 +181,10 @@ export const useCityStore = defineStore('city', () => {
 
   // Обновить статистику города
   const updateCityStats = () => {
-    // Подсчет населения
+    // Используем BuildingService для расчета населения
     let population = 0;
     city.value.buildings.forEach(building => {
-      if (building.type === 'residential') {
-        switch (building.name) {
-          case 'Маленький домик':
-            population += 3 * building.level;
-            break;
-          case 'Коттедж':
-            population += 8 * building.level;
-            break;
-          case 'Многоквартирный дом':
-            population += 20 * building.level;
-            break;
-        }
-      }
+      population += BuildingService.calculatePopulation(building);
     });
 
     city.value.population = population;
@@ -238,6 +217,11 @@ export const useCityStore = defineStore('city', () => {
 
   // Проверить можно ли построить на клетке
   const canBuildOn = (x: number, y: number) => {
+    // Используем BuildingService для проверки границ
+    if (!BuildingService.validateBuildingPosition(x, y, gridSize)) {
+      return false;
+    }
+    
     return !city.value.buildings.some(b => b.x === x && b.y === y);
   };
 
