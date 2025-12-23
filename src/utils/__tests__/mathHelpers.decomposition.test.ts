@@ -380,10 +380,10 @@ describe('Math Helpers - Decomposition', () => {
           // Не должно быть лишних пробелов в начале/конце
           expect(option).toBe(option.trim());
           // Должен содержать хотя бы один оператор
-          expect(option).toMatch(/[\+\-\×]/);
+          expect(option).toMatch(/[+\-×]/);
           // Не должно быть пустых компонентов
-          expect(option).not.toMatch(/[\+\-\×]\s*[\+\-\×]/);
-          expect(option).not.toMatch(/[\+\-\×]\s*$/);
+          expect(option).not.toMatch(/[+\-×]\s*[+\-×]/);
+          expect(option).not.toMatch(/[+\-×]\s*$/);
         }
       }
     });
@@ -394,7 +394,7 @@ describe('Math Helpers - Decomposition', () => {
         const correctOption = problem.options[problem.correctIndex];
 
         // Правильный вариант должен вычисляться в correctAnswer
-        const evaluated = eval(correctOption); // eslint-disable-line no-eval
+        const evaluated = eval(correctOption);
         expect(evaluated).toBe(problem.correctAnswer);
       }
     });
@@ -436,7 +436,7 @@ describe('Math Helpers - Decomposition', () => {
       // Генерируем задачи на уровне 1
       for (let i = 0; i < countTwoDigitAtLevel1; i++) {
         const problem = generateDecompositionProblem(50, 1);
-        const match = problem.expression.match(/(\d+)\s*([\+\-])\s*(\d+)/);
+        const match = problem.expression.match(/(\d+)\s*([-+])\s*(\d+)/);
         if (match) {
           const num2 = parseInt(match[3]);
           if (num2 >= 10) twoDigitAtLevel1++;
@@ -446,7 +446,7 @@ describe('Math Helpers - Decomposition', () => {
       // Генерируем задачи на уровне 9
       for (let i = 0; i < countTwoDigitAtLevel9; i++) {
         const problem = generateDecompositionProblem(50, 9);
-        const match = problem.expression.match(/(\d+)\s*([\+\-])\s*(\d+)/);
+        const match = problem.expression.match(/(\d+)\s*([-+])\s*(\d+)/);
         if (match) {
           const num2 = parseInt(match[3]);
           if (num2 >= 10) twoDigitAtLevel9++;

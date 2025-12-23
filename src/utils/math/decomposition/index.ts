@@ -11,10 +11,6 @@ const randomInt = (min: number, max: number): number => {
   return Math.floor(Math.random() * (max - min + 1)) + min;
 };
 
-// Вспомогательная функция для случайного выбора
-const randomChoice = <T>(arr: T[]): T => {
-  return arr[Math.floor(Math.random() * arr.length)];
-};
 
 // Типы для разложения
 interface DecompositionResult {
@@ -163,7 +159,7 @@ function buildWrongAdditionOptions(num1: number, num2: number, correctOption: st
 
   // Если меньше 3 вариантов, добавляем fallback-варианты
   const result = [...unique];
-  for (let offset of [-2, -1, 1, 2, 3]) {
+  for (const offset of [-2, -1, 1, 2, 3]) {
     if (result.length >= 3) break;
     const modifiedNum2 = num2 + offset;
     if (modifiedNum2 > 0 && modifiedNum2 !== num2) {
@@ -330,7 +326,7 @@ function buildWrongSubtractionOptions(num1: number, num2: number, correctOption:
   const result = [...unique];
 
   // Если меньше 3, добавляем fallback-варианты
-  for (let offset of [-2, -1, 1, 2, 3]) {
+  for (const offset of [-2, -1, 1, 2, 3]) {
     if (result.length >= 3) break;
     const modifiedNum2 = num2 + offset;
     if (modifiedNum2 > 0 && modifiedNum2 < num1 && modifiedNum2 !== num2) {
@@ -390,7 +386,6 @@ export function generateDecompositionProblem(
 
   // Пробуем генерировать (максимум несколько попыток для разнообразия)
   const maxRetries = 5;
-  let lastError: Error | null = null;
 
   for (let attempt = 0; attempt < maxRetries; attempt++) {
     const isAddition = Math.random() > 0.5;

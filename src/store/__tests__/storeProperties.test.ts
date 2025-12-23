@@ -376,8 +376,6 @@ describe('Stores - Property Based Tests', () => {
       const store = usePlayerStore()
       store.resetProgress()
 
-      const initial = store.player.experience
-
       // Even with invalid operations, experience should stay >= 0
       store.addExperience(0)
       expect(store.player.experience).toBeGreaterThanOrEqual(0)

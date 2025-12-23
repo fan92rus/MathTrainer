@@ -7,7 +7,7 @@ import tseslint from 'typescript-eslint'
 
 export default [
   {
-    ignores: ['dist/**', 'node_modules/**', 'coverage/**', '**/*.d.ts']
+    ignores: ['dist/**', 'node_modules/**', 'coverage/**', '**/*.d.ts', '**/*.json']
   },
   js.configs.recommended,
   ...pluginVue.configs['flat/essential'],
@@ -28,7 +28,9 @@ export default [
         clearInterval: 'readonly',
         clearTimeout: 'readonly',
         NodeJS: 'readonly',
-        alert: 'readonly'
+        alert: 'readonly',
+        process: 'readonly',
+        __dirname: 'readonly'
       }
     },
     rules: {
@@ -59,7 +61,9 @@ export default [
         clearInterval: 'readonly',
         clearTimeout: 'readonly',
         NodeJS: 'readonly',
-        alert: 'readonly'
+        alert: 'readonly',
+        process: 'readonly',
+        __dirname: 'readonly'
       }
     },
     plugins: {
@@ -108,7 +112,8 @@ export default [
         clearInterval: 'readonly',
         clearTimeout: 'readonly',
         NodeJS: 'readonly',
-        alert: 'readonly'
+        alert: 'readonly',
+        process: 'readonly'
       }
     },
     plugins: {

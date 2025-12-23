@@ -322,7 +322,7 @@ describe('Math Generation - Property Based Tests', () => {
     test('correct answer equals mathematical result', () => {
       for (let score = 0; score <= 500; score += 50) {
         const problem = generateDecompositionProblem(score, 3)
-        const expectedResult = eval(problem.expression) // eslint-disable-line no-eval
+        const expectedResult = eval(problem.expression)
         expect(problem.correctAnswer).toBe(expectedResult)
       }
     })
@@ -332,7 +332,7 @@ describe('Math Generation - Property Based Tests', () => {
         const problem = generateDecompositionProblem(score, 3)
         const option = problem.options[problem.correctIndex]
         // The option should evaluate to the correct answer
-        const evaluated = eval(option) // eslint-disable-line no-eval
+        const evaluated = eval(option)
         expect(evaluated).toBe(problem.correctAnswer)
       }
     })
@@ -359,7 +359,7 @@ describe('Math Generation - Property Based Tests', () => {
         const problem = generateDecompositionProblem(score, 3)
         for (const option of problem.options) {
           // Decomposition options should contain operators
-          expect(option).toMatch(/[\+\-\×]/)
+          expect(option).toMatch(/[+\-×]/)
         }
       }
     })
@@ -396,7 +396,7 @@ describe('Math Generation - Property Based Tests', () => {
         const correctOption = problem.options[problem.correctIndex]
 
         // Правильный вариант должен давать правильный ответ
-        const evaluated = eval(correctOption) // eslint-disable-line no-eval
+        const evaluated = eval(correctOption)
         expect(evaluated).toBe(problem.correctAnswer)
       }
     })
@@ -628,7 +628,7 @@ describe('Math Generation - Property Based Tests', () => {
             for (const wrong of wrongOptions) {
               // Проверяем отсутствие компонента "0" после оператора или начала строки
               // Не используем /\d+0/ так как он находит числа вроде "20"
-              expect(wrong).not.toMatch(/(^|\s)[\-\+]?\s*0(?!\d)/)
+              expect(wrong).not.toMatch(/(^|\s)[-+]?\s*0(?!\d)/)
               expect(wrong).not.toContain('- 0')
               expect(wrong).not.toContain('-0')
             }

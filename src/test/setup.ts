@@ -1,5 +1,4 @@
 import { config } from '@vue/test-utils'
-import { vi } from 'vitest'
 
 // Mock localStorage (оптимизация - без вызова vi.fn для каждого свойства)
 const localStorageMock = (() => {
