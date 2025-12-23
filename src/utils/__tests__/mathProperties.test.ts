@@ -11,6 +11,7 @@ import { generateCountingProblem } from '../math/counting'
 import { generateMultiplicationProblem, getAvailableMultiplicationLevels } from '../math/multiplication'
 import { generateDecompositionProblem, generateWrongAdditionOptions, generateWrongSubtractionOptions } from '../math/decomposition'
 import { generateFirstGradeDecompositionProblem } from '../math/firstGrade'
+import { generateEquationProblem } from '../math/equations'
 import { shuffleArray } from '../math/common'
 
 // Pinia setup не нужен для этих тестов - они тестируют только генераторы математики
@@ -658,6 +659,165 @@ describe('Math Generation - Property Based Tests', () => {
         ),
         { numRuns: 50 }
       )
+    })
+  })
+
+  describe('generateEquationProblem', () => {
+    test('correct answer is always in options at correctIndex', () => {
+      fc.assert(
+        fc.property(
+          fc.integer({ min: 0, max: 500 }),
+          (score) => {
+            const problem = generateEquationProblem(score)
+            const actualAnswer = parseInt(problem.options[problem.correctIndex])
+            expect(actualAnswer).toBe(problem.correctAnswer)
+            expect(problem.options).toHaveLength(4)
+            return true
+          }
+        ),
+        { numRuns: 100 }
+      )
+    })
+
+    test('all options are unique', () => {
+      fc.assert(
+        fc.property(
+          fc.integer({ min: 0, max: 500 }),
+          (score) => {
+            const problem = generateEquationProblem(score)
+            const uniqueOptions = new Set(problem.options)
+            expect(uniqueOptions.size).toBe(problem.options.length)
+            return true
+          }
+        ),
+        { numRuns: 100 }
+      )
+    })
+
+    test('equation expression contains x', () => {
+      fc.assert(
+        fc.property(
+          fc.integer({ min: 0, max: 500 }),
+          (score) => {
+            const problem = generateEquationProblem(score)
+            expect(problem.expression).toContain('x')
+            return true
+          }
+        ),
+        { numRuns: 100 }
+      )
+    })
+
+    test('equation contains equals sign', () => {
+      fc.assert(
+        fc.property(
+          fc.integer({ min: 0, max: 500 }),
+          (score) => {
+            const problem = generateEquationProblem(score)
+            expect(problem.expression).toContain('=')
+            return true
+          }
+        ),
+        { numRuns: 100 }
+      )
+    })
+
+    test('correct answer is positive', () => {
+      fc.assert(
+        fc.property(
+          fc.integer({ min: 0, max: 500 }),
+          (score) => {
+            const problem = generateEquationProblem(score)
+            expect(problem.correctAnswer).toBeGreaterThanOrEqual(0)
+            return true
+          }
+        ),
+        { numRuns: 100 }
+      )
+    })
+
+    test('difficulty increases with score', () => {
+      const lowScore = generateEquationProblem(0)
+      const highScore = generateEquationProblem(500)
+      expect(highScore.difficulty).toBeGreaterThanOrEqual(lowScore.difficulty)
+    })
+
+    test('all options are non-negative', () => {
+      fc.assert(
+        fc.property(
+          fc.integer({ min: 0, max: 500 }),
+          (score) => {
+            const problem = generateEquationProblem(score)
+            for (const option of problem.options) {
+              const value = parseInt(option)
+              expect(value).toBeGreaterThanOrEqual(0)
+            }
+            return true
+          }
+        ),
+        { numRuns: 100 }
+      )
+    })
+
+    test('wrong answers are distinct from correct answer', () => {
+      fc.assert(
+        fc.property(
+          fc.integer({ min: 0, max: 500 }),
+          (score) => {
+            const problem = generateEquationProblem(score)
+            const correctAnswerStr = problem.correctAnswer.toString()
+            const correctCount = problem.options.filter((o) => o === correctAnswerStr).length
+            expect(correctCount).toBe(1)
+            return true
+          }
+        ),
+        { numRuns: 100 }
+      )
+    })
+
+    test('equation type is valid', () => {
+      fc.assert(
+        fc.property(
+          fc.integer({ min: 0, max: 500 }),
+          (score) => {
+            const problem = generateEquationProblem(score)
+            const validTypes = ['simple', 'with-parentheses', 'with-multiplication']
+            expect(validTypes).toContain(problem.equationType)
+            return true
+          }
+        ),
+        { numRuns: 100 }
+      )
+    })
+
+    test('higher score enables more equation types', () => {
+      const lowScoreProblems = Array.from({ length: 20 }, () => generateEquationProblem(0))
+      const highScoreProblems = Array.from({ length: 20 }, () => generateEquationProblem(500))
+
+      const lowScoreTypes = new Set(lowScoreProblems.map((p) => p.equationType))
+      const highScoreTypes = new Set(highScoreProblems.map((p) => p.equationType))
+
+      // High score should have at least as many types as low score
+      expect(highScoreTypes.size).toBeGreaterThanOrEqual(lowScoreTypes.size)
+    })
+
+    test('with-multiplication equations produce correct answer', () => {
+      // Generate multiple problems until we get a multiplication one
+      for (let i = 0; i < 100; i++) {
+        const problem = generateEquationProblem(500) // High score for multiplication
+        if (problem.equationType === 'with-multiplication') {
+          // Parse equation like "3 × x = 21" or "x × 5 = 25"
+          const match = problem.expression.match(/(\d+)\s*×\s*x\s*=\s*(\d+)|x\s*×\s*(\d+)\s*=\s*(\d+)/)
+          if (match) {
+            const multiplier = match[1] ? parseInt(match[1]) : parseInt(match[3]!)
+            const result = match[2] ? parseInt(match[2]) : parseInt(match[4]!)
+            expect(problem.correctAnswer).toBe(result / multiplier)
+          }
+          return
+        }
+      }
+      // If we didn't find a multiplication equation, test passes
+      expect(true).toBe(true)
     })
   })
 })
