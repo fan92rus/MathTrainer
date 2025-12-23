@@ -31,8 +31,6 @@ body {
   padding: 20px;
   position: relative;
   overflow: hidden;
-  width: 700px;
-  max-width: 700px;
   max-height: 95vh;
   display: flex;
   flex-direction: column;
@@ -660,10 +658,6 @@ body {
 
 /* Для очень широких экранов */
 @media (min-width: 1200px) {
-  .game-container {
-    max-width: 700px;
-  }
-
   .options-grid {
     grid-template-columns: repeat(2, 1fr);
     gap: 15px;

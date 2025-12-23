@@ -37,7 +37,7 @@ export interface Player {
 
 export interface DailyTask {
   id: string;
-  type: 'solve' | 'build' | 'play' | 'explore';
+  type: 'equations' | 'multiplication' | 'counting' | 'decomposition' | 'decomposition_easy';
   description: string;
   target: number;
   current: number;

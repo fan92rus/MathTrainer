@@ -222,7 +222,6 @@ onMounted(() => {
   }
 
   .task-item {
-    flex-direction: column;
     align-items: stretch;
     gap: 0.75rem;
   }

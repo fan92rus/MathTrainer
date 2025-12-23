@@ -82,9 +82,6 @@
         <button class="action-button primary" @click="goToExercises">
           🎯 Выполнить задания
         </button>
-        <button class="action-button secondary" @click="goToCity">
-          🏙️ В город
-        </button>
       </div>
     </div>
   </div>
@@ -150,6 +147,7 @@ onMounted(() => {
 
 <style scoped>
 .daily-tasks-view {
+  width: 100%;
   min-height: 100vh;
   background: linear-gradient(to bottom, #dbeafe, #e0f2fe);
   padding: 1rem;
@@ -270,8 +268,6 @@ onMounted(() => {
 }
 
 .progress-icon {
-  background: #3b82f6;
-  color: white;
   font-weight: bold;
 }
 
@@ -446,7 +442,6 @@ onMounted(() => {
   }
 
   .task-item {
-    flex-direction: column;
     text-align: center;
     gap: 1rem;
   }

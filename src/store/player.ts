@@ -1,6 +1,8 @@
 import { defineStore } from 'pinia';
 import type { Player, Currency, DailyTask } from '@/types/gamification';
 import { useLocalStorage } from '@vueuse/core';
+import { useSettingsStore } from '@/store/settings';
+import { getAvailableExercises } from '@/utils/gradeHelpers';
 
 export const usePlayerStore = defineStore('player', () => {
   // Состояние игрока с локальным сохранением
@@ -97,47 +99,163 @@ export const usePlayerStore = defineStore('player', () => {
       return;
     }
 
-    const newTasks: DailyTask[] = [
+    // Получаем настройки и доступные упражнения
+    const settingsStore = useSettingsStore();
+
+    // Если класс не выбран, не генерируем задания
+    if (!settingsStore.selectedGrade) {
+      return;
+    }
+
+    const availableExercises = getAvailableExercises(
+      settingsStore.selectedGrade,
+      settingsStore.currentQuarter
+    );
+
+    // Пул всех возможных заданий
+    const allTasks: DailyTask[] = [];
+
+    // Задания на счёт (всегда доступны)
+    allTasks.push(
       {
-        id: 'solve_5',
-        type: 'solve',
-        description: 'Решить 5 примеров',
+        id: 'counting_3',
+        type: 'counting',
+        description: 'Посчитать 3 раза',
+        target: 3,
+        current: 0,
+        reward: { coins: 6, experience: 12 },
+        completed: false,
+      },
+      {
+        id: 'counting_5',
+        type: 'counting',
+        description: 'Посчитать 5 раз',
         target: 5,
-        current: 0,
-        reward: { coins: 5, experience: 10 },
-        completed: false,
-      },
-      {
-        id: 'solve_20',
-        type: 'solve',
-        description: 'Решить 20 примеров',
-        target: 20,
-        current: 0,
-        reward: { coins: 15, experience: 30 },
-        completed: false,
-      },
-      {
-        id: 'build_1',
-        type: 'build',
-        description: 'Построить 1 здание',
-        target: 1,
         current: 0,
         reward: { coins: 10, experience: 20 },
         completed: false,
-      },
-      {
-        id: 'play_3',
-        type: 'play',
-        description: 'Сыграть в 3 мини-игры',
-        target: 3,
-        current: 0,
-        reward: { coins: 15, experience: 25 },
-        completed: false,
-      },
-    ];
+      }
+    );
+
+    // Задания на разложение для 1 класса
+    if (availableExercises.firstGradeDecomposition.available) {
+      allTasks.push(
+        {
+          id: 'decomposition_easy_3',
+          type: 'decomposition_easy',
+          description: 'Разложить 3 числа (просто)',
+          target: 3,
+          current: 0,
+          reward: { coins: 5, experience: 10 },
+          completed: false,
+        },
+        {
+          id: 'decomposition_easy_5',
+          type: 'decomposition_easy',
+          description: 'Разложить 5 чисел (просто)',
+          target: 5,
+          current: 0,
+          reward: { coins: 10, experience: 20 },
+          completed: false,
+        }
+      );
+    }
+
+    // Задания на уравнения
+    if (availableExercises.equations.available) {
+      allTasks.push(
+        {
+          id: 'equations_5',
+          type: 'equations',
+          description: 'Решить 5 примеров на сложение/вычитание',
+          target: 5,
+          current: 0,
+          reward: { coins: 5, experience: 10 },
+          completed: false,
+        },
+        {
+          id: 'equations_15',
+          type: 'equations',
+          description: 'Решить 15 примеров на сложение/вычитание',
+          target: 15,
+          current: 0,
+          reward: { coins: 12, experience: 25 },
+          completed: false,
+        }
+      );
+    }
+
+    // Задания на разложение чисел (со 2 класса)
+    if (availableExercises.decomposition.available) {
+      allTasks.push(
+        {
+          id: 'decomposition_3',
+          type: 'decomposition',
+          description: 'Разложить 3 числа',
+          target: 3,
+          current: 0,
+          reward: { coins: 8, experience: 15 },
+          completed: false,
+        },
+        {
+          id: 'decomposition_5',
+          type: 'decomposition',
+          description: 'Разложить 5 чисел',
+          target: 5,
+          current: 0,
+          reward: { coins: 14, experience: 28 },
+          completed: false,
+        }
+      );
+    }
+
+    // Задания на умножение
+    if (availableExercises.multiplication.available) {
+      allTasks.push(
+        {
+          id: 'multiplication_5',
+          type: 'multiplication',
+          description: 'Решить 5 примеров на умножение',
+          target: 5,
+          current: 0,
+          reward: { coins: 7, experience: 15 },
+          completed: false,
+        },
+        {
+          id: 'multiplication_10',
+          type: 'multiplication',
+          description: 'Решить 10 примеров на умножение',
+          target: 10,
+          current: 0,
+          reward: { coins: 15, experience: 30 },
+          completed: false,
+        }
+      );
+    }
+
+    // Случайный выбор до 4 заданий на основе даты
+    const seed = new Date(today).getTime();
+    const shuffled = shuffleArray([...allTasks], seed);
+    const selectedCount = Math.min(4, shuffled.length);
+    const newTasks = shuffled.slice(0, selectedCount);
 
     dailyTasks.value = newTasks;
     localStorage.setItem('dailyTasksDate', today);
+  };
+
+  // Перемешивание массива с seed для детерминированной случайности
+  const shuffleArray = <T>(array: T[], seed: number): T[] => {
+    const result = [...array];
+    let random = seed;
+
+    for (let i = result.length - 1; i > 0; i--) {
+      // Простой генератор псевдослучайных чисел
+      random = (random * 1103515245 + 12345) & 0x7fffffff;
+      const j = random % (i + 1);
+      [result[i], result[j]] = [result[j], result[i]];
+    }
+
+    return result;
   };
 
   // Обновить прогресс задания

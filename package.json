@@ -37,6 +37,7 @@
     "@babylonjs/gui": "^8.42.0",
     "@vitejs/plugin-vue": "^6.0.2",
     "@vueuse/core": "^14.1.0",
+    "phaser": "^3.90.0",
     "pinia": "^3.0.4",
     "vite": "^7.2.6",
     "vue": "^3.5.25",
