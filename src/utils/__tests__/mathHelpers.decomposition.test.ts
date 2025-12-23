@@ -249,6 +249,215 @@ describe('Math Helpers - Decomposition', () => {
     });
   });
 
+  describe('Неправильные варианты должны содержать разложение', () => {
+    test('для сложения с однозначным числом неправильные варианты содержат разложение', () => {
+      // Генерируем несколько задач на сложение и проверяем неправильные варианты
+      let foundOneDigitAddition = false;
+
+      for (let i = 0; i < 30; i++) {
+        const problem: MathProblem = generateDecompositionProblem(50);
+
+        // Ищем сложение с однозначным вторым числом
+        const match = problem.expression.match(/(\d+)\s*\+\s*(\d+)/);
+        if (!match) continue;
+
+        const num2 = parseInt(match[2]);
+        if (num2 <= 9) {
+          foundOneDigitAddition = true;
+
+          // Находим неправильные варианты (кроме правильного ответа)
+          const wrongOptions = problem.options.filter((_, idx) => idx !== problem.correctIndex);
+
+          // Проверяем, что хотя бы один неправильный вариант разложен
+          const hasDecomposedOption = wrongOptions.some(option => option.split('+').length > 2);
+          expect(hasDecomposedOption).toBe(true);
+
+          break;
+        }
+      }
+
+      // Убеждаемся, что нашли хотя бы одну подходящую задачу
+      expect(foundOneDigitAddition).toBe(true);
+    });
+
+    test('для вычитания с однозначным числом неправильные варианты содержат разложение', () => {
+      // Генерируем несколько задач на вычитание и проверяем неправильные варианты
+      let foundOneDigitSubtraction = false;
+
+      for (let i = 0; i < 30; i++) {
+        const problem: MathProblem = generateDecompositionProblem(50);
+
+        // Ищем вычитание с однозначным вторым числом
+        const match = problem.expression.match(/(\d+)\s*-\s*(\d+)/);
+        if (!match) continue;
+
+        const num2 = parseInt(match[2]);
+        if (num2 <= 9) {
+          foundOneDigitSubtraction = true;
+
+          // Находим неправильные варианты (кроме правильного ответа)
+          const wrongOptions = problem.options.filter((_, idx) => idx !== problem.correctIndex);
+
+          // Проверяем, что хотя бы один неправильный вариант разложен
+          const hasDecomposedOption = wrongOptions.some(option => option.split('-').length > 2);
+          expect(hasDecomposedOption).toBe(true);
+
+          break;
+        }
+      }
+
+      // Убеждаемся, что нашли хотя бы одну подходящую задачу
+      expect(foundOneDigitSubtraction).toBe(true);
+    });
+  });
+
+  describe('Граничные значения и fallback', () => {
+    test('работает с минимальным maxNumber', () => {
+      // Минимальное значение, при котором возможна генерация
+      const problem = generateDecompositionProblem(20, 1);
+      expect(problem).toBeDefined();
+      expect(problem.expression).toBeDefined();
+      expect(problem.options).toBeDefined();
+      expect(problem.options.length).toBeGreaterThan(0);
+    });
+
+    test('работает с очень большим maxNumber', () => {
+      const problem = generateDecompositionProblem(1000, 1);
+      expect(problem).toBeDefined();
+      expect(problem.correctAnswer).toBeLessThanOrEqual(1000);
+    });
+
+    test('работает с null maxNumber (использует 100 по умолчанию)', () => {
+      const problem = generateDecompositionProblem(null, 1);
+      expect(problem).toBeDefined();
+      expect(problem.correctAnswer).toBeLessThanOrEqual(100);
+    });
+
+    test('все уровни сложности от 1 до 9 генерируют валидные задачи', () => {
+      for (let level = 1; level <= 9; level++) {
+        const problem = generateDecompositionProblem(50, level);
+        expect(problem).toBeDefined();
+        expect(problem.options.length).toBeGreaterThanOrEqual(3);
+        expect(problem.correctIndex).toBeGreaterThanOrEqual(0);
+        expect(problem.correctIndex).toBeLessThan(problem.options.length);
+      }
+    });
+
+    test('некорректный уровень использует fallback значение', () => {
+      // Level 0 или 10 должны использовать fallback (0.05)
+      const problem1 = generateDecompositionProblem(50, 0);
+      const problem2 = generateDecompositionProblem(50, 10);
+      const problem3 = generateDecompositionProblem(50, -5);
+
+      expect(problem1).toBeDefined();
+      expect(problem2).toBeDefined();
+      expect(problem3).toBeDefined();
+    });
+  });
+
+  describe('Корректность вариантов ответов', () => {
+    test('неправильные варианты отличаются от правильного варианта', () => {
+      for (let i = 0; i < 10; i++) {
+        const problem = generateDecompositionProblem(50, 3);
+        const correctOption = problem.options[problem.correctIndex];
+
+        // Проверяем все неправильные варианты
+        for (let j = 0; j < problem.options.length; j++) {
+          if (j !== problem.correctIndex) {
+            // Неправильный вариант должен отличаться от правильного
+            expect(problem.options[j]).not.toBe(correctOption);
+          }
+        }
+      }
+    });
+
+    test('все варианты имеют корректный формат выражения', () => {
+      for (let i = 0; i < 20; i++) {
+        const problem = generateDecompositionProblem(50, 3);
+
+        for (const option of problem.options) {
+          // Формат: число (операция число)*
+          // Не должно быть лишних пробелов в начале/конце
+          expect(option).toBe(option.trim());
+          // Должен содержать хотя бы один оператор
+          expect(option).toMatch(/[\+\-\×]/);
+          // Не должно быть пустых компонентов
+          expect(option).not.toMatch(/[\+\-\×]\s*[\+\-\×]/);
+          expect(option).not.toMatch(/[\+\-\×]\s*$/);
+        }
+      }
+    });
+
+    test('разложенные варианты дают правильный результат', () => {
+      for (let i = 0; i < 20; i++) {
+        const problem = generateDecompositionProblem(50, 3);
+        const correctOption = problem.options[problem.correctIndex];
+
+        // Правильный вариант должен вычисляться в correctAnswer
+        const evaluated = eval(correctOption); // eslint-disable-line no-eval
+        expect(evaluated).toBe(problem.correctAnswer);
+      }
+    });
+  });
+
+  describe('Стабильность генерации', () => {
+    test('многократная генерация не падает', () => {
+      // Генерируем 100 задач подряд - не должно быть ошибок или infinite loops
+      for (let i = 0; i < 100; i++) {
+        const problem = generateDecompositionProblem(50, Math.floor(Math.random() * 9) + 1);
+        expect(problem).toBeDefined();
+        expect(problem.options.length).toBeGreaterThanOrEqual(3);
+      }
+    });
+
+    test('генерирует разнообразные выражения', () => {
+      const expressions = new Set<string>();
+
+      // Генерируем задачи с разными maxNumber для разнообразия
+      for (let max = 20; max <= 100; max += 10) {
+        for (let level = 1; level <= 9; level += 2) {
+          const problem = generateDecompositionProblem(max, level);
+          expressions.add(problem.expression);
+        }
+      }
+
+      // Должно быть несколько разных выражений
+      expect(expressions.size).toBeGreaterThan(5);
+    });
+  });
+
+  describe('Влияние уровня сложности', () => {
+    test('более высокий уровень даёт больше двузначных вторых чисел', () => {
+      const countTwoDigitAtLevel1 = 100;
+      const countTwoDigitAtLevel9 = 100;
+      let twoDigitAtLevel1 = 0;
+      let twoDigitAtLevel9 = 0;
+
+      // Генерируем задачи на уровне 1
+      for (let i = 0; i < countTwoDigitAtLevel1; i++) {
+        const problem = generateDecompositionProblem(50, 1);
+        const match = problem.expression.match(/(\d+)\s*([\+\-])\s*(\d+)/);
+        if (match) {
+          const num2 = parseInt(match[3]);
+          if (num2 >= 10) twoDigitAtLevel1++;
+        }
+      }
+
+      // Генерируем задачи на уровне 9
+      for (let i = 0; i < countTwoDigitAtLevel9; i++) {
+        const problem = generateDecompositionProblem(50, 9);
+        const match = problem.expression.match(/(\d+)\s*([\+\-])\s*(\d+)/);
+        if (match) {
+          const num2 = parseInt(match[3]);
+          if (num2 >= 10) twoDigitAtLevel9++;
+        }
+      }
+
+      // На уровне 9 должно быть больше двузначных вторых чисел
+      expect(twoDigitAtLevel9).toBeGreaterThan(twoDigitAtLevel1);
+    });
+  });
+
   describe('generateFirstGradeDecompositionProblem', () => {
     test('генерирует числа от 2 до 10', () => {
       for (let i = 0; i < 10; i++) {

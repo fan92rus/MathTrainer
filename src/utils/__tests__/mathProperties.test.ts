@@ -5,20 +5,16 @@
  * using fast-check for generative testing.
  */
 
-import { describe, test, expect, beforeEach } from 'vitest'
+import { describe, test, expect } from 'vitest'
 import * as fc from 'fast-check'
 import { generateCountingProblem } from '../math/counting'
 import { generateMultiplicationProblem, getAvailableMultiplicationLevels } from '../math/multiplication'
-import { generateDecompositionProblem } from '../math/decomposition'
+import { generateDecompositionProblem, generateWrongAdditionOptions, generateWrongSubtractionOptions } from '../math/decomposition'
 import { generateFirstGradeDecompositionProblem } from '../math/firstGrade'
 import { shuffleArray } from '../math/common'
-import { createPinia, setActivePinia } from 'pinia'
 
+// Pinia setup не нужен для этих тестов - они тестируют только генераторы математики
 describe('Math Generation - Property Based Tests', () => {
-  beforeEach(() => {
-    setActivePinia(createPinia())
-  })
-
   describe('generateCountingProblem', () => {
     test('correct answer is always in options at correctIndex', () => {
       fc.assert(
@@ -366,6 +362,302 @@ describe('Math Generation - Property Based Tests', () => {
           expect(option).toMatch(/[\+\-\×]/)
         }
       }
+    })
+
+    test('wrong options are distinct from correct option', () => {
+      for (let score = 0; score <= 500; score += 50) {
+        const problem = generateDecompositionProblem(score, 3)
+        const correctOption = problem.options[problem.correctIndex]
+
+        for (let i = 0; i < problem.options.length; i++) {
+          if (i !== problem.correctIndex) {
+            expect(problem.options[i]).not.toBe(correctOption)
+          }
+        }
+      }
+    })
+
+    test('no zero components in any option', () => {
+      for (let score = 0; score <= 500; score += 50) {
+        const problem = generateDecompositionProblem(score, 3)
+
+        for (const option of problem.options) {
+          expect(option).not.toContain('+ 0')
+          expect(option).not.toContain(' - 0')
+          expect(option).not.toContain('+0')
+          expect(option).not.toContain('-0')
+        }
+      }
+    })
+
+    test('decomposed options evaluate to correct answer', () => {
+      for (let score = 0; score <= 500; score += 50) {
+        const problem = generateDecompositionProblem(score, 3)
+        const correctOption = problem.options[problem.correctIndex]
+
+        // Правильный вариант должен давать правильный ответ
+        const evaluated = eval(correctOption) // eslint-disable-line no-eval
+        expect(evaluated).toBe(problem.correctAnswer)
+      }
+    })
+  })
+
+  describe('generateWrongAdditionOptions - Property Based', () => {
+    // Вспомогательная функция для создания правильного варианта сложения
+    const buildCorrectAdditionOption = (num1: number, num2: number): string => {
+      if (num2 <= 9) {
+        const ones1 = num1 % 10
+        const needed = 10 - ones1
+        return `${num1} + ${needed} + ${num2 - needed}`
+      } else {
+        const tens = Math.floor(num2 / 10) * 10
+        const remainder = num2 - tens
+        return `${num1} + ${tens} + ${remainder}`
+      }
+    }
+
+    test('wrong options never equal correct option', () => {
+      fc.assert(
+        fc.property(
+          fc.integer({ min: 11, max: 89 }),
+          fc.integer({ min: 2, max: 9 }),
+          (num1, num2) => {
+            // Пропускаем случаи, где сумма > 99
+            if (num1 + num2 > 99) return true
+
+            const correctOption = buildCorrectAdditionOption(num1, num2)
+            const wrongOptions = generateWrongAdditionOptions(num1, num2, correctOption)
+
+            for (const wrong of wrongOptions) {
+              expect(wrong).not.toBe(correctOption)
+            }
+            return true
+          }
+        ),
+        { numRuns: 100 }
+      )
+    })
+
+    test('wrong options for single-digit addends contain decomposed variants', () => {
+      fc.assert(
+        fc.property(
+          fc.integer({ min: 11, max: 89 }),
+          fc.integer({ min: 2, max: 9 }),
+          (num1, num2) => {
+            // Пропускаем случаи без перехода через десяток или с суммой > 99
+            const ones1 = num1 % 10
+            if (ones1 + num2 <= 10 || num1 + num2 > 99) return true
+
+            const correctOption = buildCorrectAdditionOption(num1, num2)
+            const wrongOptions = generateWrongAdditionOptions(num1, num2, correctOption)
+
+            // Проверяем, что есть разложенные варианты, за исключением граничных случаев,
+            // где needed (сколько нужно до круглого десятка) слишком маленький
+            const needed = 10 - ones1
+            if (needed >= 2 && num2 - needed >= 2) {
+              const hasDecomposed = wrongOptions.some(opt => opt.split('+').length > 2)
+              expect(hasDecomposed).toBe(true)
+            }
+            return true
+          }
+        ),
+        { numRuns: 50 }
+      )
+    })
+
+    test('wrong options for two-digit addends contain decomposed variants', () => {
+      fc.assert(
+        fc.property(
+          fc.integer({ min: 11, max: 70 }),
+          fc.integer({ min: 11, max: 29 }),
+          (num1, num2) => {
+            if (num1 + num2 > 99) return true
+
+            const correctOption = buildCorrectAdditionOption(num1, num2)
+            const wrongOptions = generateWrongAdditionOptions(num1, num2, correctOption)
+
+            // Хотя бы один неправильный вариант должен быть разложен
+            const hasDecomposed = wrongOptions.some(opt => opt.split('+').length > 2)
+            expect(hasDecomposed).toBe(true)
+            return true
+          }
+        ),
+        { numRuns: 50 }
+      )
+    })
+
+    test('no zero components in wrong addition options', () => {
+      fc.assert(
+        fc.property(
+          fc.integer({ min: 11, max: 89 }),
+          fc.integer({ min: 2, max: 9 }),
+          (num1, num2) => {
+            if (num1 + num2 > 99) return true
+
+            const correctOption = buildCorrectAdditionOption(num1, num2)
+            const wrongOptions = generateWrongAdditionOptions(num1, num2, correctOption)
+
+            for (const wrong of wrongOptions) {
+              expect(wrong).not.toContain('+ 0')
+              expect(wrong).not.toContain('+0')
+            }
+            return true
+          }
+        ),
+        { numRuns: 100 }
+      )
+    })
+
+    test('wrong options are unique', () => {
+      fc.assert(
+        fc.property(
+          fc.integer({ min: 11, max: 89 }),
+          fc.integer({ min: 2, max: 9 }),
+          (num1, num2) => {
+            if (num1 + num2 > 99) return true
+
+            const correctOption = buildCorrectAdditionOption(num1, num2)
+            const wrongOptions = generateWrongAdditionOptions(num1, num2, correctOption)
+
+            const unique = new Set(wrongOptions)
+            // Допускаем некоторое количество дубликатов из-за fallback-генерации
+            expect(unique.size).toBeGreaterThanOrEqual(Math.max(1, wrongOptions.length - 1))
+            return true
+          }
+        ),
+        { numRuns: 50 }
+      )
+    })
+  })
+
+  describe('generateWrongSubtractionOptions - Property Based', () => {
+    // Вспомогательная функция для создания правильного варианта вычитания
+    const buildCorrectSubtractionOption = (num1: number, num2: number): string => {
+      if (num2 <= 9) {
+        const ones1 = num1 % 10
+        return `${num1} - ${ones1} - ${num2 - ones1}`
+      } else {
+        const tens = Math.floor(num2 / 10) * 10
+        const remainder = num2 - tens
+        return `${num1} - ${tens} - ${remainder}`
+      }
+    }
+
+    test('wrong options never equal correct option', () => {
+      fc.assert(
+        fc.property(
+          fc.integer({ min: 20, max: 99 }),
+          fc.integer({ min: 2, max: 9 }),
+          (num1, num2) => {
+            // num2 должен быть больше единиц num1 для перехода через десяток
+            const ones1 = num1 % 10
+            if (num2 <= ones1) return true
+
+            const correctOption = buildCorrectSubtractionOption(num1, num2)
+            const wrongOptions = generateWrongSubtractionOptions(num1, num2, correctOption)
+
+            for (const wrong of wrongOptions) {
+              expect(wrong).not.toBe(correctOption)
+            }
+            return true
+          }
+        ),
+        { numRuns: 100 }
+      )
+    })
+
+    test('wrong options for single-digit subtrahends contain decomposed variants', () => {
+      fc.assert(
+        fc.property(
+          fc.integer({ min: 20, max: 99 }),
+          fc.integer({ min: 2, max: 9 }),
+          (num1, num2) => {
+            const ones1 = num1 % 10
+            if (num2 <= ones1) return true
+
+            const correctOption = buildCorrectSubtractionOption(num1, num2)
+            const wrongOptions = generateWrongSubtractionOptions(num1, num2, correctOption)
+
+            // Проверяем, что есть разложенные варианты, за исключением случаев, где
+            // разность между num2 и ones1 равна 1 (мало вариантов для генерации)
+            const diff = num2 - ones1
+            if (diff > 1) {
+              const hasDecomposed = wrongOptions.some(opt => opt.split('-').length > 2)
+              expect(hasDecomposed).toBe(true)
+            }
+            return true
+          }
+        ),
+        { numRuns: 50 }
+      )
+    })
+
+    test('wrong options for two-digit subtrahends contain decomposed variants', () => {
+      fc.assert(
+        fc.property(
+          fc.integer({ min: 30, max: 99 }),
+          fc.integer({ min: 11, max: 50 }),
+          (num1, num2) => {
+            if (num2 >= num1) return true
+
+            const correctOption = buildCorrectSubtractionOption(num1, num2)
+            const wrongOptions = generateWrongSubtractionOptions(num1, num2, correctOption)
+
+            // Хотя бы один неправильный вариант должен быть разложен
+            const hasDecomposed = wrongOptions.some(opt => opt.split('-').length > 2)
+            expect(hasDecomposed).toBe(true)
+            return true
+          }
+        ),
+        { numRuns: 50 }
+      )
+    })
+
+    test('no zero components in wrong subtraction options', () => {
+      fc.assert(
+        fc.property(
+          fc.integer({ min: 20, max: 99 }),
+          fc.integer({ min: 2, max: 9 }),
+          (num1, num2) => {
+            const ones1 = num1 % 10
+            if (num2 <= ones1) return true
+
+            const correctOption = buildCorrectSubtractionOption(num1, num2)
+            const wrongOptions = generateWrongSubtractionOptions(num1, num2, correctOption)
+
+            for (const wrong of wrongOptions) {
+              // Проверяем отсутствие компонента "0" после оператора или начала строки
+              // Не используем /\d+0/ так как он находит числа вроде "20"
+              expect(wrong).not.toMatch(/(^|\s)[\-\+]?\s*0(?!\d)/)
+              expect(wrong).not.toContain('- 0')
+              expect(wrong).not.toContain('-0')
+            }
+            return true
+          }
+        ),
+        { numRuns: 100 }
+      )
+    })
+
+    test('wrong options are unique', () => {
+      fc.assert(
+        fc.property(
+          fc.integer({ min: 20, max: 99 }),
+          fc.integer({ min: 2, max: 9 }),
+          (num1, num2) => {
+            const ones1 = num1 % 10
+            if (num2 <= ones1) return true
+
+            const correctOption = buildCorrectSubtractionOption(num1, num2)
+            const wrongOptions = generateWrongSubtractionOptions(num1, num2, correctOption)
+
+            const unique = new Set(wrongOptions)
+            expect(unique.size).toBeGreaterThanOrEqual(Math.max(1, wrongOptions.length - 1))
+            return true
+          }
+        ),
+        { numRuns: 50 }
+      )
     })
   })
 })

@@ -1,405 +1,439 @@
 /**
  * Утилиты для упражнений на разложение чисел
+ * Конвейерный подход: детерминированная генерация без циклов с проверками
  */
 
 import type { MathProblem, MathOperation } from '@/types';
 import { shuffleArray } from '../common';
 
+// Вспомогательная функция для генерации случайного числа в диапазоне
+const randomInt = (min: number, max: number): number => {
+  return Math.floor(Math.random() * (max - min + 1)) + min;
+};
+
+// Вспомогательная функция для случайного выбора
+const randomChoice = <T>(arr: T[]): T => {
+  return arr[Math.floor(Math.random() * arr.length)];
+};
+
+// Типы для разложения
+interface DecompositionResult {
+  num1: number;
+  num2: number;
+  expression: string;
+  correctOption: string;
+  wrongOptions: string[];
+}
+
 /**
- * Генерирует правильный вариант для сложения с разложением
+ * Конвейер для сложения: детерминированно генерирует числа с переходом через десяток
  */
-function generateAdditionOption(num1: number, num2: number): string {
-  // Раскладываем только если есть переход через десяток
-  // Проверяем, будет ли переход через десяток при сложении
-  const sum = num1 + num2;
-  const tensBefore = Math.floor(num1 / 10);
-  const tensAfter = Math.floor(sum / 10);
+function generateAdditionPipeline(maxNumber: number, twoDigitProbability: number): DecompositionResult | null {
+  // Шаг 1: Генерируем первое число (с единицами от 1 до 8)
+  const tens1 = randomInt(1, Math.floor(maxNumber / 10) - 1);
+  const ones1 = randomInt(1, 8);
+  const num1 = tens1 * 10 + ones1;
 
-  // Если количество десятков изменилось, значит был переход через десяток
-  // Это включает как переход с 9 единиц на следующий десяток, так и переход между десятками
-  if (tensAfter > tensBefore) {
-    // Есть переход через десяток - раскладываем
-    if (num2 <= 9) {
-      // Однозначное число - раскладываем чтобы дополнить до круглого десятка
-      const lastDigit1 = num1 % 10;
-      const neededForRound = 10 - lastDigit1;
+  // Шаг 2: Решаем, будет ли второе число двузначным
+  const useTwoDigit = Math.random() < twoDigitProbability;
 
-      // Проверяем, не будет ли нулевого компонента при разложении
-      if (neededForRound === 0 || neededForRound === num2 || num2 - neededForRound === 0) {
-        // Если будет нулевой компонент, не раскладываем
-        return `${num1} + ${num2}`;
-      }
+  let num2: number;
 
-      // Раскладываем, чтобы дополнить до круглого десятка
-      const part1 = neededForRound;
-      const part2 = num2 - neededForRound;
-
-      return `${num1} + ${part1} + ${part2}`;
-    } else {
-      // Двузначное число - раскладываем на десятки и единицы
-      const tens = Math.floor(num2 / 10) * 10;
-      const remainder = num2 - tens;
-
-      // Проверяем, чтобы оба компонента были ненулевыми
-      if (tens === 0 || remainder === 0) {
-        // Если один из компонентов нулевой, не раскладываем
-        return `${num1} + ${num2}`;
-      }
-
-      return `${num1} + ${tens} + ${remainder}`;
+  if (useTwoDigit) {
+    // Двузначное число: сумма не должна превышать maxNumber
+    const maxTwoDigit = Math.min(99, maxNumber - num1 - 1);
+    if (maxTwoDigit < 11) {
+      return null; // Не можем создать двузначное число
     }
+    num2 = randomInt(11, maxTwoDigit);
   } else {
-    // Нет перехода через десяток - не раскладываем
-    return `${num1} + ${num2}`;
+    // Однозначное число: гарантируем переход через десяток
+    const needed = 10 - ones1; // сколько нужно до круглого десятка
+    if (needed >= 9) {
+      return null; // Не можем создать подходящее число
+    }
+    num2 = randomInt(needed + 1, 9);
+  }
+
+  // Проверяем сумму
+  if (num1 + num2 > maxNumber) {
+    return null;
+  }
+
+  // Шаг 3: Строим правильный вариант
+  const correctOption = buildCorrectAdditionOption(num1, num2);
+
+  // Шаг 4: Строим неправильные варианты
+  const wrongOptions = buildWrongAdditionOptions(num1, num2, correctOption);
+
+  return {
+    num1,
+    num2,
+    expression: `${num1} + ${num2}`,
+    correctOption,
+    wrongOptions
+  };
+}
+
+/**
+ * Строит правильный вариант для сложения (без проверок - данные уже валидны)
+ */
+function buildCorrectAdditionOption(num1: number, num2: number): string {
+  if (num2 <= 9) {
+    // Однозначное - дополняем до круглого десятка
+    const ones1 = num1 % 10;
+    const needed = 10 - ones1;
+    return `${num1} + ${needed} + ${num2 - needed}`;
+  } else {
+    // Двузначное - раскладываем на десятки и единицы
+    const tens = Math.floor(num2 / 10) * 10;
+    const remainder = num2 - tens;
+    return `${num1} + ${tens} + ${remainder}`;
   }
 }
 
 /**
- * Генерирует правильный вариант для вычитания с разложением
+ * Строит неправильные варианты для сложения (детерминированно)
+ * Гарантирует наличие вариантов с разложением (с переходом через десяток)
  */
-function generateSubtractionOption(num1: number, num2: number): string {
-  const difference = num1 - num2;
-  const tensBefore = Math.floor(num1 / 10);
-  const tensAfter = Math.floor(difference / 10);
+function buildWrongAdditionOptions(num1: number, num2: number, correctOption: string): string[] {
+  const wrongOptions: string[] = [];
 
-  // Если количество десятков уменьшилось, есть переход через десяток
-  if (tensAfter < tensBefore) {
-    // Есть переход через десяток - раскладываем
-    if (num2 <= 9) {
-      // Однозначное второе число
-      const lastDigit1 = num1 % 10;
+  if (num2 <= 9) {
+    // Для однозначного числа генерируем разложенные варианты с неправильной точкой перехода
+    const ones1 = num1 % 10;
+    const needed = 10 - ones1;
 
-      // Проверяем, не будет ли нулевого компонента при разложении
-      if (lastDigit1 === 0 || num2 - lastDigit1 <= 0 || num2 === lastDigit1) {
-        // Если будет нулевой компонент, не раскладываем
-        return `${num1} - ${num2}`;
+    // Стратегия 1: Сдвиг точки разложения в меньшую сторону
+    if (needed > 1) {
+      const newPart1 = needed - 1;
+      const newPart2 = num2 - newPart1;
+      if (newPart2 > 0) {
+        wrongOptions.push(`${num1} + ${newPart1} + ${newPart2}`);
       }
+    }
 
-      const roundPart = lastDigit1;
-      const remainder = num2 - roundPart;
-
-      return `${num1} - ${roundPart} - ${remainder}`;
-    } else {
-      // Двузначное второе число - раскладываем на десятки и единицы (сначала вычитаем десятки, потом единицы)
-      const tens = Math.floor(num2 / 10) * 10;
-      const remainder = num2 - tens;
-
-      // Проверяем, чтобы оба компонента были ненулевыми
-      if (tens === 0 || remainder === 0) {
-        // Если один из компонентов нулевой, не раскладываем
-        return `${num1} - ${num2}`;
+    // Стратегия 2: Сдвиг точки разложения в большую сторону
+    if (needed < num2 - 1) {
+      const newPart1 = needed + 1;
+      const newPart2 = num2 - newPart1;
+      if (newPart2 > 0) {
+        wrongOptions.push(`${num1} + ${newPart1} + ${newPart2}`);
       }
+    }
 
-      return `${num1} - ${tens} - ${remainder}`;
+    // Стратегия 3: Двойной сдвиг
+    if (needed > 2 && num2 >= needed + 2) {
+      const newPart1 = needed - 2;
+      const newPart2 = num2 - newPart1;
+      if (newPart2 > 0) {
+        wrongOptions.push(`${num1} + ${newPart1} + ${newPart2}`);
+      }
+    }
+
+    // Стратегия 4: Не раскладывать (для разнообразия)
+    wrongOptions.push(`${num1} + ${num2}`);
+
+  } else {
+    // Для двузначного числа генерируем варианты с разложением
+    const tens = Math.floor(num2 / 10) * 10;
+    const remainder = num2 - tens;
+
+    // Стратегия 1: Перенести часть единиц в десятки
+    if (remainder > 0 && remainder < 9 && tens > 0) {
+      wrongOptions.push(`${num1} + ${tens - 10} + ${remainder + 10}`);
+    }
+
+    // Стратегия 2: Изменить точку между десятками и единицами
+    if (remainder > 1) {
+      wrongOptions.push(`${num1} + ${tens} + ${remainder - 1} + 1`);
+    }
+
+    // Стратегия 3: Другое распределение единиц
+    if (remainder >= 2) {
+      wrongOptions.push(`${num1} + ${tens} + 1 + ${remainder - 1}`);
+    }
+
+    // Стратегия 4: Не раскладывать
+    wrongOptions.push(`${num1} + ${num2}`);
+  }
+
+  // Фильтруем дубликаты и правильный ответ
+  const unique = [...new Set(wrongOptions)].filter(x => x !== correctOption);
+
+  // Если меньше 3 вариантов, добавляем fallback-варианты
+  const result = [...unique];
+  for (let offset of [-2, -1, 1, 2, 3]) {
+    if (result.length >= 3) break;
+    const modifiedNum2 = num2 + offset;
+    if (modifiedNum2 > 0 && modifiedNum2 !== num2) {
+      // Для fallback тоже пробуем создать разложенный вариант
+      const option = num2 <= 9
+        ? `${num1} + ${modifiedNum2}`
+        : `${num1} + ${Math.floor(modifiedNum2 / 10) * 10} + ${modifiedNum2 % 10}`;
+      if (option !== correctOption && !result.includes(option)) {
+        result.push(option);
+      }
     }
   }
 
-  // Если нет перехода через десяток - не раскладываем
-  return `${num1} - ${num2}`;
+  return result.slice(0, 3);
+}
+
+/**
+ * Конвейер для вычитания: детерминированно генерирует числа с переходом через десяток
+ */
+function generateSubtractionPipeline(maxNumber: number, twoDigitProbability: number): DecompositionResult | null {
+  // Шаг 1: Генерируем первое число
+  const tens1 = randomInt(1, Math.floor(maxNumber / 10) - 1);
+  const ones1 = randomInt(1, 8);
+  const num1 = tens1 * 10 + ones1;
+
+  // Шаг 2: Решаем, будет ли второе число двузначным
+  const useTwoDigit = Math.random() < twoDigitProbability;
+
+  let num2: number;
+
+  if (useTwoDigit) {
+    // Двузначное: должно быть меньше num1
+    const maxTwoDigit = num1 - 1;
+    if (maxTwoDigit < 11) {
+      return null;
+    }
+    num2 = randomInt(11, maxTwoDigit);
+  } else {
+    // Однозначное: гарантируем переход через десяток (вычитаем больше чем единиц)
+    const maxPossible = Math.min(9, num1 - 1);
+    if (ones1 >= maxPossible) {
+      return null; // Не будет перехода через десяток
+    }
+    num2 = randomInt(ones1 + 1, maxPossible);
+  }
+
+  // Шаг 3: Строим правильный вариант
+  const correctOption = buildCorrectSubtractionOption(num1, num2);
+
+  // Шаг 4: Строим неправильные варианты
+  const wrongOptions = buildWrongSubtractionOptions(num1, num2, correctOption);
+
+  return {
+    num1,
+    num2,
+    expression: `${num1} - ${num2}`,
+    correctOption,
+    wrongOptions
+  };
+}
+
+/**
+ * Строит правильный вариант для вычитания (без проверок)
+ */
+function buildCorrectSubtractionOption(num1: number, num2: number): string {
+  if (num2 <= 9) {
+    const ones1 = num1 % 10;
+    return `${num1} - ${ones1} - ${num2 - ones1}`;
+  } else {
+    const tens = Math.floor(num2 / 10) * 10;
+    const remainder = num2 - tens;
+    return `${num1} - ${tens} - ${remainder}`;
+  }
+}
+
+/**
+ * Строит неправильные варианты для вычитания (детерминированно)
+ * Гарантирует наличие вариантов с разложением (с переходом через десяток)
+ */
+function buildWrongSubtractionOptions(num1: number, num2: number, correctOption: string): string[] {
+  const wrongOptions: string[] = [];
+
+  if (num2 <= 9) {
+    // Для однозначного числа генерируем разложенные варианты с неправильной точкой перехода
+    const ones1 = num1 % 10;
+
+    // Стратегия 1: Сдвиг точки разложения в меньшую сторону
+    if (ones1 > 1 && num2 > ones1) {
+      const newPart1 = ones1 - 1;
+      const newPart2 = num2 - newPart1;
+      if (newPart2 > 0) {
+        wrongOptions.push(`${num1} - ${newPart1} - ${newPart2}`);
+      }
+    }
+
+    // Стратегия 2: Сдвиг точки разложения в большую сторону
+    if (ones1 < num2 - 1) {
+      const newPart1 = ones1 + 1;
+      const newPart2 = num2 - newPart1;
+      if (newPart2 > 0) {
+        wrongOptions.push(`${num1} - ${newPart1} - ${newPart2}`);
+      }
+    }
+
+    // Стратегия 3: Двойной сдвиг
+    if (ones1 > 2 && num2 > ones1 + 1) {
+      const newPart1 = ones1 - 2;
+      const newPart2 = num2 - newPart1;
+      if (newPart2 > 0) {
+        wrongOptions.push(`${num1} - ${newPart1} - ${newPart2}`);
+      }
+    }
+
+    // Стратегия 4: Для граничных случаев - другой способ разложения
+    // Если основные стратегии не сработали, добавляем альтернативные варианты
+    if (wrongOptions.length < 2) {
+      if (ones1 >= 2 && num2 > ones1) {
+        // 4a: Разложить через другой первый компонент
+        const newPart1 = ones1 - 1;
+        const newPart2 = num2 - newPart1;
+        if (newPart2 > 0 && newPart2 !== num2 - ones1) {
+          wrongOptions.push(`${num1} - ${newPart1} - ${newPart2}`);
+        }
+      }
+      if (ones1 <= num2 - 2) {
+        // 4b: Разложить через больший первый компонент
+        const newPart1 = ones1 + 2;
+        const newPart2 = num2 - newPart1;
+        if (newPart2 > 0 && newPart2 !== num2 - ones1) {
+          wrongOptions.push(`${num1} - ${newPart1} - ${newPart2}`);
+        }
+      }
+    }
+
+    // Стратегия 5: Не раскладывать
+    wrongOptions.push(`${num1} - ${num2}`);
+
+  } else {
+    // Для двузначного числа генерируем варианты с разложением
+    const tens = Math.floor(num2 / 10) * 10;
+    const remainder = num2 - tens;
+
+    // Стратегия 1: Изменить порядок вычитания (сначала десятки, потом единицы)
+    if (remainder > 0) {
+      wrongOptions.push(`${num1} - ${remainder} - ${tens}`);
+    }
+
+    // Стратегия 2: Перенести часть единиц в десятки
+    if (remainder > 0 && remainder < 9 && tens >= 20) {
+      wrongOptions.push(`${num1} - ${tens - 10} - ${remainder + 10}`);
+    }
+
+    // Стратегия 3: Изменить распределение единиц
+    if (remainder >= 2) {
+      wrongOptions.push(`${num1} - ${tens} - 1 - ${remainder - 1}`);
+    }
+
+    // Стратегия 4: Не раскладывать
+    wrongOptions.push(`${num1} - ${num2}`);
+  }
+
+  // Фильтруем и дополняем
+  const unique = [...new Set(wrongOptions)].filter(x => x !== correctOption);
+  const result = [...unique];
+
+  // Если меньше 3, добавляем fallback-варианты
+  for (let offset of [-2, -1, 1, 2, 3]) {
+    if (result.length >= 3) break;
+    const modifiedNum2 = num2 + offset;
+    if (modifiedNum2 > 0 && modifiedNum2 < num1 && modifiedNum2 !== num2) {
+      // Для fallback тоже пробуем создать разложенный вариант
+      const option = num2 <= 9
+        ? `${num1} - ${modifiedNum2}`
+        : `${num1} - ${Math.floor(modifiedNum2 / 10) * 10} - ${modifiedNum2 % 10}`;
+      if (option !== correctOption && !result.includes(option)) {
+        result.push(option);
+      }
+    }
+  }
+
+  return result.slice(0, 3);
 }
 
 /**
  * Генерирует неправильные варианты для сложения
+ * Экспортируется для использования в тестах
  */
-function generateWrongAdditionOptions(num1: number, num2: number, correctOption: string): string[] {
-  const wrongOptions: string[] = [];
-  const parts = correctOption.split(' + ');
-  const mainNum = parseInt(parts[0] ?? '0');
-
-  // Стратегия 1: Разделить второе число на неравные части
-  if (num2 > 4) {
-    // Используем соотношение 30%/70% чтобы избежать нулей
-    const part1 = Math.max(1, Math.floor(num2 * 0.3));
-    const part2 = num2 - part1;
-
-    // Убеждаемся, что оба компонента положительные и не равны нулю
-    if (part1 > 0 && part2 > 0 && part1 !== num2 && part2 !== num2) {
-      const option = `${mainNum} + ${part1} + ${part2}`;
-      if (option !== correctOption && !wrongOptions.includes(option)) {
-        wrongOptions.push(option);
-      }
-    }
-  }
-
-  // Стратегия 2: Если правильный ответ разложен, изменяем пропорции
-  if (parts.length === 3) {
-    const part1 = parseInt(parts[1] ?? '0');
-    const part2 = parseInt(parts[2] ?? '0');
-
-    if (part1 > 0 && part2 > 0) {
-      const combined = part1 + part2;
-
-      // Создаем новое разложение с соотношением 25%/75%
-      const newPart1 = Math.max(1, Math.floor(combined * 0.25));
-      const newPart2 = combined - newPart1;
-
-      if (newPart1 > 0 && newPart2 > 0 && newPart1 !== part1 && newPart2 !== part2) {
-        const option = `${mainNum} + ${newPart1} + ${newPart2}`;
-        if (option !== correctOption && !wrongOptions.includes(option)) {
-          wrongOptions.push(option);
-        }
-      }
-    }
-  }
-
-  // Стратегия 3: Используем другие числа близкие к правильным
-  if (num2 > 2) {
-    // Создаем варианты с небольшими изменениями
-    for (const offset of [-1, 1, 2]) {
-      const modifiedNum2 = num2 + offset;
-      if (modifiedNum2 > 0 && modifiedNum2 !== num2) {
-        // Проверяем, не создает ли это переход через десяток
-        const sum = num1 + modifiedNum2;
-        const tensBefore = Math.floor(num1 / 10);
-        const tensAfter = Math.floor(sum / 10);
-
-        if (tensAfter === tensBefore || (tensAfter > tensBefore && modifiedNum2 <= 9)) {
-          const option = `${num1} + ${modifiedNum2}`;
-          if (option !== correctOption && !wrongOptions.includes(option)) {
-            wrongOptions.push(option);
-            break; // Добавляем только один такой вариант
-          }
-        }
-      }
-    }
-  }
-
-  // Фильтруем и возвращаем до 3 уникальных вариантов
-  const filtered = wrongOptions.filter((opt, index, arr) => arr.indexOf(opt) === index);
-
-  // Если вариантов меньше 3, добавляем простые варианты
-  while (filtered.length < 3) {
-    const simpleOption = `${num1} + ${num2 + filtered.length + 1}`;
-    if (simpleOption !== correctOption && !filtered.includes(simpleOption)) {
-      filtered.push(simpleOption);
-    }
-  }
-
-  return filtered.slice(0, 3);
+export function generateWrongAdditionOptions(num1: number, num2: number, correctOption: string): string[] {
+  return buildWrongAdditionOptions(num1, num2, correctOption);
 }
 
 /**
  * Генерирует неправильные варианты для вычитания
+ * Экспортируется для использования в тестах
  */
-export function generateWrongSubtractionOptions(
-  num1: number,
-  num2: number,
-  correctOption: string
-): string[] {
-  const wrongOptions: string[] = [];
-
-  // Стратегия 1: Использовать неправильный способ разложения
-  if (num1 % 10 !== 0 && num2 > 0 && num2 <= 9) {
-    const lastDigit = num1 % 10;
-
-    // Попытка разложить неправильно, но избегая нулей
-    if (num2 >= lastDigit + 1) {
-      const remainder = num2 - lastDigit + 1;
-      if (remainder > 0 && remainder !== num2 && lastDigit > 0 && remainder !== lastDigit) {
-        wrongOptions.push(`${num1} - ${lastDigit} - ${remainder}`);
-      }
-    }
-  }
-
-  // Стратегия 2: Разложить на десятки иначе (для двузначных чисел)
-  if (num2 >= 10) {
-    const tens = Math.floor(num2 / 10) * 10;
-    const remainder = num2 - tens;
-    const lastDigit = num1 % 10;
-
-    // Убеждаемся, что все компоненты ненулевые
-    if (tens > 0 && remainder > 0 && tens !== num2) {
-      // Изменим способ разложения
-      if (lastDigit > remainder && lastDigit - remainder > 0) {
-        const newRemainder = lastDigit - remainder;
-        if (newRemainder > 0 && newRemainder !== tens) {
-          wrongOptions.push(`${num1} - ${newRemainder} - ${tens}`);
-        }
-      }
-
-      // Также можно изменить порядок
-      wrongOptions.push(`${num1} - ${remainder} - ${tens}`);
-    }
-  }
-
-  // Стратегия 3: Не разложить, если нужно разложить
-  if (correctOption.split(' - ').length > 2) {
-    const option = `${num1} - ${num2}`;
-    if (!wrongOptions.includes(option)) {
-      wrongOptions.push(option);
-    }
-  }
-
-  // Стратегия 4: Разделить на неравные части (для четных чисел)
-  if (num2 > 4 && num2 % 2 === 0) {
-    // Используем соотношение 40%/60% вместо 50%/50%
-    const part1 = Math.max(1, Math.floor(num2 * 0.4));
-    const part2 = num2 - part1;
-    if (part1 > 0 && part2 > 0 && part1 !== part2) {
-      const option = `${num1} - ${part1} - ${part2}`;
-      if (!wrongOptions.includes(option)) {
-        wrongOptions.push(option);
-      }
-    }
-  }
-
-  // Стратегия 5: Изменить вычитаемое на небольшую величину
-  if (num2 > 1) {
-    for (const offset of [1, -1, 2]) {
-      const modifiedNum2 = num2 + offset;
-      if (modifiedNum2 > 0 && modifiedNum2 < num1 && modifiedNum2 !== num2) {
-        const option = `${num1} - ${modifiedNum2}`;
-        if (!wrongOptions.includes(option)) {
-          wrongOptions.push(option);
-          break; // Добавляем только один такой вариант
-        }
-      }
-    }
-  }
-
-  // Фильтруем и возвращаем до 3 уникальных вариантов
-  const filtered = wrongOptions.filter((opt, index, arr) => arr.indexOf(opt) === index);
-
-  // Если вариантов меньше 3, добавляем простые варианты
-  while (filtered.length < 3) {
-    const simpleOption = `${num1} + ${num2 + filtered.length + 1}`;
-    if (simpleOption !== correctOption && !filtered.includes(simpleOption)) {
-      filtered.push(simpleOption);
-    }
-  }
-
-  return filtered.slice(0, 3);
+export function generateWrongSubtractionOptions(num1: number, num2: number, correctOption: string): string[] {
+  return buildWrongSubtractionOptions(num1, num2, correctOption);
 }
 
 /**
  * Генерирует задачу на разложение чисел
+ * @param maxNumber - максимальное число (по умолчанию 100)
+ * @param level - уровень сложности (1-9), влияет на вероятность двузначного второго числа
  */
 export function generateDecompositionProblem(
   maxNumber: number | null = null,
   level: number = 1
 ): MathProblem {
-  // Если maxNumber не указан, используем 100 для двузначных чисел
   const effectiveMax = maxNumber || 100;
-  const minNumber = 10; // Минимум 10 для двузначных чисел
-  const maxAttempts = 50; // Увеличим количество попыток для нахождения подходящих чисел
 
-  // Вычисляем вероятность двузначного второго числа на основе уровня (плавное увеличение)
+  // Вероятность двузначного второго числа на основе уровня
   const twoDigitProbabilities: Record<number, number> = {
-    1: 0.05, // Уровень 1: 5% (0-49 очков)
-    2: 0.1, // Уровень 2: 10% (50-99 очков)
-    3: 0.15, // Уровень 3: 15% (100-149 очков)
-    4: 0.2, // Уровень 4: 20% (150-199 очков)
-    5: 0.25, // Уровень 5: 25% (200-249 очков)
-    6: 0.35, // Уровень 6: 35% (250-299 очков)
-    7: 0.45, // Уровень 7: 45% (300-349 очков)
-    8: 0.55, // Уровень 8: 55% (350-399 очков)
-    9: 0.65 // Уровень 9: 65% (400+ очков)
+    1: 0.05,
+    2: 0.1,
+    3: 0.15,
+    4: 0.2,
+    5: 0.25,
+    6: 0.35,
+    7: 0.45,
+    8: 0.55,
+    9: 0.65
   };
   const twoDigitProbability = twoDigitProbabilities[level] || 0.05;
 
-  for (let attempt = 0; attempt < maxAttempts; attempt++) {
-    // Выбираем операцию
+  // Пробуем генерировать (максимум несколько попыток для разнообразия)
+  const maxRetries = 5;
+  let lastError: Error | null = null;
+
+  for (let attempt = 0; attempt < maxRetries; attempt++) {
     const isAddition = Math.random() > 0.5;
 
-    let num1: number, num2: number, correctOption: string, wrongOptions: string[];
+    let result: DecompositionResult | null;
 
     if (isAddition) {
-      // Генерируем сложение с переходом через десяток
-      // Создаем число с последней цифрой > 0
-      num1 = Math.floor(Math.random() * (effectiveMax - minNumber)) + minNumber;
-      const lastDigit = num1 % 10;
-
-      if (lastDigit === 0) {
-        // Если последняя цифра 0, делаем её случайной от 1 до 8
-        num1 = Math.floor(num1 / 10) * 10 + Math.floor(Math.random() * 8) + 1;
-      }
-
-      // Генерируем num2 такое, чтобы был переход через десяток
-      const minNeeded = 10 - (num1 % 10) + 1; // Минимальное число для перехода через десяток
-      const maxPossible = Math.min(9, effectiveMax - num1); // Максимальное однозначное число
-
-      // Решаем, будет ли num2 двузначным на основе уровня
-      const useTwoDigit = Math.random() < twoDigitProbability;
-
-      if (useTwoDigit && minNeeded > maxPossible) {
-        // Генерируем двузначное число без ограничений (только чтобы сумма не превышала максимум)
-        const maxTwoDigit = effectiveMax - num1;
-        num2 = Math.floor(Math.random() * (maxTwoDigit - 11)) + 11;
-      } else if (minNeeded <= maxPossible) {
-        num2 = Math.floor(Math.random() * (maxPossible - minNeeded + 1)) + minNeeded;
-      } else {
-        // Если не можем найти однозначное число, пробуем двузначное
-        num2 = Math.floor(Math.random() * 9) + 11; // от 11 до 19
-      }
-
-      // Убедимся, что сумма не превышает максимум
-      while (num1 + num2 > effectiveMax) {
-        num2 = Math.max(1, num2 - 1);
-      }
-
-      correctOption = generateAdditionOption(num1, num2);
-      wrongOptions = generateWrongAdditionOptions(num1, num2, correctOption);
+      result = generateAdditionPipeline(effectiveMax, twoDigitProbability);
     } else {
-      // Генерируем вычитание с переходом через десяток
-      num1 = Math.floor(Math.random() * (effectiveMax - minNumber)) + minNumber;
-      const lastDigit = num1 % 10;
-
-      if (lastDigit === 0) {
-        // Если последняя цифра 0, делаем её случайной от 1 до 8
-        num1 = Math.floor(num1 / 10) * 10 + Math.floor(Math.random() * 8) + 1;
-      }
-
-      // Генерируем num2 такое, чтобы был переход через десяток при вычитании
-      const maxForTransition = num1 % 10; // Максимальное число для перехода через десяток
-
-      // Решаем, будет ли num2 двузначным на основе уровня
-      const useTwoDigit = Math.random() < twoDigitProbability;
-
-      if (useTwoDigit && maxForTransition === 0) {
-        // Генерируем двузначное число без ограничений (только чтобы num2 < num1)
-        const maxTwoDigit = num1 - 1;
-        num2 = Math.floor(Math.random() * (maxTwoDigit - 11)) + 11;
-      } else if (maxForTransition > 0) {
-        num2 = Math.floor(Math.random() * maxForTransition) + 1;
-      } else {
-        num2 = Math.floor(Math.random() * (num1 - 11)) + 11; // Двузначное число
-      }
-
-      correctOption = generateSubtractionOption(num1, num2);
-      wrongOptions = generateWrongSubtractionOptions(num1, num2, correctOption);
+      result = generateSubtractionPipeline(effectiveMax, twoDigitProbability);
     }
 
-    // Проверяем, что есть разложение и нет нулей
-    const hasDecomposition = correctOption.split(isAddition ? ' + ' : ' - ').length > 2;
-    const hasNoZeros = !correctOption.includes('+ 0') && !correctOption.includes(' - 0');
-    const wrongOptionsHaveNoZeros = wrongOptions.every(
-      (opt) => !opt.includes('+ 0') && !opt.includes(' - 0')
-    );
+    if (result) {
+      // Проверяем отсутствие нулей (единственная оставшаяся проверка)
+      const allOptions = [result.correctOption, ...result.wrongOptions];
+      const hasNoZeros = allOptions.every(
+        opt => !opt.includes('+ 0') && !opt.includes(' - 0')
+      );
 
-    if (hasDecomposition && hasNoZeros && wrongOptionsHaveNoZeros) {
-      const allOptions = [correctOption, ...wrongOptions];
-      const shuffled = shuffleArray(allOptions);
-      const correctIndex = shuffled.indexOf(correctOption);
-      const operation: MathOperation = isAddition ? 'addition' : 'subtraction';
+      if (hasNoZeros) {
+        const shuffled = shuffleArray(allOptions);
+        const correctIndex = shuffled.indexOf(result.correctOption);
+        const operation: MathOperation = isAddition ? 'addition' : 'subtraction';
 
-      return {
-        expression: isAddition ? `${num1} + ${num2}` : `${num1} - ${num2}`,
-        operation,
-        num1,
-        num2,
-        correctAnswer: isAddition ? num1 + num2 : num1 - num2,
-        options: shuffled,
-        correctIndex,
-        difficulty: 2
-      };
+        return {
+          expression: result.expression,
+          operation,
+          num1: result.num1,
+          num2: result.num2,
+          correctAnswer: isAddition ? result.num1 + result.num2 : result.num1 - result.num2,
+          options: shuffled,
+          correctIndex,
+          difficulty: 2
+        };
+      }
     }
   }
 
-  // Если не удалось сгенерировать, используем гарантированный пример с переходом через десяток
+  // Fallback - гарантированно рабочий пример
   const num1 = 19;
   const num2 = 3;
   const correctOption = `${num1} + 1 + 2`;
-  const wrongOptions = [`${num1} + 1 + ${num2 + 1}`, `${num1} + 2 + 1`, `${num1} + ${num2}`];
+  const wrongOptions = [`${num1} + 2 + 1`, `${num1} + 3`, `${num1} + 2 + 2`];
   const allOptions = [correctOption, ...wrongOptions];
   const shuffled = shuffleArray(allOptions);
   const correctIndex = shuffled.indexOf(correctOption);
