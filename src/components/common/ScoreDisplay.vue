@@ -15,7 +15,7 @@
 </template>
 
 <script setup lang="ts">
-  interface Props {
+  export interface Props {
     currentScore?: number;
     totalScore?: number;
     currentQuestion?: number;

@@ -17,7 +17,7 @@
 <script setup lang="ts">
 import { ref, onMounted, nextTick } from 'vue';
 
-interface Props {
+export interface Props {
   amount: number;
   showText?: boolean;
   duration?: number;

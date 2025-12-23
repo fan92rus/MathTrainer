@@ -29,7 +29,7 @@
   import { computed } from 'vue';
   import StarRating from './StarRating.vue';
 
-  interface Props {
+  export interface Props {
     correctAnswers: number;
     totalAnswers: number;
     score: number;
