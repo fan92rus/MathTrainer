@@ -347,14 +347,14 @@ describe('generateEquationProblemManual', () => {
     const simple = results.find(r => r.equationType === 'simple');
     if (simple) {
       expect(simple.expression).toContain('x');
-      expect(simple.expression).not.toMatch(/[\(\)]/); // без скобок
+      expect(simple.expression).not.toMatch(/[()]/); // без скобок
       expect(simple.expression).not.toContain('×'); // без умножения
     }
 
     // Проверяем уравнения со скобками
     const withParens = results.find(r => r.equationType === 'with-parentheses');
     if (withParens) {
-      expect(withParens.expression).toMatch(/[\(\)]/); // со скобками
+      expect(withParens.expression).toMatch(/[()]/); // со скобками
     }
 
     // Проверяем уравнения с умножением
@@ -369,12 +369,12 @@ describe('generateEquationProblemManual', () => {
     const firstX = problem1.correctAnswer;
 
     // Генерируем несколько задач с previousX
-    let differentXFound = false;
+    let _differentXFound = false;
     let lastProblem = problem1;
     for (let i = 0; i < 20; i++) {
       lastProblem = generateEquationProblemManual(100, firstX);
       if (lastProblem.correctAnswer !== firstX) {
-        differentXFound = true;
+        _differentXFound = true;
         break;
       }
     }

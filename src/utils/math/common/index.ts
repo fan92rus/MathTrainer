@@ -14,42 +14,10 @@ export function shuffleArray<T>(array: T[]): T[] {
 
   for (let i = newArray.length - 1; i > 0; i--) {
     const j = Math.floor(Math.random() * (i + 1));
-    [newArray[i], newArray[j]] = [newArray[j], newArray[i]];
+    [newArray[i], newArray[j]] = [newArray[j]!, newArray[i]!] as [T, T];
   }
 
   return newArray;
-}
-
-/**
- * Интерфейс для результата стратегии генерации
- */
-interface StrategyResult {
-  part1: number;
-  part2: number;
-  isValid: boolean;
-}
-
-/**
- * Вспомогательная функция для генерации неправильного варианта по заданной стратегии
- */
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-function generateWrongOptionByStrategy(
-  wrongOptions: string[],
-  strategyFn: () => StrategyResult,
-  _isNotAlreadyAdded: (_part1: number, _part2: number) => boolean,
-  maxAttempts: number
-): void {
-  let attempts = 0;
-
-  while (wrongOptions.length < wrongOptions.length + 1 && attempts < maxAttempts) {
-    const result = strategyFn();
-
-    if (result.isValid && _isNotAlreadyAdded(result.part1, result.part2)) {
-      wrongOptions.push(`${result.part1} и ${result.part2}`);
-    }
-
-    attempts++;
-  }
 }
 
 /**

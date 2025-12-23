@@ -113,7 +113,7 @@ export function getEquationsLevelConfig(score: number): EquationsLevelConfig {
   else if (score >= 100) level = 3;
   else if (score >= 50) level = 2;
 
-  return levelConfigs[level];
+  return levelConfigs[level]!;
 }
 
 /**
@@ -328,7 +328,7 @@ export function generateEquationProblem(
     correctIndex,
     difficulty: levelConfig.complexity,
     xValue: correctAnswer, // Добавляем значение X для отслеживания
-    equationType
+    equationType: equationType!
   };
 }
 
@@ -348,7 +348,7 @@ export function getNextEquationsLevel(currentScore: number): NextLevelInfo | nul
   return {
     currentLevel,
     nextLevel,
-    scoreNeeded: Math.max(0, nextLevelConfig.requiredScore - currentScore),
+    scoreNeeded: Math.max(0, (nextLevelConfig.requiredScore ?? 0) - currentScore),
     nextLevelConfig
   };
 }
@@ -384,7 +384,7 @@ export function getAllEquationsLevels(): Array<{
     levels.push({
       level: i,
       description: config.description,
-      requiredScore: config.requiredScore
+      requiredScore: config.requiredScore ?? 0
     });
   }
   return levels;

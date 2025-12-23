@@ -6,7 +6,7 @@ import { generateEquationProblem } from '../math/equations';
 import { describe, test, expect } from 'vitest';
 
 // Вспомогательная функция для проверки правильности ответа в уравнении
-function verifyEquationAnswer(expression: string, x: number, expectedAnswer: number): boolean {
+function verifyEquationAnswer(expression: string, x: number, _expectedAnswer: number): boolean {
   // Заменяем x на значение и вычисляем результат
   const evalExpression = expression
     .replace(/x/g, x.toString())
@@ -149,12 +149,12 @@ describe('generateEquationProblem', () => {
       const firstX = problem1.correctAnswer;
 
       // Генерируем несколько уравнений с предыдущим X
-      let differentXFound = false;
+      let _differentXFound = false;
       let lastProblem = problem1;
       for (let i = 0; i < 20; i++) {
         lastProblem = generateEquationProblem(25, firstX);
         if (lastProblem.correctAnswer !== firstX) {
-          differentXFound = true;
+          _differentXFound = true;
           break;
         }
       }

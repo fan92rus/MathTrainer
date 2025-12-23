@@ -144,7 +144,7 @@
       const currentLevelByScore = computed(() => getLevelByScore(totalScore.value));
 
       // Обработчик выбора ответа
-      const handleAnswerSelected = (index) => {
+      const handleAnswerSelected = (index: number) => {
         const isCorrect = index === (currentProblem.value?.correctIndex || 0);
 
         selectAnswer(index, currentProblem.value?.correctIndex || 0, (points) => {

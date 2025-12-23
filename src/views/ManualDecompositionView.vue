@@ -1,3 +1,4 @@
+<!-- global HTMLInputElement -->
 <template>
   <div class="app-container" :style="{ '--keyboard-height': keyboardHeight + 'px' }">
     <div class="game-container">
@@ -447,7 +448,8 @@
 </template>
 
 <script lang="ts">
-  import { ref, onMounted, computed, nextTick } from 'vue';
+/* global HTMLInputElement */
+  import { ref, onMounted, computed, nextTick, watch } from 'vue';
   import { useRouter } from 'vue-router';
   import { useScoresStore } from '../store/scores';
   import { useSettingsStore } from '../store/settings';
@@ -456,6 +458,7 @@
   import {
     generateDecompositionProblem
   } from '../utils/math/index';
+  import type { MathProblem, EquationProblem } from '../types';
   import ScoreDisplay from '../components/common/ScoreDisplay.vue';
   import ProgressBar from '../components/common/ProgressBar.vue';
   import StarRating from '../components/common/StarRating.vue';
@@ -476,13 +479,13 @@
       const totalQuestions = 5;
 
       // Рефы для полей ввода
-      const firstPartInput = ref(null);
-      const secondPartInput = ref(null);
-      const intermediateInput = ref(null);
-      const furtherFirstInput = ref(null);
-      const furtherSecondInput = ref(null);
-      const furtherIntermediateInput = ref(null);
-      const finalInput = ref(null);
+      const firstPartInput = ref<HTMLInputElement | null>(null);
+      const secondPartInput = ref<HTMLInputElement | null>(null);
+      const intermediateInput = ref<HTMLInputElement | null>(null);
+      const furtherFirstInput = ref<HTMLInputElement | null>(null);
+      const furtherSecondInput = ref<HTMLInputElement | null>(null);
+      const furtherIntermediateInput = ref<HTMLInputElement | null>(null);
+      const finalInput = ref<HTMLInputElement | null>(null);
 
       // Используем mobile keyboard composable
       const { keyboardHeight, isKeyboardOpen, focusWithScroll } = useMobileKeyboard();
@@ -625,8 +628,8 @@
         const match = expr.match(/(\d+)\s*([+-])\s*(\d+)/);
 
         if (match) {
-          firstNumber.value = parseInt(match[1]);
-          secondNumber.value = parseInt(match[3]);
+          firstNumber.value = parseInt(match[1] ?? '0');
+          secondNumber.value = parseInt(match[3] ?? '0');
           const operation = match[2]; // '+' или '-'
 
           // Вычисляем правильное разложение для удобного счета
@@ -785,9 +788,9 @@
       };
 
       // Обработчик фокуса на полях ввода
-      const handleInputFocus = (inputRef) => {
-        if (inputRef && inputRef.value && !inputRef.value.disabled) {
-          focusWithScroll(inputRef.value, 120);
+      const handleInputFocus = (inputElement: HTMLInputElement | null) => {
+        if (inputElement && !inputElement.disabled) {
+          focusWithScroll(inputElement, 120);
         }
       };
 
@@ -988,7 +991,7 @@
         problems.value = manualProblems;
 
         if (manualProblems.length > 0) {
-          currentProblem.value = manualProblems[0];
+          currentProblem.value = manualProblems[0] as MathProblem | EquationProblem;
         }
 
         // Сбрасываем состояние
@@ -1037,8 +1040,7 @@
       };
 
       // Следим за изменением шага
-      const unwatch = computed(() => step.value);
-      unwatch.effect = checkShowHint;
+      watch(step, checkShowHint);
 
       return {
         score,

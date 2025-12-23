@@ -1,3 +1,4 @@
+/* global HTMLAudioElement OscillatorType */
 // Простой аудио-менеджер для звуков в игре
 export class AudioManager {
   private sounds: Map<string, HTMLAudioElement> = new Map();

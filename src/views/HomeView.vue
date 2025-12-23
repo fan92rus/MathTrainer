@@ -178,8 +178,8 @@
           if (!isScrolling) {
             window.requestAnimationFrame(() => {
               const scrollTop = container.scrollTop;
-              const cardElement = container.querySelector('.game-card') as HTMLElement
-              const cardHeight = cardElement?.offsetHeight + 20 || 0; // +gap
+              const cardElement = container.querySelector('.game-card') as HTMLElement | null;
+              const cardHeight = (cardElement?.offsetHeight ?? 0) + 20; // +gap
               const cardElements = container.querySelectorAll('.game-card');
 
               if (cardHeight > 0 && cardElements.length > 0) {

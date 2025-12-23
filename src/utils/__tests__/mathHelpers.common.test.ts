@@ -324,7 +324,7 @@ describe('createMathExpression', () => {
     expect(resultAdd).toMatch(/^\d+\s\+\s\d+$/);
 
     const resultSub = createMathExpression(10, 5, 'subtraction');
-    expect(resultSub).toMatch(/^\d+\s\-\s\d+$/);
+    expect(resultSub).toMatch(/^\d+\s-\s\d+$/);
   });
 });
 

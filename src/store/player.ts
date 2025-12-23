@@ -252,7 +252,7 @@ export const usePlayerStore = defineStore('player', () => {
       // Простой генератор псевдослучайных чисел
       random = (random * 1103515245 + 12345) & 0x7fffffff;
       const j = random % (i + 1);
-      [result[i], result[j]] = [result[j], result[i]];
+      [result[i], result[j]] = [result[j]!, result[i]!] as [T, T];
     }
 
     return result;

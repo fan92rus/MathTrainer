@@ -135,10 +135,6 @@ const goToExercises = () => {
   router.push('/');
 };
 
-const goToCity = () => {
-  router.push('/city');
-};
-
 onMounted(() => {
   // Генерируем задания при необходимости
   playerStore.generateDailyTasks();

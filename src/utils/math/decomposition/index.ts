@@ -104,7 +104,7 @@ function generateSubtractionOption(num1: number, num2: number): string {
 function generateWrongAdditionOptions(num1: number, num2: number, correctOption: string): string[] {
   const wrongOptions: string[] = [];
   const parts = correctOption.split(' + ');
-  const mainNum = parseInt(parts[0]);
+  const mainNum = parseInt(parts[0] ?? '0');
 
   // Стратегия 1: Разделить второе число на неравные части
   if (num2 > 4) {
@@ -123,8 +123,8 @@ function generateWrongAdditionOptions(num1: number, num2: number, correctOption:
 
   // Стратегия 2: Если правильный ответ разложен, изменяем пропорции
   if (parts.length === 3) {
-    const part1 = parseInt(parts[1]);
-    const part2 = parseInt(parts[2]);
+    const part1 = parseInt(parts[1] ?? '0');
+    const part2 = parseInt(parts[2] ?? '0');
 
     if (part1 > 0 && part2 > 0) {
       const combined = part1 + part2;

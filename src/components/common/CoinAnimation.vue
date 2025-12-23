@@ -1,7 +1,7 @@
 <template>
   <div v-if="show" class="coin-animation">
     <div
-      v-for="(coin, index) in coins"
+      v-for="(_coin, index) in coins"
       :key="index"
       class="coin"
       :style="getCoinStyle(index)"

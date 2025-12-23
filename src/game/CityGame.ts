@@ -1,3 +1,4 @@
+/* global Phaser */
 import { Game } from 'phaser'
 import { CityScene } from './scenes/CityScene'
 

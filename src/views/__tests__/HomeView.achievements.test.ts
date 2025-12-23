@@ -91,7 +91,7 @@ describe('HomeView - Achievements Integration', () => {
 
   it('должен показывать достижения при наличии разблокированных', () => {
     const achievementsStore = useAchievementsStore()
-    const scoresStore = useScoresStore()
+    const _scoresStore = useScoresStore()
 
     // Разблокируем достижение напрямую
     achievementsStore.unlockAchievement('first_steps')

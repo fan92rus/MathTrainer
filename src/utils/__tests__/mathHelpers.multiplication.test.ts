@@ -1,6 +1,5 @@
 import { describe, test, expect } from 'vitest';
 import { generateMultiplicationProblem, getAvailableMultiplicationLevels } from '../math/multiplication';
-import type { MultiplicationLevel } from '@/types';
 
 describe('generateMultiplicationProblem', () => {
   describe('базовая проверка структуры', () => {

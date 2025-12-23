@@ -32,7 +32,12 @@
   // Вычисляем шаги решения на основе выражения и правильного варианта
   const steps = computed(() => {
     const steps: string[] = [];
-    const [num1Str, , num2Str] = props.expression.split(' ');
+    const exprParts = props.expression.split(' ');
+    const num1Str = exprParts[0];
+    const num2Str = exprParts[2];
+    if (!num1Str || !num2Str) {
+      return steps;
+    }
     const num1 = parseInt(num1Str);
     const num2 = parseInt(num2Str);
     const operation = props.expression.includes('+') ? '+' : '-';
@@ -41,36 +46,44 @@
       // Логика для сложения
       const parts = props.correctOption.split(' + ');
       if (parts.length > 2) {
-        steps.push(`${num1} + ${parts[1]} = ${num1 + parseInt(parts[1])}`);
+        const part1 = parts[1] ?? '0';
+        steps.push(`${num1} + ${part1} = ${num1 + parseInt(part1)}`);
         if (parts.length > 3) {
           // Если больше двух частей в разложении
-          let runningTotal = num1 + parseInt(parts[1]);
+          let runningTotal = num1 + parseInt(part1);
           for (let i = 2; i < parts.length - 1; i++) {
-            const part = parseInt(parts[i]);
+            const partStr = parts[i] ?? '0';
+            const part = parseInt(partStr);
             runningTotal += part;
             steps.push(`${runningTotal - part} + ${part} = ${runningTotal}`);
           }
-          steps.push(`${runningTotal} + ${parts[parts.length - 1]} = ${num1 + num2}`);
+          const lastPart = parts[parts.length - 1] ?? '0';
+          steps.push(`${runningTotal} + ${lastPart} = ${num1 + num2}`);
         } else {
-          steps.push(`${num1 + parseInt(parts[1])} + ${parts[2]} = ${num1 + num2}`);
+          const part2 = parts[2] ?? '0';
+          steps.push(`${num1 + parseInt(part1)} + ${part2} = ${num1 + num2}`);
         }
       }
     } else {
       // Логика для вычитания
       const parts = props.correctOption.split(' - ');
       if (parts.length > 2) {
-        steps.push(`${num1} - ${parts[1]} = ${num1 - parseInt(parts[1])}`);
+        const part1 = parts[1] ?? '0';
+        steps.push(`${num1} - ${part1} = ${num1 - parseInt(part1)}`);
         if (parts.length > 3) {
           // Если больше двух частей в разложении
-          let runningTotal = num1 - parseInt(parts[1]);
+          let runningTotal = num1 - parseInt(part1);
           for (let i = 2; i < parts.length - 1; i++) {
-            const part = parseInt(parts[i]);
+            const partStr = parts[i] ?? '0';
+            const part = parseInt(partStr);
             runningTotal -= part;
             steps.push(`${runningTotal + part} - ${part} = ${runningTotal}`);
           }
-          steps.push(`${runningTotal} - ${parts[parts.length - 1]} = ${num1 - num2}`);
+          const lastPart = parts[parts.length - 1] ?? '0';
+          steps.push(`${runningTotal} - ${lastPart} = ${num1 - num2}`);
         } else {
-          steps.push(`${num1 - parseInt(parts[1])} - ${parts[2]} = ${num1 - num2}`);
+          const part2 = parts[2] ?? '0';
+          steps.push(`${num1 - parseInt(part1)} - ${part2} = ${num1 - num2}`);
         }
       }
     }
@@ -80,7 +93,12 @@
 
   // Вычисляем конечный результат
   const result = computed(() => {
-    const [num1Str, , num2Str] = props.expression.split(' ');
+    const parts = props.expression.split(' ');
+    const num1Str = parts[0];
+    const num2Str = parts[2];
+    if (!num1Str || !num2Str) {
+      return 0;
+    }
     const num1 = parseInt(num1Str);
     const num2 = parseInt(num2Str);
 

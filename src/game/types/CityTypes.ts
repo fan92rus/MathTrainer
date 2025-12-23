@@ -1,3 +1,4 @@
+/* global Phaser */
 export interface TileData {
   gridX: number
   gridY: number

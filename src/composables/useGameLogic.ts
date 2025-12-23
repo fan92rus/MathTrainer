@@ -124,7 +124,8 @@ export function useGameLogic(totalQuestions: number = 10): UseGameLogic {
       if (errorsPerQuestion.value[currentQuestion.value] === undefined) {
         errorsPerQuestion.value[currentQuestion.value] = 0;
       }
-      errorsPerQuestion.value[currentQuestion.value]++;
+      const currentCount = errorsPerQuestion.value[currentQuestion.value] ?? 0;
+      errorsPerQuestion.value[currentQuestion.value] = currentCount + 1;
       console.log(
         `Неправильный ответ! Вопрос ${currentQuestion.value}, всего ошибок: ${errorsPerQuestion.value[currentQuestion.value]}`
       );

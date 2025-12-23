@@ -44,7 +44,6 @@ function generateWrongOptions(
   correctSecondPart: number
 ): string[] {
   const wrongOptions: string[] = [];
-  const _maxAttempts = 10;
 
   // Проверяет, что вариант еще не добавлен
   const isNotAlreadyAdded = (part1: number, part2: number): boolean => {

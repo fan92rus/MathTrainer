@@ -118,8 +118,8 @@ export function useMobileKeyboard() {
 
   // Функция блокировки ориентации (если поддерживается)
   const lockOrientation = () => {
-    if (screen.orientation && screen.orientation.lock) {
-      screen.orientation.lock('portrait').catch(() => {
+    if (screen.orientation && 'lock' in screen.orientation) {
+      (screen.orientation as any).lock('portrait').catch(() => {
         // Игнорируем ошибки блокировки ориентации
         console.log('Не удалось заблокировать ориентацию экрана');
       });

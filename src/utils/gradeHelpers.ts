@@ -145,7 +145,7 @@ export function getDifficultySettings(grade: GradeLevel, quarter: number): Diffi
     }
   };
 
-  return settings[grade]?.[quarter] || settings[1][1];
+  return settings[grade]?.[quarter] ?? settings[1]![1]!;
 }
 
 // Функция для получения названия класса

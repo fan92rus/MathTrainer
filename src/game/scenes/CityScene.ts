@@ -1,3 +1,4 @@
+/* global Phaser */
 import { Scene } from 'phaser'
 import { IsometricUtils } from '../utils/IsometricUtils'
 import type { TileData, GridPosition } from '../types/CityTypes'
@@ -92,7 +93,7 @@ export class CityScene extends Scene {
   }
 
   private setupZoomControls(): void {
-    this.input.on('wheel', (pointer: Phaser.Input.Pointer, gameObjects: any, deltaX: number, deltaY: number, deltaZ: number) => {
+    this.input.on('wheel', (_pointer: Phaser.Input.Pointer, _gameObjects: any, _deltaX: number, deltaY: number, _deltaZ: number) => {
       const camera = this.cameras.main
       const currentZoom = camera.zoom
       const zoomSpeed = 0.1
@@ -204,7 +205,7 @@ export class CityScene extends Scene {
     }
   }
 
-  update(time: number, delta: number): void {
+  update(_time: number, delta: number): void {
     if (!this.cameraControls) return
 
     // Обновляем плавное управление камерой
