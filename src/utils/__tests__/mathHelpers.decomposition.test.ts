@@ -8,12 +8,12 @@ import type { MathProblem } from '../math';
 // Мокаем Math.random для предсказуемых результатов
 const mockMathRandom = (values: number[]): void => {
   let index = 0;
-  Math.random = jest.fn(() => values[index++ % values.length]);
+  Math.random = vi.fn(() => values[index++ % values.length]) as any;
 };
 
 describe('Math Helpers - Decomposition', () => {
   beforeEach(() => {
-    jest.restoreAllMocks();
+    vi.restoreAllMocks();
   });
 
   describe('generateDecompositionProblem', () => {

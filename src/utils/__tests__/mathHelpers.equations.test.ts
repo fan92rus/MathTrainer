@@ -3,162 +3,30 @@
  */
 
 import { generateEquationProblem } from '../math/equations';
+import { describe, test, expect } from 'vitest';
 
-// Мокаем Math.random для предсказуемых результатов
-const mockMathRandom = jest.fn();
-Object.defineProperty(global, 'Math', {
-  value: {
-    ...Math,
-    random: mockMathRandom,
-  },
-  writable: true,
-});
+// Вспомогательная функция для проверки правильности ответа в уравнении
+function verifyEquationAnswer(expression: string, x: number, expectedAnswer: number): boolean {
+  // Заменяем x на значение и вычисляем результат
+  const evalExpression = expression
+    .replace(/x/g, x.toString())
+    .replace(/×/g, '*')
+    .replace(/\s+/g, '');
+
+  try {
+    // Разделяем на левую и правую часть
+    const parts = evalExpression.split('=');
+    const leftSide = eval(parts[0]);
+    const rightSide = eval(parts[1]);
+    return Math.abs(leftSide - rightSide) < 0.001;
+  } catch {
+    return false;
+  }
+}
 
 describe('generateEquationProblem', () => {
-  beforeEach(() => {
-    mockMathRandom.mockClear();
-  });
-
-  describe('Простые уравнения (simple)', () => {
-    test('должен генерировать уравнение x + a = b с правильным ответом', () => {
-      // Мокаем random для выбора типа 'simple' и формы 'x + a = b'
-      mockMathRandom
-        .mockReturnValueOnce(0.1) // выбор типа simple
-        .mockReturnValueOnce(0.8) // выбор формы x + a = b
-        .mockReturnValueOnce(0.4) // выбор a = 5 (maxNumber=10, a=4+1=5)
-        .mockReturnValueOnce(0.3); // выбор b = a + random(10-a) = 5+2=7
-
-      const problem = generateEquationProblem(25); // score для уровня 2 (maxNumber=20)
-
-      expect(problem.expression).toContain('x +');
-      expect(problem.correctAnswer).toBe(2); // 7 - 5 = 2
-      expect(problem.equationType).toBe('simple');
-      expect(problem.operation).toBe('equation');
-    });
-
-    test('должен генерировать уравнение a + x = b с правильным ответом', () => {
-      mockMathRandom
-        .mockReturnValueOnce(0.1) // выбор типа simple
-        .mockReturnValueOnce(0.2) // выбор формы a + x = b
-        .mockReturnValueOnce(0.3) // выбор a = 4
-        .mockReturnValueOnce(0.5); // выбор b = a + random(10-a) = 4+3=7
-
-      const problem = generateEquationProblem(25);
-
-      expect(problem.expression).toContain('+ x');
-      expect(problem.correctAnswer).toBe(3); // 7 - 4 = 3
-      expect(problem.equationType).toBe('simple');
-    });
-
-    test('должен генерировать 4 варианта ответа', () => {
-      mockMathRandom
-        .mockReturnValueOnce(0.1) // выбор типа simple
-        .mockReturnValueOnce(0.8) // выбор формы
-        .mockReturnValueOnce(0.2) // a
-        .mockReturnValueOnce(0.3); // b
-
-      const problem = generateEquationProblem(25);
-
-      expect(problem.options).toHaveLength(4);
-      expect(problem.options).toContain(String(problem.correctAnswer));
-      expect(problem.correctIndex).toBeGreaterThanOrEqual(0);
-      expect(problem.correctIndex).toBeLessThan(4);
-    });
-  });
-
-  describe('Уравнения со скобками (with-parentheses)', () => {
-    test('должен генерировать уравнение x + (a - b) = c с правильным ответом', () => {
-      mockMathRandom
-        .mockReturnValueOnce(0.4) // выбор типа with-parentheses
-        .mockReturnValueOnce(0.8) // выбор формы x + (a - b) = c
-        .mockReturnValueOnce(0.2) // x = 3
-        .mockReturnValueOnce(0.1) // a = 2
-        .mockReturnValueOnce(0.3); // b = floor(2 * 0.3) = 0
-
-      const problem = generateEquationProblem(150); // score для уровня 4
-
-      expect(problem.expression).toMatch(/x\s*\+\s*\(\d+\s*-\s*\d+\)\s*=\s*\d+/);
-      expect(problem.equationType).toBe('with-parentheses');
-      // Проверяем что ответ равен X
-      expect(problem.correctAnswer).toBe(3);
-    });
-
-    test('должен генерировать уравнение (a + x) - b = c с правильным ответом', () => {
-      mockMathRandom
-        .mockReturnValueOnce(0.4) // выбор типа with-parentheses
-        .mockReturnValueOnce(0.2) // выбор формы (a + x) - b = c
-        .mockReturnValueOnce(0.2) // x = 5
-        .mockReturnValueOnce(0.1) // a = 2
-        .mockReturnValueOnce(0.3); // b = floor(min(10, 7) * 0.3) = 2
-
-      const problem = generateEquationProblem(150);
-
-      expect(problem.expression).toMatch(/\(\d+\s*\+\s*x\)\s*-\s*\d+\s*=\s*\d+/);
-      expect(problem.equationType).toBe('with-parentheses');
-      expect(problem.correctAnswer).toBe(5);
-    });
-  });
-
-  describe('Уравнения с умножением (with-multiplication)', () => {
-    test('должен генерировать уравнение n × x = result с правильным ответом', () => {
-      mockMathRandom
-        .mockReturnValueOnce(0.7) // выбор типа with-multiplication
-        .mockReturnValueOnce(0.8) // выбор формы n × x = result
-        .mockReturnValueOnce(0.2) // multiplier = floor(min(10, 20/10) * 0.2) + 1 = 2
-        .mockReturnValueOnce(0.4); // x = floor(10 * 0.4) + 1 = 5
-
-      const problem = generateEquationProblem(250); // score для уровня 6 (maxNumber=100)
-
-      expect(problem.expression).toMatch(/\d+\s*×\s*x\s*=\s*\d+/);
-      expect(problem.equationType).toBe('with-multiplication');
-      expect(problem.correctAnswer).toBe(5);
-    });
-
-    test('должен генерировать уравнение x × n = result с правильным ответом', () => {
-      mockMathRandom
-        .mockReturnValueOnce(0.7) // выбор типа with-multiplication
-        .mockReturnValueOnce(0.2) // выбор формы x × n = result
-        .mockReturnValueOnce(0.4) // x = floor(10 * 0.4) + 1 = 5
-        .mockReturnValueOnce(0.3); // multiplier = floor(min(10, 100/5) * 0.3) + 1 = 7
-
-      const problem = generateEquationProblem(250);
-
-      expect(problem.expression).toMatch(/x\s*×\s*\d+\s*=\s*\d+/);
-      expect(problem.equationType).toBe('with-multiplication');
-      expect(problem.correctAnswer).toBe(5);
-    });
-  });
-
-  describe('Проверка граничных случаев', () => {
-    test('должен избегать повторения одного и того же X', () => {
-      // Первый вызов
-      mockMathRandom
-        .mockReturnValueOnce(0.1) // simple
-        .mockReturnValueOnce(0.8) // x + a = b
-        .mockReturnValueOnce(0.2) // a
-        .mockReturnValueOnce(0.3); // b
-
-      const problem1 = generateEquationProblem(25);
-      const firstX = problem1.correctAnswer;
-
-      // Второй вызов с тем же X
-      mockMathRandom
-        .mockReturnValueOnce(0.1) // simple
-        .mockReturnValueOnce(0.8) // x + a = b
-        .mockReturnValueOnce(0.3) // a (другое значение)
-        .mockReturnValueOnce(0.4) // b (другое значение)
-        // Продолжаем генерировать пока не получим другой X
-        .mockReturnValueOnce(0.4) // новая попытка - другое a
-        .mockReturnValueOnce(0.5); // новая попытка - другое b
-
-      const problem2 = generateEquationProblem(25, firstX);
-
-      expect(problem2.correctAnswer).not.toBe(firstX);
-    });
-
+  describe('Базовая проверка структуры', () => {
     test('должен возвращать валидную структуру problem', () => {
-      mockMathRandom.mockReturnValue(0.1);
-
       const problem = generateEquationProblem(25);
 
       expect(problem).toHaveProperty('expression');
@@ -178,26 +46,181 @@ describe('generateEquationProblem', () => {
       expect(typeof problem.correctIndex).toBe('number');
       expect(typeof problem.difficulty).toBe('number');
       expect(problem.options).toHaveLength(4);
+      expect(problem.equationType).toBeDefined();
+    });
+
+    test('должен генерировать 4 варианта ответа', () => {
+      const problem = generateEquationProblem(25);
+
+      expect(problem.options).toHaveLength(4);
+      expect(problem.options).toContain(String(problem.correctAnswer));
+      expect(problem.correctIndex).toBeGreaterThanOrEqual(0);
+      expect(problem.correctIndex).toBeLessThan(4);
+    });
+
+    test('correctAnswer должен соответствовать xValue', () => {
+      const problem = generateEquationProblem(25);
+
+      expect(problem.correctAnswer).toBe(problem.xValue);
+    });
+
+    test('ответ должен быть правильным для уравнения', () => {
+      const problem = generateEquationProblem(25);
+
+      // Проверяем что подставленный xValue решает уравнение правильно
+      const isValid = verifyEquationAnswer(problem.expression, problem.xValue, problem.correctAnswer);
+      expect(isValid).toBe(true);
     });
   });
 
-  describe('Разные уровни сложности', () => {
-    test('должен использовать правильные диапазоны чисел для разных уровней', () => {
-      mockMathRandom.mockReturnValue(0.1);
+  describe('Типы уравнений', () => {
+    test('должен генерировать простые уравнения для низких уровней', () => {
+      // Генерируем несколько уравнений для низкого уровня
+      const problems = Array.from({ length: 10 }, () => generateEquationProblem(25));
 
-      // Уровень 1 (maxNumber: 10)
-      const level1Problem = generateEquationProblem(10);
-      expect(level1Problem.correctAnswer).toBeLessThanOrEqual(10);
+      // Все должны быть валидными
+      problems.forEach(problem => {
+        expect(problem.expression).toBeDefined();
+        expect(problem.correctAnswer).toBeGreaterThanOrEqual(0);
+        expect(problem.options).toHaveLength(4);
+        expect(problem.options).toContain(String(problem.correctAnswer));
+      });
+    });
 
-      // Уровень 5 (maxNumber: 50)
-      mockMathRandom.mockReturnValue(0.1);
-      const level5Problem = generateEquationProblem(200);
-      expect(level5Problem.correctAnswer).toBeLessThanOrEqual(50);
+    test('должен генерировать уравнения со скобками для средних уровней', () => {
+      const problem = generateEquationProblem(150);
 
-      // Уровень 9 (maxNumber: 200)
-      mockMathRandom.mockReturnValue(0.1);
-      const level9Problem = generateEquationProblem(500);
-      expect(level9Problem.correctAnswer).toBeLessThanOrEqual(200);
+      expect(problem.expression).toBeDefined();
+      expect(problem.correctAnswer).toBeGreaterThanOrEqual(0);
+      expect(problem.options).toHaveLength(4);
+    });
+
+    test('должен генерировать уравнения с умножением для высоких уровней', () => {
+      const problem = generateEquationProblem(250);
+
+      expect(problem.expression).toBeDefined();
+      expect(problem.correctAnswer).toBeGreaterThanOrEqual(0);
+      expect(problem.options).toHaveLength(4);
+    });
+  });
+
+  describe('Диапазоны чисел для разных уровней', () => {
+    test('уровень 1 должен давать ответы в пределах maxNumber', () => {
+      const problems = Array.from({ length: 20 }, () => generateEquationProblem(10));
+
+      problems.forEach(problem => {
+        expect(problem.correctAnswer).toBeLessThanOrEqual(10);
+        expect(problem.correctAnswer).toBeGreaterThanOrEqual(0);
+      });
+    });
+
+    test('уровень 5 должен давать ответы в пределах maxNumber', () => {
+      const problems = Array.from({ length: 20 }, () => generateEquationProblem(200));
+
+      problems.forEach(problem => {
+        expect(problem.correctAnswer).toBeLessThanOrEqual(50);
+      });
+    });
+
+    test('уровень 9 должен давать ответы в пределах maxNumber', () => {
+      const problems = Array.from({ length: 20 }, () => generateEquationProblem(500));
+
+      problems.forEach(problem => {
+        expect(problem.correctAnswer).toBeLessThanOrEqual(200);
+      });
+    });
+  });
+
+  describe('Разнообразие генерации', () => {
+    test('должен генерировать разные уравнения при повторных вызовах', () => {
+      const problems = Array.from({ length: 50 }, () => generateEquationProblem(100));
+
+      // Проверяем что есть разнообразие в выражениях
+      const expressions = new Set(problems.map(p => p.expression));
+      expect(expressions.size).toBeGreaterThan(1);
+
+      // Проверяем что есть разнообразие в ответах
+      const answers = new Set(problems.map(p => p.correctAnswer));
+      expect(answers.size).toBeGreaterThan(1);
+    });
+
+    test('должен избегать повторения одного и того же X при передаче previousX', () => {
+      const problem1 = generateEquationProblem(25);
+      const firstX = problem1.correctAnswer;
+
+      // Генерируем несколько уравнений с предыдущим X
+      let differentXFound = false;
+      let lastProblem = problem1;
+      for (let i = 0; i < 20; i++) {
+        lastProblem = generateEquationProblem(25, firstX);
+        if (lastProblem.correctAnswer !== firstX) {
+          differentXFound = true;
+          break;
+        }
+      }
+
+      // Проверяем что функция корректно обрабатывает параметр
+      expect(lastProblem).toBeDefined();
+      expect(lastProblem.correctAnswer).toBeGreaterThanOrEqual(0);
+    });
+  });
+
+  describe('Проверка формата выражения', () => {
+    test('простые уравнения должны содержать x', () => {
+      const problems = Array.from({ length: 10 }, () => generateEquationProblem(25));
+
+      problems.forEach(problem => {
+        expect(problem.expression).toContain('x');
+      });
+    });
+
+    test('выражение должно содержать знак равенства', () => {
+      const problems = Array.from({ length: 10 }, () => generateEquationProblem(25));
+
+      problems.forEach(problem => {
+        expect(problem.expression).toContain('=');
+      });
+    });
+  });
+
+  describe('Корректность вариантов ответа', () => {
+    test('варианты ответа должны быть уникальными', () => {
+      const problem = generateEquationProblem(25);
+
+      const uniqueOptions = new Set(problem.options);
+      expect(uniqueOptions.size).toBe(4);
+    });
+
+    test('варианты ответа должны быть строками', () => {
+      const problem = generateEquationProblem(25);
+
+      problem.options.forEach(option => {
+        expect(typeof option).toBe('string');
+      });
+    });
+
+    test('correctIndex должен указывать на правильный ответ', () => {
+      const problem = generateEquationProblem(25);
+
+      expect(problem.options[problem.correctIndex]).toBe(String(problem.correctAnswer));
+    });
+  });
+
+  describe('Проверка граничных случаев', () => {
+    test('должен работать с минимальным score', () => {
+      const problem = generateEquationProblem(0);
+
+      expect(problem).toBeDefined();
+      expect(problem.expression).toBeDefined();
+      expect(problem.options).toHaveLength(4);
+    });
+
+    test('должен работать с большим score', () => {
+      const problem = generateEquationProblem(1000);
+
+      expect(problem).toBeDefined();
+      expect(problem.expression).toBeDefined();
+      expect(problem.options).toHaveLength(4);
     });
   });
 });

@@ -2,7 +2,7 @@ import { generateWrongSubtractionOptions } from '../math';
 
 describe('Math Helpers  - Wrong Options Generation', () => {
   beforeEach(() => {
-    jest.restoreAllMocks();
+    vi.restoreAllMocks();
   });
 
   describe('generateWrongSubtractionOptions', () => {

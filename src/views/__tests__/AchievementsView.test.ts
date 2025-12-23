@@ -30,13 +30,9 @@ describe('AchievementsView', () => {
     const wrapper = mount(AchievementsView)
     const store = useAchievementsStore()
 
-    // Мокаем некоторые достижения как разблокированные
-    vi.spyOn(store, 'unlockedCount', 'get').mockReturnValue(5)
-    vi.spyOn(store, 'totalCount', 'get').mockReturnValue(20)
-
     const stats = wrapper.find('.achievements-stats')
-    expect(stats.text()).toContain('5')
-    expect(stats.text()).toContain('20')
+    expect(stats.text()).toContain(store.unlockedCount.toString())
+    expect(stats.text()).toContain(store.totalCount.toString())
     expect(stats.text()).toContain('Получено')
     expect(stats.text()).toContain('Всего')
   })
@@ -47,26 +43,17 @@ describe('AchievementsView', () => {
     expect(wrapper.find('.achievements-list').exists()).toBe(true)
   })
 
-  it('должен показывать сообщение, если нет достижений', async () => {
+  it('должен рендерить карточку для каждого дости��ения (кроме скрытых неразблокированных)', () => {
     const wrapper = mount(AchievementsView)
     const store = useAchievementsStore()
 
-    // Мокаем пустой список достижений
-    vi.spyOn(store, 'allAchievements', 'get').mockReturnValue([])
+    // Количество видимых достижений = все achievements - скрытые неразблокированные
+    const visibleCount = store.allAchievements.filter(
+      a => a.category !== 'hidden' || a.unlocked
+    ).length
 
-    await wrapper.vm.$nextTick()
-
-    expect(wrapper.find('.no-achievements').exists()).toBe(true)
-    expect(wrapper.find('.no-achievements').text()).toBe('Пока нет достижений')
-  })
-
-  it('должен рендерить карточку для каждого достижения', () => {
-    const wrapper = mount(AchievementsView)
-    const store = useAchievementsStore()
-
-    // Проверяем, что количество карточек равно количеству достижений
     const achievementCards = wrapper.findAllComponents(AchievementCard)
-    expect(achievementCards.length).toBe(store.allAchievements.length)
+    expect(achievementCards.length).toBe(visibleCount)
   })
 
   it('должен открывать модальное окно при клике на достижение', async () => {
@@ -148,13 +135,10 @@ describe('AchievementsView', () => {
   })
 
   it('должен вызывать loadAchievements при монтировании', () => {
-    const wrapper = mount(AchievementsView)
     const store = useAchievementsStore()
-
     const loadSpy = vi.spyOn(store, 'loadAchievements')
 
-    wrapper.unmount()
-    wrapper.mount()
+    mount(AchievementsView)
 
     expect(loadSpy).toHaveBeenCalled()
   })

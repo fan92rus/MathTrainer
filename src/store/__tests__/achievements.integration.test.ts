@@ -8,28 +8,28 @@ describe('Achievements Integration Tests', () => {
     setActivePinia(createPinia())
   })
 
-  it('должен разблокировать достижение за общие очки', () => {
+  it('должен разблокировать достижение за общие очки (novice - 100 очков)', () => {
     const achievementsStore = useAchievementsStore()
     const scoresStore = useScoresStore()
 
-    // Добавляем очки напрямую в store
-    scoresStore.updateCountingScore(10)
+    // Добавляем 100 очков для novice
+    scoresStore.updateCountingScore(100)
 
     // Вызываем проверку достижений
     achievementsStore.checkTotalPointsAchievements(() => scoresStore.getTotalScore, [])
 
-    // Должно разблокироваться достижение "first_steps" за 10 очков
-    const achievement = achievementsStore.achievements.find(a => a.id === 'first_steps')
+    // Должно разблокироваться достижение "novice" за 100 очков
+    const achievement = achievementsStore.achievements.find(a => a.id === 'novice')
     expect(achievement?.unlocked).toBe(true)
     expect(achievement?.progress).toBe(100)
   })
 
-  it('должен разблокировать достижение за очки в счете', () => {
+  it('должен разблокировать достижение за очки в счете (counting_lover - 100 очков)', () => {
     const achievementsStore = useAchievementsStore()
     const scoresStore = useScoresStore()
 
-    // Добавляем 50 очков в счет
-    scoresStore.updateCountingScore(50)
+    // Добавляем 100 очков в счет
+    scoresStore.updateCountingScore(100)
 
     // Вызываем проверку достижений
     const mockScoresStore = {
@@ -37,12 +37,21 @@ describe('Achievements Integration Tests', () => {
       decompositionScore: scoresStore.decompositionScore,
       firstGradeDecompositionScore: scoresStore.firstGradeDecompositionScore,
       multiplicationScore: scoresStore.multiplicationScore,
-      equationsScore: scoresStore.equationsScore
+      equationsScore: scoresStore.equationsScore,
+      get getAllScores() {
+        return {
+          counting: this.countingScore,
+          decomposition: this.decompositionScore,
+          firstGradeDecomposition: this.firstGradeDecompositionScore,
+          multiplication: this.multiplicationScore,
+          equations: this.equationsScore
+        }
+      }
     }
 
     achievementsStore.checkExercisePointsAchievements(mockScoresStore as any, 'counting', [])
 
-    // Должно разблокироваться достижение "counting_lover" за 30 очков
+    // Должно разблокироваться достижение "counting_lover" за 100 очков
     const achievement = achievementsStore.achievements.find(a => a.id === 'counting_lover')
     expect(achievement?.unlocked).toBe(true)
   })
@@ -51,30 +60,75 @@ describe('Achievements Integration Tests', () => {
     const achievementsStore = useAchievementsStore()
     const scoresStore = useScoresStore()
 
-    // Добавляем 25 очков (половина от 50 для counting_lover)
-    scoresStore.updateCountingScore(25)
+    // Добавляем 50 очков (половина от 100 для counting_lover)
+    scoresStore.updateCountingScore(50)
 
     const mockScoresStore = {
       countingScore: scoresStore.countingScore,
       decompositionScore: scoresStore.decompositionScore,
       firstGradeDecompositionScore: scoresStore.firstGradeDecompositionScore,
       multiplicationScore: scoresStore.multiplicationScore,
-      equationsScore: scoresStore.equationsScore
+      equationsScore: scoresStore.equationsScore,
+      get getAllScores() {
+        return {
+          counting: this.countingScore,
+          decomposition: this.decompositionScore,
+          firstGradeDecomposition: this.firstGradeDecompositionScore,
+          multiplication: this.multiplicationScore,
+          equations: this.equationsScore
+        }
+      }
     }
 
     achievementsStore.checkExercisePointsAchievements(mockScoresStore as any, 'counting', [])
 
     const achievement = achievementsStore.achievements.find(a => a.id === 'counting_lover')
-    expect(achievement?.progress).toBe(50) // 25/50 * 100
+    expect(achievement?.progress).toBe(50) // 50/100 * 100
     expect(achievement?.unlocked).toBe(false)
 
-    // Добавляем еще 30 очков (итого 55)
-    scoresStore.updateCountingScore(30)
+    // Добавляем еще 60 очков (итого 110)
+    scoresStore.updateCountingScore(60)
     mockScoresStore.countingScore = scoresStore.countingScore // Обновляем мок
     achievementsStore.checkExercisePointsAchievements(mockScoresStore as any, 'counting', [])
 
     // Теперь должно быть разблокировано
     expect(achievement?.unlocked).toBe(true)
+  })
+
+  it('должен разблокировать достижение за серию правильных ответов', () => {
+    const achievementsStore = useAchievementsStore()
+    const scoresStore = useScoresStore()
+
+    scoresStore.updateCountingScore(50)
+
+    const mockScoresStore = {
+      countingScore: scoresStore.countingScore,
+      decompositionScore: scoresStore.decompositionScore,
+      firstGradeDecompositionScore: scoresStore.firstGradeDecompositionScore,
+      multiplicationScore: scoresStore.multiplicationScore,
+      equationsScore: scoresStore.equationsScore,
+      get getAllScores() {
+        return {
+          counting: this.countingScore,
+          decomposition: this.decompositionScore,
+          firstGradeDecomposition: this.firstGradeDecompositionScore,
+          multiplication: this.multiplicationScore,
+          equations: this.equationsScore
+        }
+      }
+    }
+
+    // Вызываем проверку со streak 10
+    const unlocked = achievementsStore.checkAchievements(mockScoresStore as any, {
+      type: 'counting',
+      correct: true,
+      streak: 10
+    })
+
+    // first_steps должен быть разблокирован
+    const firstSteps = achievementsStore.achievements.find(a => a.id === 'first_steps')
+    expect(firstSteps?.unlocked).toBe(true)
+    expect(unlocked).toContain('first_steps')
   })
 
   it('должен проверять все типы достижений при вызове checkAchievements', () => {
@@ -105,18 +159,21 @@ describe('Achievements Integration Tests', () => {
       const achievementsStore = useAchievementsStore()
       const scoresStore = useScoresStore()
 
-      scoresStore.updateCountingScore(20)
+      scoresStore.updateCountingScore(100)
 
       // Первый вызов
       achievementsStore.checkTotalPointsAchievements(() => scoresStore.getTotalScore, [])
 
+      const novice = achievementsStore.achievements.find(a => a.id === 'novice')
+      expect(novice?.unlocked).toBe(true)
+      expect(novice?.progress).toBe(100)
+
       // Второй вызов с теми же очками
       achievementsStore.checkTotalPointsAchievements(() => scoresStore.getTotalScore, [])
 
-      const achievement = achievementsStore.achievements.find(a => a.id === 'first_steps')
-      // Должно быть разблокировано, но progress не должен меняться
-      expect(achievement?.unlocked).toBe(true)
-      expect(achievement?.progress).toBe(100)
+      // Должно оставаться разблокированным
+      expect(novice?.unlocked).toBe(true)
+      expect(novice?.progress).toBe(100)
     })
 
     it('должен корректно обрабатывать нулевые очки', () => {
@@ -129,6 +186,41 @@ describe('Achievements Integration Tests', () => {
       // Ни одно достижение не должно быть разблокировано
       const unlockedCount = achievementsStore.achievements.filter(a => a.unlocked).length
       expect(unlockedCount).toBe(0)
+    })
+
+    it('не должен терять прогресс между проверками', () => {
+      const achievementsStore = useAchievementsStore()
+      const scoresStore = useScoresStore()
+
+      scoresStore.updateCountingScore(30)
+
+      const mockScoresStore = {
+        countingScore: scoresStore.countingScore,
+        decompositionScore: scoresStore.decompositionScore,
+        firstGradeDecompositionScore: scoresStore.firstGradeDecompositionScore,
+        multiplicationScore: scoresStore.multiplicationScore,
+        equationsScore: scoresStore.equationsScore,
+        get getAllScores() {
+          return {
+            counting: this.countingScore,
+            decomposition: this.decompositionScore,
+            firstGradeDecomposition: this.firstGradeDecompositionScore,
+            multiplication: this.multiplicationScore,
+            equations: this.equationsScore
+          }
+        }
+      }
+
+      achievementsStore.checkExercisePointsAchievements(mockScoresStore as any, 'counting', [])
+
+      const countingLover = achievementsStore.achievements.find(a => a.id === 'counting_lover')
+      expect(countingLover?.progress).toBe(30) // 30/100 * 100
+
+      // Вторая проверка без изменений
+      achievementsStore.checkExercisePointsAchievements(mockScoresStore as any, 'counting', [])
+
+      // Прогресс не должен измениться
+      expect(countingLover?.progress).toBe(30)
     })
   })
 })
