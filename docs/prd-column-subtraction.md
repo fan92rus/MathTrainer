@@ -1,8 +1,26 @@
 # PRD: Вычитание в столбик (Column Subtraction)
 
-**Дата:** 7 февраля 2026
-**Версия:** 1.0
+**Дата:** 8 февраля 2026
+**Версия:** 1.2
 **Статус:** Черновик
+
+---
+
+## Table of Contents
+
+- [1. Executive Summary](#1-executive-summary-резюме)
+- [2. Problem Statement](#2-problem-statement-постановка-проблемы)
+- [3. Goals & Metrics](#3-goals--metrics-цели-и-метрики)
+- [4. Non-Goals](#4-non-goals-не-является-целью)
+- [5. User Personas](#5-user-personas-персоны)
+- [6. Functional Requirements](#6-functional-requirements-функциональные-требования)
+- [7. Non-Functional Requirements](#7-non-functional-requirements-нефункциональные-требования)
+- [8. Implementation Phases](#8-implementation-phases-этапы-реализации)
+- [9. Validation Checkpoints & Manual QA](#9-validation-checkpoints--manual-qa-чекпоинты-и-ручная-проверка)
+- [10. Risks & Mitigations](#10-risks--mitigations-риски-и-mitigations)
+- [11. Existing Patterns Reference](#11-existing-patterns-reference-ссылка-на-паттерны)
+- [Appendix A: Type Definitions](#appendix-a-type-definitions)
+- [Appendix B: Storyboard "Магазин"](#appendix-b-storyboard-магазин-детальный)
 
 ---
 
@@ -199,21 +217,31 @@
 
 ### FR-005: Компонент LearningStory
 
-**Описание:** Интерактивная история "Магазин" с 4 шагами
+**Описание:** Интерактивная история "Магазин" с 6 шагами
 
 **Требования:**
-- **Шаг 1:** "У тебя 5 конфет россыпью, нужно отдать 7. Что сделаешь?"
-  - Варианты: "Вскрою пачку", "Отдам 5", "Нельзя"
-- **Шаг 2:** "Сколько пачек вскроешь?" → выбор: 3/2/1
-- **Шаг 3:** "Сколько конфет стало россыпью?" → выбор: 5/10/15
-- **Шаг 4:** "15-7=?" → ввод числа
-- Обратная связь при ошибке: объяснение почему неправильно
+- **Шаг 0 (Введение):** "Добро пожаловать в магазин! У тебя 3 пачки по 10 и 5 россыпью"
+  - Одна кнопка: "Понятно!"
+- **Шаг 1 (Проблема):** "Покупатель хочет 7. У тебя 5 россыпью. Хватит?"
+  - Варианты: "Да" / "Нет" / "Не знаю"
+- **Шаг 2 (Решение):** "Не хватает! Что делать?"
+  - Варианты: "Вскрыть пачку" / "Отказать" / "Дать только 5"
+- **Шаг 3 (Сколько):** "Сколько пачек вскроешь?"
+  - Варианты: "1" / "2" / "3"
+- **Шаг 4 (Подсчёт):** "Вскрыли 1 пачку. Сколько теперь россыпью?"
+  - Варианты: "10" / "15" / "5"
+- **Шаг 5 (Результат):** "15 - 7 = ?"
+  - Ввод числа
+- Обратная связь при ошибке: объяснение без подсветки правильного ответа
+- После 2 ошибок на шаге — подсказка
+- После 3 ошибок — показ правильного ответа
 - Невозможно пропустить шаг
 
 **Приемочные критерии:**
-- Все 4 шага проходят последовательно
+- Все 6 шагов проходят последовательно
 - Ошибка показывает объяснение
 - Прогресс сохраняется
+- Layout помещается на 320px без скролла
 
 **Файл:** `src/components/columnSubtraction/LearningStory.vue`
 
@@ -327,83 +355,409 @@
 
 ---
 
-## 7. Implementation Phases (Этапы реализации)
+## 7. Non-Functional Requirements (Нефункциональные требования)
 
-### Phase 1: Foundation (Фундамент) — 2 дня
+### NFR-001: Performance (Производительность)
 
-**Задачи:**
-- Типы `ColumnSubtractionProblem`
-- Генератор задач
-- Store и routing
-- Интеграция в AvailableExercises
+| Требование | Целевое значение | Способ измерения |
+|------------|------------------|------------------|
+| Initial page load | < 2 seconds | Lighthouse Performance |
+| Animation frame rate | ≥ 60 FPS | Chrome DevTools |
+| Time to interactive | < 3 seconds | Lighthouse TTI |
+| SVG rendering | < 100ms | Performance API |
+
+### NFR-002: Accessibility (Доступность)
+
+| Требование | Стандарт | Способ проверки |
+|------------|----------|-----------------|
+| WCAG compliance | Level AA | axe-core audit |
+| Color contrast | ≥ 4.5:1 | Contrast checker |
+| Keyboard navigation | Full support | Manual testing |
+| Screen reader | Compatible | NVDA/VoiceOver testing |
+| Touch targets | ≥ 44x44px | Manual verification |
+
+### NFR-003: Browser Support (Поддержка браузеров)
+
+| Браузер | Версия | Приоритет |
+|---------|--------|-----------|
+| Chrome | Last 2 versions | P0 |
+| Safari | Last 2 versions | P0 |
+| Firefox | Last 2 versions | P1 |
+| Edge | Last 2 versions | P1 |
+| Mobile Safari | iOS 14+ | P0 |
+| Mobile Chrome | Android 8+ | P0 |
+
+### NFR-006: Mobile-First & Responsive Design (Адаптивный дизайн)
+
+| Требование | Значение | Обоснование |
+|------------|----------|-------------|
+| **Минимальная ширина viewport** | 320px | iPhone SE и маленькие Android |
+| **Ориентация** | Портретная только | Естественнее для детей, проще layout |
+| **Touch targets** | ≥ 44x44px | Apple HIG, удобно для детских пальцев |
+| **Шрифт** | ≥ 16px base | Читаемость на маленьких экранах |
+
+#### Breakpoints и адаптивное поведение
+
+| Breakpoint | Ширина | Изменения в layout |
+|------------|--------|-------------------|
+| **XS** | 320-374px | Компактный layout, минимальные отступы |
+| **SM** | 375-479px | Увеличенные отступы, крупнее шрифт |
+| **MD** | 480-767px | Крупнее иконки, больше воздуха |
+| **LG** | 768px+ | Центрированный контент с max-width |
+
+#### Layout структура по breakpoints
+
+**XS (320-374px) — базовый:**
+```
+┌─────────────────────────┐
+│   [← Выход]    Шаг 1/6  │  ← 44px
+├─────────────────────────┤
+│   📦📦📦  🍬🍬🍬🍬🍬     │  ← 120px
+├─────────────────────────┤
+│  Текст вопроса          │  ← 60-80px
+├─────────────────────────┤
+│  ┌───┐┌───┐┌───┐        │  ← 60px
+│  │ В1││ В2││ В3│        │
+│  └───┘└───┘└───┘        │
+├─────────────────────────┤
+│  ●○○○○○                 │  ← 40px
+└─────────────────────────┘
+```
+
+**SM (375-479px):**
+- Отступы: 16px → 20px
+- Шрифт вопроса: +2px
+- Иконки пачек/конфет: +10% размер
+- Кнопки: чуть шире
+
+**MD (480-767px):**
+- Отступы: 24px
+- Иконки: +20% от базового
+- Шрифт вопроса: +4px от базового
+- Визуал можно разместить горизонтально: пачки слева, конфеты справа
+- Кнопки с большим padding
+
+**LG (768px+):**
+```
+┌───────────────────────────────────────┐
+│                                       │
+│         [← Выход]       Шаг 1/6       │
+│                                       │
+│    ┌─────────────────────────────┐    │
+│    │                             │    │
+│    │   📦📦📦   🍬🍬🍬🍬🍬        │    │  ← max-width: 480px
+│    │                             │    │     центрировано
+│    │   Текст вопроса здесь       │    │
+│    │                             │    │
+│    │   ┌─────┐ ┌─────┐ ┌─────┐   │    │
+│    │   │ В-1 │ │ В-2 │ │ В-3 │   │    │
+│    │   └─────┘ └─────┘ └─────┘   │    │
+│    │                             │    │
+│    │   ●○○○○○  Прогресс          │    │
+│    │                             │    │
+│    └─────────────────────────────┘    │
+│                                       │
+└───────────────────────────────────────┘
+```
+
+#### Пропорциональное масштабирование элементов
+
+| Элемент | XS (320px) | SM (375px) | MD (480px) | LG (768px+) |
+|---------|------------|------------|------------|-------------|
+| Пачка (SVG) | 40×50px | 45×56px | 50×63px | 50×63px (max) |
+| Конфета (SVG) | 20×20px | 24×24px | 28×28px | 28×28px (max) |
+| Шрифт вопроса | 16px | 18px | 20px | 20px |
+| Кнопка height | 44px | 48px | 52px | 52px |
+| Отступы | 12px | 16px | 20px | 24px |
+
+**Принципы:**
+- Mobile-first: сначала дизайн для 320px, потом увеличиваем
+- Всё содержимое на одном экране БЕЗ скролла (на всех breakpoints)
+- На LG — центрированная карточка с max-width, не растягиваем
+- Иконки и шрифты растут, но не бесконечно — есть max
+
+### NFR-004: Reliability (Надёжность)
+
+| Требование | Цель |
+|------------|------|
+| localStorage persistence | 100% data retention across sessions |
+| State recovery | Resume from last position after refresh |
+| Error boundary | Graceful degradation with user-friendly message |
+
+### NFR-005: Maintainability (Сопровождаемость)
+
+| Требование | Цель |
+|------------|------|
+| Code coverage | ≥ 80% for generator logic |
+| TypeScript strict mode | No `any` types |
+| Component reusability | ColumnDisplay reusable for future addition exercise |
+
+---
+
+## 8. Implementation Phases (Этапы реализации)
+
+### Phase 1: Foundation (Фундамент)
+
+**Atomic Tasks (5-15 min each):**
+
+| Task ID | Task | File | Est. Time |
+|---------|------|------|-----------|
+| 1.1 | Define `ColumnSubtractionProblem` interface in `src/types/index.ts` | `src/types/index.ts` | 10 min |
+| 1.2 | Create `src/utils/math/columnSubtraction/index.ts` file structure | `src/utils/math/columnSubtraction/index.ts` | 5 min |
+| 1.3 | Implement `needsBorrowing(minuend, subtrahend)` helper function | `src/utils/math/columnSubtraction/index.ts` | 5 min |
+| 1.4 | Implement `hasZeroInUnits(minuend)` helper function | `src/utils/math/columnSubtraction/index.ts` | 5 min |
+| 1.5 | Implement `generateWrongOptions(correctAnswer, minuend, subtrahend)` function | `src/utils/math/columnSubtraction/index.ts` | 10 min |
+| 1.6 | Implement `generateColumnSubtractionProblem(difficulty)` main generator | `src/utils/math/columnSubtraction/index.ts` | 15 min |
+| 1.7 | Add `columnSubtractionScore` and `columnSubtractionLearningCompleted` to `ScoresState` | `src/store/scores.ts` | 5 min |
+| 1.8 | Implement `updateColumnSubtractionScore(points)` method | `src/store/scores.ts` | 5 min |
+| 1.9 | Implement `setColumnSubtractionLearningCompleted()` method | `src/store/scores.ts` | 5 min |
+| 1.10 | Add routes `/column-subtraction`, `/column-subtraction/learning`, `/column-subtraction/diagnostic` | `src/router/index.ts` | 10 min |
+| 1.11 | Add exercise to `AvailableExercises` for grades 2-3, quarters 2-4 | `src/utils/gradeHelpers.ts` | 5 min |
+| 1.12 | Write unit tests for generator (borrowing cases) | `src/utils/math/columnSubtraction/__tests__/` | 15 min |
+| 1.13 | Write unit tests for generator (zero in units cases) | `src/utils/math/columnSubtraction/__tests__/` | 10 min |
 
 **Dependencies:** Нет
 
 ---
 
-### Phase 2: Visualization Components (Визуализация) — 3 дня
+### Phase 2: Visualization Components (Визуализация)
 
-**Задачи:**
-- ColumnDisplay.vue
-- ShopVisualization.vue
-- SVG icons (candyPack, candyPackOpen, candy)
-- Unit testing компонентов
+**Atomic Tasks (5-15 min each):**
 
-**Dependencies:** Phase 1
-
----
-
-### Phase 3: Learning Mode (Обучение) — 2 дня
-
-**Задачи:**
-- LearningStory.vue
-- ColumnSubtractionLearningView.vue
-- Интеграция со store (learningCompleted)
-
-**Dependencies:** Phase 2
-
----
-
-### Phase 4: Diagnostic Mode (Диагностика) — 2 дня
-
-**Задачи:**
-- ColumnSubtractionDiagnosticView.vue
-- Логика 9/10
-- Редиректы
+| Task ID | Task | File | Est. Time |
+|---------|------|------|-----------|
+| 2.1 | Create `src/components/columnSubtraction/` directory | — | 2 min |
+| 2.2 | Create SVG candy pack icon (sealed) | `src/components/columnSubtraction/svgIcons.ts` | 10 min |
+| 2.3 | Create SVG candy pack icon (open) | `src/components/columnSubtraction/svgIcons.ts` | 5 min |
+| 2.4 | Create SVG single candy icon | `src/components/columnSubtraction/svgIcons.ts` | 5 min |
+| 2.5 | Create ColumnDisplay.vue component shell with props | `src/components/columnSubtraction/ColumnDisplay.vue` | 10 min |
+| 2.6 | Implement number column layout (minuend, subtrahend, line) | `src/components/columnSubtraction/ColumnDisplay.vue` | 15 min |
+| 2.7 | Implement digit alignment by place value | `src/components/columnSubtraction/ColumnDisplay.vue` | 10 min |
+| 2.8 | Implement borrowing dot animation (dot above digit) | `src/components/columnSubtraction/ColumnDisplay.vue` | 15 min |
+| 2.9 | Implement active digit highlighting CSS | `src/components/columnSubtraction/ColumnDisplay.vue` | 10 min |
+| 2.10 | Create ShopVisualization.vue component shell | `src/components/columnSubtraction/ShopVisualization.vue` | 10 min |
+| 2.11 | Implement pack count display (X packs + Y loose) | `src/components/columnSubtraction/ShopVisualization.vue` | 10 min |
+| 2.12 | Implement "open pack" CSS animation | `src/components/columnSubtraction/ShopVisualization.vue` | 15 min |
+| 2.13 | Implement candy recount after opening animation | `src/components/columnSubtraction/ShopVisualization.vue` | 15 min |
+| 2.14 | Add mobile-responsive sizing to both components | Both components | 10 min |
 
 **Dependencies:** Phase 1
 
 ---
 
-### Phase 5: Training Mode (Тренировка) — 2 дня
+### Phase 3: Learning Mode (Обучение)
 
-**Задачи:**
-- ColumnSubtractionView.vue
-- Интеграция с useGameLogic
-- Подсказки
-- Монеты
+**Atomic Tasks (5-15 min each):**
+
+| Task ID | Task | File | Est. Time |
+|---------|------|------|-----------|
+| 3.1 | Create LearningStory.vue component shell with 4-step state | `src/components/columnSubtraction/LearningStory.vue` | 10 min |
+| 3.2 | Implement Step 1: "You have 5 loose candies, need to give 7" | `src/components/columnSubtraction/LearningStory.vue` | 15 min |
+| 3.3 | Implement Step 1 answer options and validation | `src/components/columnSubtraction/LearningStory.vue` | 10 min |
+| 3.4 | Implement Step 2: "How many packs to open?" | `src/components/columnSubtraction/LearningStory.vue` | 10 min |
+| 3.5 | Implement Step 2 answer options (3/2/1) | `src/components/columnSubtraction/LearningStory.vue` | 5 min |
+| 3.6 | Implement Step 3: "How many loose candies now?" | `src/components/columnSubtraction/LearningStory.vue` | 10 min |
+| 3.7 | Implement Step 3 answer options (5/10/15) | `src/components/columnSubtraction/LearningStory.vue` | 5 min |
+| 3.8 | Implement Step 4: "15 - 7 = ?" with number input | `src/components/columnSubtraction/LearningStory.vue` | 10 min |
+| 3.9 | Implement error feedback for each step | `src/components/columnSubtraction/LearningStory.vue` | 15 min |
+| 3.10 | Implement progress indicator (step X of 4) | `src/components/columnSubtraction/LearningStory.vue` | 5 min |
+| 3.11 | Create ColumnSubtractionLearningView.vue shell | `src/views/ColumnSubtractionLearningView.vue` | 5 min |
+| 3.12 | Integrate LearningStory into LearningView | `src/views/ColumnSubtractionLearningView.vue` | 10 min |
+| 3.13 | Implement "Next" button visibility logic (only after correct answer) | `src/views/ColumnSubtractionLearningView.vue` | 5 min |
+| 3.14 | Implement completion → `setColumnSubtractionLearningCompleted()` call | `src/views/ColumnSubtractionLearningView.vue` | 5 min |
+| 3.15 | Implement "Exit" button → HomeView navigation | `src/views/ColumnSubtractionLearningView.vue` | 5 min |
 
 **Dependencies:** Phase 2
 
 ---
 
-### Phase 6: Integration & Testing (Интеграция и тесты) — 2 дня
+### Phase 4: Diagnostic Mode (Диагностика)
 
-**Задачи:**
-- HomeView integration
-- E2E тесты
-- Unit tests для генератора
-- QA
+**Atomic Tasks (5-15 min each):**
+
+| Task ID | Task | File | Est. Time |
+|---------|------|------|-----------|
+| 4.1 | Create ColumnSubtractionDiagnosticView.vue shell | `src/views/ColumnSubtractionDiagnosticView.vue` | 10 min |
+| 4.2 | Implement diagnostic problem generator (3 borrowing, 3 two-digit result, 2 zero units, 2 mixed) | `src/views/ColumnSubtractionDiagnosticView.vue` | 15 min |
+| 4.3 | Integrate ColumnDisplay component | `src/views/ColumnSubtractionDiagnosticView.vue` | 5 min |
+| 4.4 | Implement answer option selection UI | `src/views/ColumnSubtractionDiagnosticView.vue` | 10 min |
+| 4.5 | Implement score tracking (correct/total) | `src/views/ColumnSubtractionDiagnosticView.vue` | 10 min |
+| 4.6 | Implement 9/10 pass criterion check | `src/views/ColumnSubtractionDiagnosticView.vue` | 5 min |
+| 4.7 | Implement fail → redirect to Learning | `src/views/ColumnSubtractionDiagnosticView.vue` | 5 min |
+| 4.8 | Implement pass → redirect to Training | `src/views/ColumnSubtractionDiagnosticView.vue` | 5 min |
+| 4.9 | Implement progress bar (X of 10) | `src/views/ColumnSubtractionDiagnosticView.vue` | 10 min |
+| 4.10 | Implement results summary screen | `src/views/ColumnSubtractionDiagnosticView.vue` | 15 min |
+
+**Dependencies:** Phase 1
+
+---
+
+### Phase 5: Training Mode (Тренировка)
+
+**Atomic Tasks (5-15 min each):**
+
+| Task ID | Task | File | Est. Time |
+|---------|------|------|-----------|
+| 5.1 | Create ColumnSubtractionView.vue shell | `src/views/ColumnSubtractionView.vue` | 10 min |
+| 5.2 | Integrate useGameLogic composable | `src/views/ColumnSubtractionView.vue` | 10 min |
+| 5.3 | Integrate ColumnDisplay component | `src/views/ColumnSubtractionView.vue` | 5 min |
+| 5.4 | Implement problem generation with difficulty progression | `src/views/ColumnSubtractionView.vue` | 10 min |
+| 5.5 | Implement answer options with AnswerOptions component | `src/views/ColumnSubtractionView.vue` | 10 min |
+| 5.6 | Implement "Show what's happening" button → ShopVisualization modal | `src/views/ColumnSubtractionView.vue` | 10 min |
+| 5.7 | Implement ShopVisualization modal integration | `src/views/ColumnSubtractionView.vue` | 10 min |
+| 5.8 | Implement wrong answer hints ("Upper number is your candies") | `src/views/ColumnSubtractionView.vue` | 10 min |
+| 5.9 | Implement wrong answer hints ("Need to borrow from tens") | `src/views/ColumnSubtractionView.vue` | 5 min |
+| 5.10 | Integrate ScoreDisplay component | `src/views/ColumnSubtractionView.vue` | 5 min |
+| 5.11 | Integrate coin system rewards | `src/views/ColumnSubtractionView.vue` | 10 min |
+| 5.12 | Implement GameOver screen | `src/views/ColumnSubtractionView.vue` | 10 min |
+
+**Dependencies:** Phase 2
+
+---
+
+### Phase 6: Integration & Testing (Интеграция и тесты)
+
+**Atomic Tasks (5-15 min each):**
+
+| Task ID | Task | File | Est. Time |
+|---------|------|------|-----------|
+| 6.1 | Add ColumnSubtraction card to HomeView | `src/views/HomeView.vue` | 10 min |
+| 6.2 | Implement button state logic (Start Learning / Check Knowledge / Train) | `src/views/HomeView.vue` | 10 min |
+| 6.3 | Add exercise icon (column or candy) | `src/views/HomeView.vue` | 5 min |
+| 6.4 | Write E2E test: learning flow completion | `tests/e2e/` | 15 min |
+| 6.5 | Write E2E test: diagnostic pass scenario | `tests/e2e/` | 10 min |
+| 6.6 | Write E2E test: diagnostic fail → redirect | `tests/e2e/` | 10 min |
+| 6.7 | Write E2E test: training mode scoring | `tests/e2e/` | 10 min |
+| 6.8 | Write unit test: wrong option generator ("flipped" answer) | `src/utils/math/columnSubtraction/__tests__/` | 10 min |
+| 6.9 | Run accessibility audit (axe-core) | — | 10 min |
+| 6.10 | Manual QA on mobile Safari | — | 15 min |
+| 6.11 | Manual QA on mobile Chrome | — | 10 min |
+| 6.12 | Fix any accessibility issues found | Various | 15 min |
 
 **Dependencies:** Phase 3, 4, 5
 
 ---
 
-**Итого:** ~13 дней разработки
+**Total Tasks:** 76 atomic tasks
+**Estimated Total Time:** ~13 hours of focused work
 
 ---
 
-## 8. Risks & Mitigations (Риски и mitigations)
+## 9. Validation Checkpoints & Manual QA (Чекпоинты и ручная проверка)
+
+### 9.1 Процесс валидации через MCP Browser
+
+Все проверки проводятся **вручную** с использованием MCP Playwright браузера. Для каждой проверки делается **скриншот** для документирования результата.
+
+**Инструменты:**
+- `mcp__playwright__browser_navigate` — навигация по страницам
+- `mcp__playwright__browser_snapshot` — accessibility snapshot для проверки структуры
+- `mcp__playwright__browser_take_screenshot` — скриншот для валидации
+- `mcp__playwright__browser_resize` — установка размеров viewport для тестирования breakpoints
+- `mcp__playwright__browser_click` / `mcp__playwright__browser_type` — взаимодействие с UI
+
+### 9.2 Чекпоинты по Phase
+
+#### Phase 1: Foundation — Checkpoints
+
+| ID | Чекпоинт | Действие | Ожидаемый результат | Скриншот |
+|----|----------|----------|---------------------|----------|
+| CP-1.1 | Генератор задач | Запустить генератор 100 раз | Все типы примеров (borrowing, zero, two-digit) генерируются | N/A (console) |
+| CP-1.2 | "Перевёрнутый" ответ | Проверить 50 генераций | В ~50% случаев есть перевернутый ответ | N/A |
+| CP-1.3 | Store persistence | Записать score → обновить страницу | Score сохранён в localStorage | N/A |
+| CP-1.4 | Роутинг | Navigate на `/column-subtraction/learning` | Страница загружается | screenshot-1.4.png |
+
+#### Phase 2: Visualization — Checkpoints
+
+| ID | Чекпоинт | Действие | Ожидаемый результат | Скриншот |
+|----|----------|----------|---------------------|----------|
+| CP-2.1 | ColumnDisplay layout | Открыть компонент | Числа выровнены по разрядам, черта под ними | screenshot-2.1.png |
+| CP-2.2 | ColumnDisplay borrowing dot | Триггер `needsBorrowing=true` | Точка появляется над разрядом | screenshot-2.2.png |
+| CP-2.3 | ShopVisualization packs | Передать packs=3, loose=5 | 3 пачки + 5 конфет отображаются | screenshot-2.3.png |
+| CP-2.4 | Анимация вскрытия | Триггер открытия пачки | Пачка "раскрывается", конфеты появляются | screenshot-2.4.png |
+| CP-2.5 | Responsive XS | Resize to 320x568 | Всё помещается без скролла | screenshot-2.5-xs.png |
+| CP-2.6 | Responsive LG | Resize to 1024x768 | Контент центрирован, max-width 480px | screenshot-2.6-lg.png |
+
+#### Phase 3: Learning Mode — Checkpoints
+
+| ID | Чекпоинт | Действие | Ожидаемый результат | Скриншот |
+|----|----------|----------|---------------------|----------|
+| CP-3.1 | Шаг 0 введение | Navigate `/column-subtraction/learning` | Текст + 3 пачки + 5 конфет + кнопка "Понятно" | screenshot-3.1.png |
+| CP-3.2 | Шаг 1 ошибка | Выбрать "Да" | Сообщение "5 меньше 7" | screenshot-3.2.png |
+| CP-3.3 | Шаг 1 успех | Выбрать "Нет" | Переход к шагу 2 | screenshot-3.3.png |
+| CP-3.4 | Прогресс-бар | Пройти 3 шага | Показывает ●●●○○○ | screenshot-3.4.png |
+| CP-3.5 | Подсказка после 2 ошибок | Ошибиться 2 раза на одном шаге | Появляется подсказка | screenshot-3.5.png |
+| CP-3.6 | Завершение обучения | Пройти все 6 шагов | `learningCompleted=true` в store | N/A |
+| CP-3.7 | Layout на 320px | Resize to 320x568 | Всё на экране, кнопки ≥44px | screenshot-3.7.png |
+
+#### Phase 4: Diagnostic Mode — Checkpoints
+
+| ID | Чекпоинт | Действие | Ожидаемый результат | Скриншот |
+|----|----------|----------|---------------------|----------|
+| CP-4.1 | 10 примеров | Navigate `/column-subtraction/diagnostic` | Прогресс-бар показывает 1/10 | screenshot-4.1.png |
+| CP-4.2 | Типы примеров | Пройти диагностику | 3 borrowing, 3 two-digit, 2 zero, 2 mixed | N/A (verify) |
+| CP-4.3 | Pass 9/10 | Ответить правильно 9 раз | Переход к тренировке | screenshot-4.3-pass.png |
+| CP-4.4 | Fail 8/10 | Ответить правильно 8 раз | Редирект на обучение | screenshot-4.4-fail.png |
+| CP-4.5 | Results screen | Завершить диагностику | Показывает результат X/10 | screenshot-4.5.png |
+
+#### Phase 5: Training Mode — Checkpoints
+
+| ID | Чекпоинт | Действие | Ожидаемый результат | Скриншот |
+|----|----------|----------|---------------------|----------|
+| CP-5.1 | Базовый UI | Navigate `/column-subtraction` | ColumnDisplay + варианты ответов + очки | screenshot-5.1.png |
+| CP-5.2 | "Показать что происходит" | Нажать кнопку | Модальное окно с ShopVisualization | screenshot-5.2.png |
+| CP-5.3 | Подсказка при ошибке | Выбрать неправильный ответ | "Верхнее число — твои конфеты" | screenshot-5.3.png |
+| CP-5.4 | Монеты | Ответить правильно 5 раз | +5 монет к балансу | screenshot-5.4.png |
+| CP-5.5 | GameOver | Завершить сессию | Экран GameOver с результатом | screenshot-5.5.png |
+
+#### Phase 6: Integration — Checkpoints
+
+| ID | Чекпоинт | Действие | Ожидаемый результат | Скриншот |
+|----|----------|----------|---------------------|----------|
+| CP-6.1 | Карточка на HomeView | Navigate `/` | Карточка "Вычитание в столбик" видна | screenshot-6.1.png |
+| CP-6.2 | Кнопка "Начать обучение" | Новый пользователь | Кнопка показывает "Начать обучение" | screenshot-6.2.png |
+| CP-6.3 | Кнопка "Проверить знания" | После обучения, до диагностики | Кнопка показывает "Проверить знания" | screenshot-6.3.png |
+| CP-6.4 | Кнопка "Тренироваться" | После успешной диагностики | Кнопка показывает "Тренироваться" | screenshot-6.4.png |
+
+### 9.3 Responsive Design Validation
+
+Для каждого breakpoint делается скриншот всех ключевых экранов:
+
+| Screen | XS (320px) | SM (375px) | MD (480px) | LG (768px+) |
+|--------|------------|------------|------------|-------------|
+| Learning Step 0 | xs-learning-0.png | sm-learning-0.png | md-learning-0.png | lg-learning-0.png |
+| Learning Step 3 | xs-learning-3.png | sm-learning-3.png | md-learning-3.png | lg-learning-3.png |
+| Diagnostic | xs-diagnostic.png | sm-diagnostic.png | md-diagnostic.png | lg-diagnostic.png |
+| Training | xs-training.png | sm-training.png | md-training.png | lg-training.png |
+
+### 9.4 Accessibility Validation
+
+| ID | Проверка | Инструмент | Критерий |
+|----|----------|------------|----------|
+| A-1 | Touch targets | Ручной замер на скриншоте | Все кнопки ≥44x44px |
+| A-2 | Color contrast | Contrast checker | ≥4.5:1 для текста |
+| A-3 | Font size | Ручной замер | Base ≥16px |
+| A-4 | Keyboard nav | Tab через UI | Все элементы доступны |
+
+### 9.5 Скрипт валидации (пример для Claude Code)
+
+```
+# Пример команды для Claude Code при валидации:
+
+1. Resize browser to 320x568 (iPhone SE)
+2. Navigate to /column-subtraction/learning
+3. Take screenshot: screenshots/xs-learning-step0.png
+4. Verify: header visible, packs visible, candies visible, button visible
+5. Click "Понятно!"
+6. Take screenshot: screenshots/xs-learning-step1.png
+7. Click "Нет"
+8. Take screenshot: screenshots/xs-learning-step2.png
+... continue for all steps
+```
+
+---
+
+## 10. Risks & Mitigations (Риски и mitigations)
 
 | Риск | Вероятность | Влияние | Mitigation |
 |------|-------------|---------|------------|
@@ -415,7 +769,7 @@
 
 ---
 
-## 9. Existing Patterns Reference (Ссылка на паттерны)
+## 11. Existing Patterns Reference (Ссылка на паттерны)
 
 При реализации следовать существующим паттернам MathTrainer:
 
@@ -447,30 +801,142 @@ interface ColumnSubtractionProblem {
 
 ---
 
-## Appendix B: Storyboard "Магазин"
+## Appendix B: Storyboard "Магазин" (Детальный)
 
-### Шаг 1: Проблема
-- **Текст:** "У тебя 5 конфет россыпью. Нужно отдать 7. Что сделаешь?"
-- **Визуал:** 5 отдельных конфет, пустое место для 7
-- **Варианты:** "Вскрою пачку" ✓ / "Отдам 5" ✗ / "Нельзя" ✗
+### Контекст
+Ребёнок — продавец в магазине конфет. У него есть пачки (по 10 конфет) и отдельные конфеты россыпью.
 
-### Шаг 2: Решение
-- **Текст:** "Сколько пачек вскроешь?"
-- **Визуал:** 3 запечатанные пачки
-- **Варианты:** "3" ✗ / "2" ✗ / "1" ✓
+### SVG-иконки (схематичные)
 
-### Шаг 3: Подсчёт
-- **Текст:** "Сколько конфет стало россыпью?"
-- **Визуал:** 2 запечатанные пачки + 12 россыпью
-- **Варианты:** "5" ✗ / "10" ✗ / "15" ✓ (12 было бы слишком просто)
+**Пачка (запечатанная):**
+```
+┌─────────┐
+│ ┌─────┐ │
+│ │ 10  │ │  ← прямоугольник 40x50px с цифрой "10"
+│ └─────┘ │
+│  КОНФ   │
+└─────────┘
+```
 
-### Шаг 4: Результат
-- **Текст:** "15 - 7 = ?"
-- **Визуал:** 15 конфет, анимация вычитания 7
-- **Ввод:** "8" ✓
+**Пачка (вскрытая):**
+```
+┌─────────┐
+│ ╔═══╗   │  ← крышка "откинута"
+│ ║   ║   │
+│ ╚═══╝   │
+└─────────┘
+```
+
+**Конфета (отдельная):**
+```
+  ╭───╮
+  │ ● │    ← круг 20x20px с "хвостиком" обёртки
+  ╰───╯
+```
 
 ---
 
-**PRD Version:** 1.0
-**Last Updated:** 2026-02-07
-**Score:** 92/100
+### Шаг 0: Введение
+
+| Элемент | Контент |
+|---------|---------|
+| **Визуал** | 3 пачки 📦📦📦 + 5 конфет 🍬🍬🍬🍬🍬 |
+| **Текст** | "Добро пожаловать в магазин! У тебя 3 пачки по 10 конфет и ещё 5 россыпью. Всего: 35" |
+| **Кнопка** | Одна кнопка: "Понятно!" → переход к шагу 1 |
+
+---
+
+### Шаг 1: Проблема
+
+| Элемент | Контент |
+|---------|---------|
+| **Визуал** | 3 пачки + 5 конфет + "?7?" (вопрос вокруг числа 7) |
+| **Текст** | "Покупатель хочет 7 конфет. У тебя 5 россыпью. Хватит?" |
+| **Варианты** | "Да" / "Нет" / "Не знаю" |
+| **Правильный** | "Нет" |
+| **При ошибке** | "5 конфет меньше чем 7. Подумай ещё!" |
+
+---
+
+### Шаг 2: Решение
+
+| Элемент | Контент |
+|---------|---------|
+| **Визуал** | 3 пачки (одна подсвечена/мигает) + 5 конфет |
+| **Текст** | "Не хватает! Что делать?" |
+| **Варианты** | "Вскрыть пачку" / "Отказать покупателю" / "Дать только 5" |
+| **Правильный** | "Вскрыть пачку" |
+| **При ошибке "Отказать"** | "Но покупатель хочет купить конфеты! Попробуем другой способ." |
+| **При ошибке "Дать 5"** | "Покупатель хочет именно 7 конфет, а не 5." |
+
+---
+
+### Шаг 3: Сколько пачек
+
+| Элемент | Контент |
+|---------|---------|
+| **Визуал** | 3 пачки с индикаторами: 1️⃣ 2️⃣ 3️⃣ |
+| **Текст** | "Сколько пачек вскроешь?" |
+| **Варианты** | "1" / "2" / "3" |
+| **Правильный** | "1" |
+| **При ошибке "2 или 3"** | "Подумай: тебе не хватает только 2 конфеты. В одной пачке 10 конфет — этого хватит!" |
+| **Подсказка (после 2 ошибки)** | "Тебе нужно отдать 7 конфет, есть 5. Сколько не хватает? 7-5=2. Хватит ли 10 из одной пачки?" |
+
+---
+
+### Шаг 4: Подсчёт
+
+| Элемент | Контент |
+|---------|---------|
+| **Визуал** | Анимация: пачка "раскрывается" → 10 конфет высыпаются к 5 → 2 пачки + 15 конфет |
+| **Текст** | "Вскрыли 1 пачку. Сколько теперь конфет россыпью?" |
+| **Варианты** | "10" / "15" / "5" |
+| **Правильный** | "15" |
+| **При ошибке** | "Было 5 конфет + 10 из пачки = ?" |
+
+---
+
+### Шаг 5: Результат
+
+| Элемент | Контент |
+|---------|---------|
+| **Визуал** | 15 конфет, 7 "уходят" к покупателю (анимация), остаётся 8 |
+| **Текст** | "15 - 7 = ?" |
+| **Ввод** | Поле для ввода числа (цифровая клавиатура) |
+| **Правильный ответ** | 8 |
+| **При ошибке** | "Посчитай: 15 минус 7..." |
+| **Завершение** | "Отлично! Ты продал 7 конфет, у тебя осталось 8. Теперь ты понимаешь, как работает заимствование!" |
+
+---
+
+### Обратная связь при ошибках (общие принципы)
+
+1. **НЕ подсвечиваем правильный ответ** в UI — ребёнок должен сам выбрать
+2. После ошибки показываем объяснение, но не сразу правильный ответ
+3. После 2 ошибок на одном шаге — даём подсказку с наводящим вопросом
+4. После 3 ошибок — показываем правильный ответ с объяснением
+
+---
+
+**PRD Version:** 1.2
+**Last Updated:** 2026-02-08
+**Score:** 96/100 (Grade: A+)
+
+### Changelog
+
+**v1.2 (2026-02-08):**
+- Добавлен NFR-006: Mobile-First & Responsive Design (320px база + breakpoints)
+- Добавлены breakpoints: XS (320-374), SM (375-479), MD (480-767), LG (768+)
+- Таблица пропорционального масштабирования элементов
+- Расширен сценарий "Магазин" до 6 шагов (добавлено введение)
+- Детализированы SVG-иконки для пачек и конфет
+- Добавлены принципы обратной связи (без подсветки правильных ответов)
+- Обновлён FR-005: LearningStory с новыми шагами
+- **Добавлен Section 9: Validation Checkpoints & Manual QA**
+- Чекпоинты для всех 6 фаз реализации (30+ проверок)
+- Responsive Design Validation матрица (16 скриншотов)
+- Accessibility Validation чекпоинты
+- Пример скрипта валидации через MCP Browser
+
+**v1.1 (2026-02-07):**
+- Initial draft
