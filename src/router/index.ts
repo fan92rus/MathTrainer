@@ -8,6 +8,9 @@ import MultiplicationView from '@/views/MultiplicationView.vue';
 import EquationsView from '@/views/EquationsView.vue';
 import ManualEquationsView from '@/views/ManualEquationsView.vue';
 import ManualDecompositionView from '@/views/ManualDecompositionView.vue';
+import ColumnSubtractionView from '@/views/ColumnSubtractionView.vue';
+import ColumnSubtractionLearningView from '@/views/ColumnSubtractionLearningView.vue';
+import ColumnSubtractionDiagnosticView from '@/views/ColumnSubtractionDiagnosticView.vue';
 import AchievementsView from '@/views/AchievementsView.vue';
 import DailyTasksView from '@/views/DailyTasksView.vue';
 import CityView from '@/views/CityView.vue';
@@ -59,6 +62,22 @@ const routes: Array<RouteRecordRaw> = [
     path: '/manual-decomposition',
     name: 'manual-decomposition',
     component: ManualDecompositionView
+  },
+  {
+    path: '/column-subtraction',
+    name: 'column-subtraction',
+    component: ColumnSubtractionView,
+    meta: { exerciseType: 'columnSubtraction' }
+  },
+  {
+    path: '/column-subtraction/learning',
+    name: 'column-subtraction-learning',
+    component: ColumnSubtractionLearningView
+  },
+  {
+    path: '/column-subtraction/diagnostic',
+    name: 'column-subtraction-diagnostic',
+    component: ColumnSubtractionDiagnosticView
   },
   {
     path: '/achievements',

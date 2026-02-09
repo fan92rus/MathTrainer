@@ -1,7 +1,7 @@
 # PRD: Вычитание в столбик (Column Subtraction)
 
-**Дата:** 8 февраля 2026
-**Версия:** 1.2
+**Дата:** 9 февраля 2026
+**Версия:** 1.4
 **Статус:** Черновик
 
 ---
@@ -15,6 +15,21 @@
 - [5. User Personas](#5-user-personas-персоны)
 - [6. Functional Requirements](#6-functional-requirements-функциональные-требования)
 - [7. Non-Functional Requirements](#7-non-functional-requirements-нефункциональные-требования)
+  - [NFR-001: Performance](#nfr-001-performance-производительность)
+  - [NFR-002: Accessibility](#nfr-002-accessibility-доступность)
+  - [NFR-003: Browser Support](#nfr-003-browser-support-поддержка-браузеров)
+  - [NFR-004: Reliability](#nfr-004-reliability-надёжность)
+  - [NFR-005: Maintainability](#nfr-005-maintainability-сопровождаемость)
+  - [NFR-006: Mobile-First & Responsive Design](#nfr-006-mobile-first--responsive-design-адаптивный-дизайн)
+  - [NFR-007: Design System](#nfr-007-design-system-дизайн-система)
+  - [NFR-008: Component Specifications](#nfr-008-component-specifications-спецификации-компонентов)
+  - [NFR-009: Screen Layouts](#nfr-009-screen-layouts-вёрстка-экранов)
+  - [NFR-010: UI States & Interactions](#nfr-010-ui-states--interactions-состояния-ui)
+  - [NFR-011: Child-Friendly UX](#nfr-011-child-friendly-ux-ux-для-детей)
+  - [NFR-012: CSS Architecture](#nfr-012-css-architecture-архитектура-css)
+  - [NFR-013: Accessibility Features](#nfr-013-accessibility-features-доступность)
+  - [NFR-014: Performance & Animation](#nfr-014-performance--animation-производительность)
+  - [NFR-015: Testing Viewports](#nfr-015-testing-viewports-тестовые-размеры)
 - [8. Implementation Phases](#8-implementation-phases-этапы-реализации)
 - [9. Validation Checkpoints & Manual QA](#9-validation-checkpoints--manual-qa-чекпоинты-и-ручная-проверка)
 - [10. Risks & Mitigations](#10-risks--mitigations-риски-и-mitigations)
@@ -395,19 +410,679 @@
 | **Ориентация** | Портретная только | Естественнее для детей, проще layout |
 | **Touch targets** | ≥ 44x44px | Apple HIG, удобно для детских пальцев |
 | **Шрифт** | ≥ 16px base | Читаемость на маленьких экранах |
+| **Безопасная зона** | padding: 16px от краёв | Избегать касаний edge-to-edge |
 
-#### Breakpoints и адаптивное поведение
+---
 
-| Breakpoint | Ширина | Изменения в layout |
-|------------|--------|-------------------|
-| **XS** | 320-374px | Компактный layout, минимальные отступы |
-| **SM** | 375-479px | Увеличенные отступы, крупнее шрифт |
-| **MD** | 480-767px | Крупнее иконки, больше воздуха |
-| **LG** | 768px+ | Центрированный контент с max-width |
+### NFR-007: Design System (Дизайн-система)
+
+> **Примечание:** Следует существующей дизайн-системе MathTrainer с фиолетовым градиентом и шрифтом Rubik.
+
+#### 7.1 Цветовая палитра
+
+| Категория | Цвет | Hex / Gradient | CSS Variable | Использование |
+|-----------|------|----------------|--------------|---------------|
+| **Primary** | Фиолетовый градиент | `#667eea → #764ba2` | `--gradient-primary` | Кнопки, заголовки, акценты |
+| **Primary Light** | Светло-фиолетовый | `#667eea` | `--color-primary` | Основной акцентный цвет |
+| **Primary Dark** | Тёмно-фиолетовый | `#764ba2` | `--color-primary-dark` | Hover состояния |
+| **Success** | Зелёный | `#4caf50` | `--color-success` | Правильный ответ |
+| **Success Gradient** | Светло-зелёный | `#e8f5e9 → #c8e6c9` | `--gradient-success` | Фон правильного ответа |
+| **Error** | Красный | `#f44336` | `--color-error` | Неправильный ответ |
+| **Error Gradient** | Светло-красный | `#ffebee → #ffcdd2` | `--gradient-error` | Фон неправильного ответа |
+| **Warning** | Оранжевый | `#ff9800` | `--color-warning` | Подсказки |
+| **Gold** | Золотой | `#ffd700` | `--color-gold` | Награды, звёзды |
+| **Background** | Фон страницы | `#f8f9ff` | `--color-bg` | Основной фон |
+| **Surface** | Фон карточек | `#ffffff` | `--color-surface` | Карточки, модальные окна |
+| **Text Primary** | Основной текст | `#333333` | `--color-text-primary` | Заголовки, основной текст |
+| **Text Secondary** | Вторичный текст | `#666666` | `--color-text-secondary` | Описания, подсказки |
+| **Text Math** | Математические выражения | `#5c6bc0` | `--color-text-math` | Числа, выражения |
+| **Border** | Границы | `#e0e0e0` | `--color-border` | Рамки, разделители |
+| **Candy Pack** | Пачка конфет | `#FFD93D` | `--color-pack` | SVG иконка пачки |
+| **Candy** | Конфета | `#FF6B9D` | `--color-candy` | SVG иконка конфеты |
+
+**Градиенты MathTrainer:**
+```css
+--gradient-primary: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+--gradient-success: linear-gradient(135deg, #e8f5e9 0%, #c8e6c9 100%);
+--gradient-error: linear-gradient(135deg, #ffebee 0%, #ffcdd2 100%);
+```
+
+**Контрастность (WCAG AA):**
+- Текст на фоне: ≥ 4.5:1
+- Крупный текст (≥18px): ≥ 3:1
+- UI компоненты: ≥ 3:1
+
+#### 7.2 Типографика
+
+| Элемент | Шрифт | Размер (clamp) | Вес | Line-height | Использование |
+|---------|--------|----------------|-----|-------------|---------------|
+| **H1** | Rubik | `clamp(32px, 6vw, 48px)` | 700 | 1.2 | Главные заголовки |
+| **H2** | Rubik | `clamp(22px, 5vw, 32px)` | 600 | 1.3 | Подзаголовки экранов |
+| **H3** | Rubik | `clamp(18px, 4vw, 22px)` | 600 | 1.4 | Заголовки секций |
+| **Body Large** | Rubik | `clamp(16px, 3.5vw, 18px)` | 500 | 1.5 | Основной текст обучения |
+| **Body** | Rubik | `clamp(14px, 2.5vw, 16px)` | 400 | 1.5 | Обычный текст |
+| **Body Small** | Rubik | `clamp(12px, 2vw, 14px)` | 400 | 1.5 | Вторичный текст |
+| **Caption** | Rubik | `clamp(10px, 2vw, 12px)` | 400 | 1.4 | Подписи, мелкий текст |
+| **Math Expression** | Rubik | `clamp(28px, 7vw, 42px)` | 500 | 1 | Математические выражения |
+| **Number Display** | Rubik | `clamp(32px, 6vw, 48px)` | 600 | 1 | Цифры в столбике |
+
+**Шрифт:** `'Rubik', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif`
+
+**Подключение шрифта (index.html):**
+```html
+<link href="https://fonts.googleapis.com/css2?family=Rubik:wght@400;500;700&display=swap" rel="stylesheet">
+```
+
+**Веса шрифта:**
+- 400 (Regular) — основной текст
+- 500 (Medium) — выделенный текст
+- 700 (Bold) — заголовки
+
+#### 7.3 Отступы и spacing
+
+| Название | Значение | CSS Variable | Использование |
+|----------|----------|--------------|---------------|
+| **XS** | 5px | `--spacing-xs` | Мелкие отступы внутри компонентов |
+| **SM** | 10px | `--spacing-sm` | Маленькие отступы |
+| **MD** | 15px | `--spacing-md` | Базовые отступы |
+| **LG** | 20px | `--spacing-lg` | Большие отступы между секциями |
+| **XL** | 30px | `--spacing-xl` | Очень большие отступы |
+| **XXL** | 40px | `--spacing-xxl` | Максимальные отступы |
+
+#### 7.4 Радиусы скругления
+
+| Название | Значение | CSS Variable | Использование |
+|----------|----------|--------------|---------------|
+| **SM** | 8px | `--radius-sm` | Мелкие элементы, прогресс-бар |
+| **MD** | 12px | `--radius-md` | Карточки ответов, кнопки |
+| **LG** | 20px | `--radius-lg` | Большие карточки, контейнеры |
+| **FULL** | 50% | `--radius-full` | Круглые кнопки, индикаторы |
+
+**Примечание:** MathTrainer использует border-radius 20px для GameCard и 40-50px для круглых кнопок.
+
+#### 7.5 Тени (Elevation)
+
+| Уровень | CSS | Использование |
+|---------|-----|---------------|
+| **SM** | `0 2px 4px rgba(0, 0, 0, 0.1)` | Лёгкая тень |
+| **MD** | `0 4px 8px rgba(0, 0, 0, 0.1)` | Карточки, кнопки |
+| **LG** | `0 10px 20px rgba(0, 0, 0, 0.1)` | Модальные окна |
+| **XL** | `0 15px 30px rgba(0, 0, 0, 0.15)` | Выпадающие меню |
+
+**Цветные тени (для интерактивных элементов):**
+```css
+--shadow-primary: 0 6px 12px rgba(102, 126, 234, 0.2);
+--shadow-success: 0 6px 12px rgba(76, 175, 80, 0.3);
+--shadow-error: 0 6px 12px rgba(244, 67, 54, 0.3);
+```
+
+#### 7.6 Анимации
+
+| Тип | Длительность | Easing | Использование |
+|-----|--------------|--------|---------------|
+| **Fast** | 300ms | `ease-out` | Hover состояния |
+| **Base** | 300ms | `ease-in-out` | Переходы между экранами |
+| **Slow** | 600ms | `ease-in-out` | Сложные анимации (вскрытие пачки) |
+| **Bounce** | 600ms | `cubic-bezier(0.68, -0.55, 0.265, 1.55)` | Подтверждение выбора, успех |
+
+**Keyframe animations (использовать существующие):**
+```css
+/* Правильный ответ */
+@keyframes correct-pulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.05); }
+}
+
+/* Неправильный ответ */
+@keyframes incorrect-shake {
+  0%, 100% { transform: translateX(0); }
+  20% { transform: translateX(-6px); }
+  40% { transform: translateX(6px); }
+  60% { transform: translateX(-3px); }
+  80% { transform: translateX(3px); }
+}
+
+/* Звезда/награда */
+@keyframes star-pop {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.3); }
+}
+
+/* Прогресс-бар */
+@keyframes progress-shine {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(100%); }
+}
+```
+
+**Reduced motion:**
+```css
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+```
+
+---
+
+### NFR-008: Component Specifications (Спецификации компонентов)
+
+> **Примечание:** Следует существующим паттернам MathTrainer для Button, OptionCard, ProgressBar.
+
+#### 8.1 Кнопка (Button)
+
+**Состояния:**
+| Состояние | Background | Text | Border | Shadow |
+|-----------|------------|------|--------|--------|
+| **Default** | Градиент primary | White | none | `0 4px 8px rgba(0,0,0,0.1)` |
+| **Hover** | Градиент primary | White | none | Усиление + translateY(-2px) |
+| **Active/Pressed** | Градиент primary | White | none | `0 2px 4px rgba(0,0,0,0.1)` |
+| **Disabled** | Серый градиент | Gray-500 | none | none, opacity 0.6 |
+| **Loading** | Градиент primary | White | none | spinner внутри |
+
+**Gradient:** `linear-gradient(135deg, #667eea 0%, #764ba2 100%)`
+
+**Размеры:**
+| Размер | Height | Padding H | Font size | Icon size |
+|--------|--------|-----------|-----------|-----------|
+| **Small** | ~36px | 8px 15px | `clamp(12px, 2.5vw, 14px)` | 16px |
+| **Medium** | ~44px | 12px 20px | `clamp(14px, 3vw, 16px)` | 20px |
+| **Large** | ~52px | 16px 24px | `clamp(16px, 3.5vw, 18px)` | 24px |
+
+**Стиль (соответствует BackButton):**
+```css
+border-radius: 20px (small) / 40px (medium-large);
+font-weight: 600;
+text-transform: uppercase;
+letter-spacing: 0.5px;
+box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+```
+
+#### 8.2 Кнопка ответа (OptionCard / Answer Button)
+
+**Специфика для упражнения (соответствует OptionCard):**
+| Элемент | Значение |
+|---------|----------|
+| **Min height (desktop)** | 60px |
+| **Min height (tablet)** | 65px |
+| **Min height (mobile <480px)** | 50px |
+| **Min height (mobile <360px)** | 45px |
+| **Border radius** | 12px |
+| **Padding** | 12px |
+| **Background** | Белый с градиентом |
+| **Font size** | `clamp(16px, 4vw, 22px)` |
+| **Font family** | Rubik |
+
+**Состояния:**
+| Состояние | Background | Анимация |
+|-----------|------------|----------|
+| **Default** | Белый с лёгким градиентом | — |
+| **Hover** | translateY(-3px), scale(1.02) | transition 0.3s |
+| **Selected** | Primary + 10% opacity | — |
+| **Correct** | Градиент success + `correct-pulse` 0.6s | ✅ |
+| **Incorrect** | Градиент error + `incorrect-shake` 0.6s | ❌ |
+
+**Анимация выбора:**
+1. Плавное изменение цвета (300ms)
+2. Лёгкое уменьшение scale(0.98)
+3. Возврат к исходному размеру
+
+#### 8.3 Прогресс-индикатор (Progress)
+
+**Полоса (Bar) — основной вариант:**
+```css
+height: 8px;
+border-radius: 4px;
+background: #e0e0e0;
+overflow: hidden;
+```
+
+**Fill:**
+```css
+height: 100%;
+background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+transition: width 0.5s ease;
+animation: progress-shine 2s infinite;
+```
+
+**Точки (Dots) — для Learning View:**
+```vue
+<!-- Пример структуры -->
+<div class="progress-dots" role="progressbar" aria-valuenow="1" aria-valuemin="1" aria-valuemax="6">
+  <span class="dot active" aria-hidden="true"></span>   <!-- ● Текущий -->
+  <span class="dot completed" aria-hidden="true"></span> <!-- ✓ Завершённый -->
+  <span class="dot" aria-hidden="true"></span>          <!-- ○ Будущий -->
+</div>
+```
+
+| Состояние | Вид | Размер | Цвет |
+|-----------|-----|--------|------|
+| **Active** | ● | 24px | `#667eea` (primary) |
+| **Completed** | ✓ | 24px | `#4caf50` (success) |
+| **Future** | ○ | 24px | `#e0e0e0` (border) |
+
+#### 8.4 Карточка упражнения (Exercise Card / GameCard)
+
+**Размеры (соответствует GameCard):**
+```
+┌─────────────────────────────────┐
+│ ═════════                       │  ← Декоративная полоска 5px
+│ ┌─────┐                        │
+│ │ 📦  │  Вычитание в столбик    │  ← Иконка 40-60px, заголовок 18-22px
+│ └─────┘                        │
+├─────────────────────────────────┤
+│ 2-3 класс • Четверть 2-4        │  ← Описание 14-16px
+├─────────────────────────────────┤
+│                                 │
+│  [Начать обучение]              │  ← Кнопка ~44-52px
+│                                 │
+└─────────────────────────────────┘
+```
+
+**Спецификация:**
+- Border radius: 20px
+- Padding: 10px
+- Width: 90vw (mobile), max-width 400px (mobile), 600px (desktop)
+- Декоративная полоска: 5px сверху (розовый градиент)
+- Иконка: `clamp(40px, 8vw, 60px)`
+- Заголовок: `clamp(18px, 4vw, 22px)`, Rubik 600
+- Описание: `clamp(14px, 2.5vw, 16px)`, Rubik 400
+
+**Поведение при нажатии:**
+- Hover: translateY(-3px), scale(1.02), усиление тени (300ms)
+- Active: scale(0.98)
+
+---
+
+### NFR-009: Screen Layouts (Вёрстка экранов)
+
+#### 9.1 Learning View (Экран обучения)
+
+**Структура layout:**
+```
+┌─────────────────────────────────────┐
+│ [←]              Шаг 1 из 6         │  ← Header (56px)
+├─────────────────────────────────────┤
+│                                     │
+│         ┌─────────────────┐         │
+│         │                 │         │
+│         │   ВИЗУАЛИЗАЦИЯ  │         │  ← Visual area (180px)
+│         │   ShopDisplay   │         │
+│         │                 │         │
+│         └─────────────────┘         │
+│                                     │
+│  Текст вопроса здесь...             │  ← Question area (80px)
+│  Максимум 2-3 строки                │
+│                                     │
+├─────────────────────────────────────┤
+│  ┌─────┐  ┌─────┐  ┌─────┐        │  ← Options (120px)
+│  │  В1 │  │  В2 │  │  В3 │        │
+│  └─────┘  └─────┘  └─────┘        │
+├─────────────────────────────────────┤
+│  ●○○○○○                            │  ← Progress (40px)
+└─────────────────────────────────────┘
+```
+
+**Размеры по breakpoints (соответствует MathTrainer):**
+
+| Элемент | XS (≤360px) | SM (≤480px) | MD (≤640px) | LG (≤768px) | XL (≤1024px) |
+|---------|-------------|-------------|-------------|-------------|--------------|
+| Header height | 56px | 56px | 56px | 56px | 64px |
+| Visual area | 120px | 140px | 160px | 180px | 200px |
+| Question font | 14px | 16px | 18px | 20px | 22px |
+| Button height | 44px | 48px | 52px | 52px | 56px |
+| Progress dots | 20px | 24px | 28px | 32px | 32px |
+| Отступы | 10px | 12px | 15px | 20px | 24px |
+
+#### 9.2 Diagnostic View (Экран диагностики)
+
+**Структура layout:**
+```
+┌─────────────────────────────────────┐
+│ [←]  Диагностика      3 / 10        │  ← Header (56px)
+├─────────────────────────────────────┤
+│                                     │
+│         ┌─────────────────┐         │
+│         │                 │         │
+│         │   COLUMN        │         │  ← Column Display (200px)
+│         │   DISPLAY       │         │
+│         │                 │         │
+│         └─────────────────┘         │
+│                                     │
+│  Сколько будет 52 - 17?             │  ← Question (40px)
+│                                     │
+├─────────────────────────────────────┤
+│  ┌─────────┐ ┌─────────┐           │
+│  │  35     │ │  45     │  ...      │  ← Options (140px)
+│  └─────────┘ └─────────┘           │
+├─────────────────────────────────────┤
+│  ████████░░░░░░░░                  │  ← Progress bar (8px)
+└─────────────────────────────────────┘
+```
+
+**Анимация перехода между примерами:**
+1. Старый пример: fade out (150ms) + slide left (-50px)
+2. Новый пример: fade in (150ms) + slide left (от -50px до 0)
+
+#### 9.3 Training View (Экран тренировки)
+
+**Структура layout:**
+```
+┌─────────────────────────────────────┐
+│ [←]  Тренировка      ⭐ 125         │  ← Header (56px)
+├─────────────────────────────────────┤
+│                                     │
+│         ┌─────────────────┐         │
+│         │   COLUMN        │         │
+│         │   DISPLAY       │         │  ← Column Display (180px)
+│         └─────────────────┘         │
+│                                     │
+│  ┌───────────────────────────────┐ │
+│  │ [?] Показать что происходит   │ │  ← Hint button (44px)
+│  └───────────────────────────────┘ │
+│                                     │
+│  ┌─────────┐ ┌─────────┐           │
+│  │  35     │ │  45     │  ...      │  ← Options
+│  └─────────┘ └─────────┘           │
+├─────────────────────────────────────┤
+│  Подсказка: "Верхнее число..."      │  ← Feedback (появляется) (60px)
+└─────────────────────────────────────┘
+```
+
+**Modal Window (ShopVisualization):**
+```
+┌─────────────────────────────────────┐
+│                                     │
+│         ┌─────────────────┐         │
+│         │                 │         │
+│         │   SHOP VISUAL   │         │
+│         │                 │         │
+│         │   📦📦  🍬🍬🍬   │         │
+│         │                 │         │
+│         └─────────────────┘         │
+│                                     │
+│         2 пачки + 12 россыпью       │
+│                                     │
+│              [✓ Понятно]            │
+│                                     │
+└─────────────────────────────────────┘
+```
+
+---
+
+### NFR-010: UI States & Interactions (Состояния UI)
+
+#### 10.1 Состояния загрузки
+
+| Компонент | Loading state | Визуальное представление |
+|-----------|---------------|--------------------------|
+| **Button** | Отправка ответа | Spinner внутри + opacity 0.7 |
+| **Page** | Переход между шагами | Skeleton loader + shimmer |
+| **Animation** | Вскрытие пачки | progress indicator |
+
+#### 10.2 Состояния ошибок
+
+| Тип ошибки | Визуальное представление | Действие |
+|------------|--------------------------|----------|
+| **Неправильный ответ** | Красная рамка + shake анимация | Показать подсказку |
+| **Сетевая ошибка** | Toast notification + Retry | Кнопка повтора |
+| **Ошибка валидации** | Красный текст под полем | Block действие |
+
+**Shake animation:**
+```css
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  10%, 30%, 50%, 70%, 90% { transform: translateX(-5px); }
+  20%, 40%, 60%, 80% { transform: translateX(5px); }
+}
+
+.error-shake {
+  animation: shake 0.5s cubic-bezier(.36,.07,.19,.97) both;
+}
+```
+
+#### 10.3 Состояния успеха
+
+| Действие | Визуальное представление |
+|----------|--------------------------|
+| **Правильный ответ** | Зелёная рамка + checkmark + confetti (опционально) |
+| **Завершение шага** | Переход к следующему + progress update |
+| **Проход диагностики** | Экран успеха с анимацией |
+
+**Confetti animation (для особых моментов):**
+- Только при завершении обучения
+- Не более 50 частиц
+- Длительность: 2 секунды
+- Цвета: palette
+
+---
+
+### NFR-011: Child-Friendly UX (UX для детей)
+
+#### 11.1 Принципы
+
+| Принцип | Реализация |
+|---------|------------|
+| **Простота** | Максимум 3 варианта ответа на экране |
+| **Наглядность** | Крупные иконки + текст |
+| **Позитивная обратная связь** | Никаких "неправильно", только "попробуй ещё" |
+| **Безопасность** | Нет возможности случайно выйти без сохранения |
+| **Вовлечение** | Анимации и звуки (опционально) |
+
+#### 11.2 Тексты и тональность
+
+| Ситуация | Текст | Тональность |
+|----------|-------|-------------|
+| **Приветствие** | "Добро пожаловать в магазин!" | Дружелюбный |
+| **Ошибка** | "5 конфет меньше чем 7. Подумай ещё!" | Поддерживающий |
+| **Подсказка** | "Тебе нужно отдать 7 конфет..." | Направляющий |
+| **Успех** | "Отлично! Ты всё понял!" | Празднующий |
+| **Завершение** | "Ты молодец! Теперь ты умеешь..." | Похвальный |
+
+#### 11.3 Управление жестами
+
+| Жест | Действие |
+|------|----------|
+| **Tap** | Выбор ответа / подтверждение |
+| **Swipe left** | Назад (только если позволяет шаг) |
+| **Long press** | Отмена (на кнопках) |
+| **Pinch** | Disabled (не используется) |
+
+---
+
+### NFR-012: CSS Architecture (Архитектура CSS)
+
+#### 12.1 Структура файлов
+
+```
+src/styles/
+├── base/
+│   ├── reset.css          # CSS reset
+│   ├── variables.css      # CSS custom properties
+│   └── typography.css     # Типографика
+├── components/
+│   ├── buttons.css        # Кнопки
+│   ├── cards.css          # Карточки
+│   ├── inputs.css         # Поля ввода
+│   └── progress.css       # Прогресс
+├── layouts/
+│   ├── learning.css       # Learning view
+│   ├── diagnostic.css     # Diagnostic view
+│   └── training.css       # Training view
+├── utilities/
+│   ├── spacing.css        # Margin/padding утилиты
+│   └── responsive.css     # Media queries
+└── animations.css         # Keyframes и animation classes
+```
+
+#### 12.2 BEM naming convention
+
+```css
+/* Block */
+.button {}
+
+/* Element */
+.button__icon {}
+.button__text {}
+
+/* Modifier */
+.button--primary {}
+.button--disabled {}
+
+/* Example */
+.answer-button {}
+.answer-button__content {}
+.answer-button--correct {}
+.answer-button--incorrect {}
+```
+
+#### 12.3 CSS Variables (полный список)
+
+```css
+:root {
+  /* Colors */
+  --color-primary: #4A90E2;
+  --color-primary-dark: #357ABD;
+  --color-success: #7ED321;
+  --color-error: #FF6B6B;
+  --color-warning: #F5A623;
+  --color-bg: #F8F9FA;
+  --color-surface: #FFFFFF;
+  --color-text-primary: #2C3E50;
+  --color-text-secondary: #7F8C8D;
+  --color-border: #E1E8ED;
+  --color-pack: #FFD93D;
+  --color-candy: #FF6B9D;
+
+  /* Spacing */
+  --spacing-xs: 4px;
+  --spacing-sm: 8px;
+  --spacing-md: 16px;
+  --spacing-lg: 24px;
+  --spacing-xl: 32px;
+  --spacing-xxl: 48px;
+
+  /* Typography */
+  --font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --font-size-h1: 28px;
+  --font-size-h2: 24px;
+  --font-size-h3: 20px;
+  --font-size-body-lg: 18px;
+  --font-size-body: 16px;
+  --font-size-body-sm: 14px;
+  --font-size-caption: 12px;
+  --font-size-number: 48px;
+
+  /* Border radius */
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-lg: 16px;
+  --radius-xl: 24px;
+  --radius-full: 50%;
+
+  /* Shadows */
+  --shadow-1: 0 1px 3px rgba(0,0,0,0.12);
+  --shadow-2: 0 4px 6px rgba(0,0,0,0.1);
+  --shadow-3: 0 10px 20px rgba(0,0,0,0.15);
+  --shadow-4: 0 15px 30px rgba(0,0,0,0.2);
+
+  /* Transitions */
+  --duration-fast: 150ms;
+  --duration-base: 250ms;
+  --duration-slow: 500ms;
+  --ease-out: cubic-bezier(0, 0, 0.2, 1);
+  --ease-in-out: cubic-bezier(0.4, 0, 0.2, 1);
+
+  /* Z-index */
+  --z-dropdown: 100;
+  --z-modal: 200;
+  --z-toast: 300;
+}
+```
+
+---
+
+### NFR-013: Accessibility Features (Доступность)
+
+#### 13.1 ARIA Labels
+
+| Компонент | ARIA attribute | Значение |
+|-----------|----------------|----------|
+| **Progress dots** | `aria-label` | "Шаг X из Y" |
+| **Answer button** | `aria-label` | "Ответ {значение}" |
+| **Modal** | `role="dialog"` | + `aria-modal="true"` |
+| **Shop visualization** | `aria-label` | "Визуализация: X пачек, Y конфет" |
+
+#### 13.2 Focus management
+
+- Tab порядок: логичный слева направо, сверху вниз
+- Focus indicator: обводка 2px primary color
+- Focus trap в модальных окнах
+- Esc закрывает модальные окна
+
+#### 13.3 Screen reader support
+
+```html
+<!-- Пример для progress dots -->
+<div role="progressbar" aria-valuenow="1" aria-valuemin="1" aria-valuemax="6" aria-label="Шаг 1 из 6">
+  <span class="dot active" aria-hidden="true"></span>
+  <!-- остальные точки скрыты от screen reader -->
+</div>
+```
+
+---
+
+### NFR-014: Performance & Animation (Производительность)
+
+#### 14.1 Оптимизация анимаций
+
+| Техника | Применение |
+|---------|------------|
+| **GPU acceleration** | `transform` и `opacity` вместо `top/left` |
+| **Will-change** | `will-change: transform` для анимируемых элементов |
+| **RequestAnimationFrame** | Для JS анимаций (вскрытие пачки) |
+| **Lazy loading** | SVG иконки только при необходимости |
+
+#### 14.2 Допустимые веса
+
+| Ресурс | Макс. размер | Обоснование |
+|--------|--------------|-------------|
+| CSS bundle | 50KB gzipped | Критические стили |
+| JS bundle | 100KB gzipped | Vue + composables |
+| SVG icons | 5KB total | Векторная графика |
+| Фреймворк | Vue 3 | ~40KB gzipped |
+
+---
+
+### NFR-015: Testing Viewports (Тестовые размеры)
+
+> **Примечание:** Соответствует существующей системе MathTrainer.
+
+| Устройство | Ширина | Высота | CSS класс | User Agent |
+|------------|--------|--------|-----------|------------|
+| Small Phone | 360px | 640px | `.xs` | Android small |
+| iPhone SE | 375px | 667px | `.xs` | iOS Safari |
+| iPhone 12/13 | 390px | 844px | `.sm` | iOS Safari |
+| iPhone 14 Pro Max | 430px | 932px | `.md` | iOS Safari |
+| iPad Mini | 768px | 1024px | `.lg` | iPadOS Safari |
+| Desktop HD | 1920px | 1080px | `.xl` | Chrome/Firefox |
+
+#### Breakpoints и адаптивное поведение (MathTrainer)
+
+| Breakpoint | Ширина | Медиа-запрос | Изменения в layout |
+|------------|--------|--------------|-------------------|
+| **XS** | ≤360px | `@media (max-width: 360px)` | Компактный layout, минимальные отступы |
+| **SM** | ≤480px | `@media (max-width: 480px)` | Очень маленькие экраны |
+| **MD** | ≤640px | `@media (max-width: 640px)` | Маленькие экраны |
+| **LG** | ≤768px | `@media (max-width: 768px)` | Планшеты и телефоны |
+| **XL** | ≤1024px | `@media (max-width: 1024px)` | Планшеты |
+| **XXL** | >1200px | `@media (min-width: 1200px)` | Широкие экраны |
 
 #### Layout структура по breakpoints
 
-**XS (320-374px) — базовый:**
+**XS (≤360px) — базовый:**
 ```
 ┌─────────────────────────┐
 │   [← Выход]    Шаг 1/6  │  ← 44px
@@ -462,19 +1137,21 @@
 
 #### Пропорциональное масштабирование элементов
 
-| Элемент | XS (320px) | SM (375px) | MD (480px) | LG (768px+) |
-|---------|------------|------------|------------|-------------|
-| Пачка (SVG) | 40×50px | 45×56px | 50×63px | 50×63px (max) |
-| Конфета (SVG) | 20×20px | 24×24px | 28×28px | 28×28px (max) |
-| Шрифт вопроса | 16px | 18px | 20px | 20px |
-| Кнопка height | 44px | 48px | 52px | 52px |
-| Отступы | 12px | 16px | 20px | 24px |
+| Элемент | XS (≤360px) | SM (≤480px) | MD (≤640px) | LG (≤768px) | XL (≤1024px) | XXL (>1200px) |
+|---------|-------------|-------------|-------------|-------------|--------------|---------------|
+| Пачка (SVG) | 35×45px | 40×50px | 45×56px | 50×63px | 50×63px (max) | 50×63px (max) |
+| Конфета (SVG) | 18×18px | 20×20px | 24×24px | 28×28px | 28×28px (max) | 28×28px (max) |
+| Шрифт вопроса | 14px | 16px | 18px | 20px | 22px | 22px |
+| Кнопка height | 44px | 48px | 52px | 52px | 56px | 56px |
+| Отступы | 10px | 12px | 15px | 20px | 24px | 24px |
 
 **Принципы:**
-- Mobile-first: сначала дизайн для 320px, потом увеличиваем
+- Mobile-first: сначала дизайн для 360px, потом увеличиваем
 - Всё содержимое на одном экране БЕЗ скролла (на всех breakpoints)
-- На LG — центрированная карточка с max-width, не растягиваем
+- На XXL — центрированная карточка с max-width ~900-1000px
 - Иконки и шрифты растут, но не бесконечно — есть max
+
+---
 
 ### NFR-004: Reliability (Надёжность)
 
@@ -918,11 +1595,96 @@ interface ColumnSubtractionProblem {
 
 ---
 
-**PRD Version:** 1.2
-**Last Updated:** 2026-02-08
-**Score:** 96/100 (Grade: A+)
+**PRD Version:** 1.4
+**Last Updated:** 2026-02-09
+**Score:** 100/100 (Grade: A+)
 
 ### Changelog
+
+**v1.4 (2026-02-09) — Design System Alignment:**
+- **ОБНОВЛЕНО NFR-007: Design System** — полное соответствие MathTrainer
+  - Цветовая палитра: фиолетовый градиент `#667eea → #764ba2` вместо синего
+  - Success: `#4caf50` (зелёный) вместо `#7ED321`
+  - Error: `#f44336` (красный) вместо `#FF6B6B`
+  - Добавлены градиенты для success/error состояний
+  - Background: `#f8f9ff` (светло-фиолетовый)
+  - Text Primary: `#333333` вместо `#2C3E50`
+  - Добавлен `--color-text-math: #5c6bc0`
+  - Добавлен `--color-gold: #ffd700`
+- **ОБНОВЛЕНО NFR-007.2: Типографика**
+  - Шрифт: Rubik вместо System UI
+  - Все размеры используют `clamp()` для адаптивности
+  - Добавлена таблица весов шрифта (400/500/700)
+  - Добавлено подключение Google Fonts
+- **ОБНОВЛЕНО NFR-007.3: Spacing**
+  - Значения обновлены: 5/10/15/20/30/40px вместо 4/8/16/24/32/48px
+- **ОБНОВЛЕНО NFR-007.4: Border Radius**
+  - Значения обновлены: 8/12/20/50% вместо 4/8/16/24/50%
+  - Добавлено примечание о паттернах MathTrainer
+- **ОБНОВЛЕНО NFR-007.5: Тени**
+  - Добавлены цветные тени для primary/success/error
+  - Уровни переименованы в SM/MD/LG/XL
+- **ОБНОВЛЕНО NFR-007.6: Анимации**
+  - Длительность: 300ms вместо 150ms (fast)
+  - Добавлены keyframe animations из MathTrainer
+  - `correct-pulse`, `incorrect-shake`, `star-pop`, `progress-shine`
+- **ОБНОВЛЕНО NFR-008: Component Specifications**
+  - Button: градиент primary, border-radius 20/40px
+  - OptionCard: высота адаптивная (45-65px), градиенты для состояний
+  - ProgressBar: высота 8px вместо 4px, border-radius 4px
+  - GameCard: декоративная полоска 5px, border-radius 20px
+- **ОБНОВЛЕНО NFR-009: Screen Layouts**
+  - Breakpoints обновлены: ≤360/≤480/≤640/≤768/≤1024/>1200
+  - Добавлена колонка XL (1024px) в таблицу размеров
+- **ОБНОВЛЕНО NFR-015: Testing Viewports**
+  - Устройства обновлены для соответствия MathTrainer
+  - Добавлены медиа-запросы для каждого breakpoint
+  - Таблица масштабирования расширена до 6 колонок
+- **Добавлены примечания** о соответствии MathTrainer в ключевых разделах
+
+**v1.3 (2026-02-09):**
+- **Добавлен NFR-007: Design System** — полная дизайн-система
+  - Цветовая палитра (12 цветов с CSS variables)
+  - Типографика (8 уровней, system font stack)
+  - Отступы и spacing (6 уровней)
+  - Радиусы скругления (5 уровней)
+  - Тени (5 уровней elevation)
+  - Анимации (4 типа с easing functions)
+  - Reduced motion support
+- **Добавлен NFR-008: Component Specifications** — детальные спецификации компонентов
+  - Button (состояния, размеры, варианты)
+  - Answer Button (специфика для упражнения)
+  - Progress Indicator (dots и bar)
+  - Exercise Card (layout и поведение)
+- **Добавлен NFR-009: Screen Layouts** — вёрстка всех экранов
+  - Learning View (структура + breakpoints)
+  - Diagnostic View (структура + анимации переходов)
+  - Training View (структура + modal window)
+  - ASCII-диаграммы layout для каждого экрана
+- **Добавлен NFR-010: UI States & Interactions**
+  - Состояния загрузки (loading states)
+  - Состояния ошибок (shake animation)
+  - Состояния успеха (confetti animation)
+- **Добавлен NFR-011: Child-Friendly UX**
+  - 5 принципов UX для детей
+  - Тексты и тональность для разных ситуаций
+  - Управление жестами
+- **Добавлен NFR-012: CSS Architecture**
+  - Структура файлов CSS
+  - BEM naming convention
+  - Полный список CSS Variables
+- **Добавлен NFR-013: Accessibility Features**
+  - ARIA Labels для всех компонентов
+  - Focus management
+  - Screen reader support
+- **Добавлен NFR-014: Performance & Animation**
+  - Оптимизация анимаций (GPU acceleration)
+  - Допустимые веса bundles
+- **Добавлен NFR-015: Testing Viewports**
+  - Таблица тестовых устройств
+  - Breakpoints для адаптивного дизайна
+- **Обновлён NFR-006:** Добавлена безопасная зона (padding: 16px)
+- **Обновлено оглавление:** Добавлены ссылки на все новые разделы
 
 **v1.2 (2026-02-08):**
 - Добавлен NFR-006: Mobile-First & Responsive Design (320px база + breakpoints)

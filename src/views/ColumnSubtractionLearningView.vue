@@ -1,0 +1,72 @@
+<template>
+  <div class="app-container">
+    <div class="game-container">
+      <div class="game-container-inner">
+        <div class="header">
+          <div style="display: flex; justify-content: space-between; align-items: center">
+            <button class="back-button" @click="goBack">← Назад</button>
+            <CurrencyDisplay />
+          </div>
+          <h1 class="title">Обучение: Вычитание в столбик</h1>
+        </div>
+
+        <LearningStory @complete="handleComplete" />
+      </div>
+    </div>
+  </div>
+</template>
+
+<script lang="ts">
+import { onMounted } from 'vue';
+import { useRouter } from 'vue-router';
+import { useScoresStore } from '@/store/scores';
+import LearningStory from '@/components/columnSubtraction/LearningStory.vue';
+import CurrencyDisplay from '@/components/player/CurrencyDisplay.vue';
+
+export default {
+  name: 'ColumnSubtractionLearningView',
+  components: {
+    LearningStory,
+    CurrencyDisplay
+  },
+  setup() {
+    const router = useRouter();
+    const scoresStore = useScoresStore();
+
+    onMounted(() => {
+      scoresStore.loadScores();
+    });
+
+    function goBack() {
+      if (window.confirm('Прогресс обучения будет потерян. Выйти?')) {
+        router.push('/');
+      }
+    }
+
+    function handleComplete() {
+      // Отмечаем обучение как завершенное
+      scoresStore.setColumnSubtractionLearningCompleted(true);
+
+      // Перенаправляем на диагностику
+      router.push('/column-subtraction/diagnostic');
+    }
+
+    return {
+      goBack,
+      handleComplete
+    };
+  }
+};
+</script>
+
+<style scoped>
+/* Удалены дублирующие стили - теперь используются глобальные из main.css */
+
+.title {
+  text-align: center;
+  margin: 16px 0;
+  font-size: clamp(18px, 4vw, 24px);
+  font-weight: 600;
+  color: #333;
+}
+</style>

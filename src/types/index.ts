@@ -262,3 +262,40 @@ export interface EquationProblem {
   xValue: number;
   equationType: string;
 }
+
+/**
+ * Интерфейс для задачи на вычитание в столбик
+ * Специфический тип для упражнения Column Subtraction
+ */
+export interface ColumnSubtractionProblem {
+  /** Уникальный идентификатор задачи */
+  id?: string;
+  /** Уменьшаемое (верхнее число) */
+  minuend: number;
+  /** Вычитаемое (нижнее число) */
+  subtrahend: number;
+  /** Разность (результат) */
+  result: number;
+  /** Требуется ли заимствование из десятков */
+  needsBorrowing: boolean;
+  /** Заимствование из десятков (конкретный случай) */
+  borrowFromTens: boolean;
+  /** Ноль в единицах уменьшаемого (например, 40-13) */
+  hasZeroInUnits: boolean;
+  /** Математическое выражение в виде строки (например, "52 - 17") */
+  expression: string;
+  /** Правильный ответ */
+  correctAnswer: number;
+  /** Массив вариантов ответов для выбора */
+  options: string[];
+  /** Индекс правильного ответа в массиве options */
+  correctIndex: number;
+  /** Уровень сложности задачи (1-10) */
+  difficulty: number;
+  /** Тип операции для совместимости с MathProblem */
+  operation: MathOperation;
+  /** Первое число для совместимости с MathProblem (等于 minuend) */
+  num1: number;
+  /** Второе число для совместимости с MathProblem (等于 subtrahend) */
+  num2: number;
+}

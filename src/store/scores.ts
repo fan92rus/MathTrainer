@@ -8,6 +8,9 @@ export interface ScoresState {
   firstGradeDecompositionScore: number;
   multiplicationScore: number;
   equationsScore: number;
+  columnSubtractionScore: number;
+  columnSubtractionLearningCompleted: boolean;
+  columnSubtractionDiagnosticPassed: boolean;
   currentMultiplicationLevel: number;
   manualEquationsSolved: number;
   totalEquationsAttempted: number;
@@ -22,6 +25,7 @@ export interface AllScores {
   firstGradeDecompositionScore: number;
   multiplicationScore: number;
   equationsScore: number;
+  columnSubtractionScore: number;
 }
 
 export const useScoresStore = defineStore('scores', {
@@ -31,6 +35,9 @@ export const useScoresStore = defineStore('scores', {
     firstGradeDecompositionScore: 0,
     multiplicationScore: 0,
     equationsScore: 0,
+    columnSubtractionScore: 0,
+    columnSubtractionLearningCompleted: false,
+    columnSubtractionDiagnosticPassed: false,
     currentMultiplicationLevel: 2, // Текущий открытый уровень таблицы умножения
     manualEquationsSolved: 0, // Количество решенных уравнений в ручном режиме
     totalEquationsAttempted: 0, // Общее количество попыток решения уравнений
@@ -44,7 +51,8 @@ export const useScoresStore = defineStore('scores', {
       state.decompositionScore +
       state.firstGradeDecompositionScore +
       state.multiplicationScore +
-      state.equationsScore,
+      state.equationsScore +
+      state.columnSubtractionScore,
 
     getEquationsScore: (state): number => state.equationsScore,
 
@@ -61,8 +69,13 @@ export const useScoresStore = defineStore('scores', {
       decompositionScore: state.decompositionScore,
       firstGradeDecompositionScore: state.firstGradeDecompositionScore,
       multiplicationScore: state.multiplicationScore,
-      equationsScore: state.equationsScore
-    })
+      equationsScore: state.equationsScore,
+      columnSubtractionScore: state.columnSubtractionScore
+    }),
+
+    getColumnSubtractionLearningCompleted: (state): boolean => state.columnSubtractionLearningCompleted,
+
+    getColumnSubtractionDiagnosticPassed: (state): boolean => state.columnSubtractionDiagnosticPassed
   },
 
   actions: {
@@ -180,6 +193,31 @@ export const useScoresStore = defineStore('scores', {
           this.totalDecompositionAttempted = parsedCount;
         }
       }
+
+      const columnSubtractionScoreSaved = getItem('columnSubtractionScore');
+      if (columnSubtractionScoreSaved !== null) {
+        const parsedScore = parseInt(columnSubtractionScoreSaved, 10);
+        if (isNaN(parsedScore) || parsedScore < 0) {
+          this.columnSubtractionScore = 0;
+          this.saveColumnSubtractionScore();
+        } else {
+          this.columnSubtractionScore = parsedScore;
+        }
+      } else {
+        // Инициализируем нулём если не найдено в хранилище
+        this.columnSubtractionScore = 0;
+        this.saveColumnSubtractionScore();
+      }
+
+      const columnSubtractionLearningSaved = getItem('columnSubtractionLearningCompleted');
+      if (columnSubtractionLearningSaved !== null) {
+        this.columnSubtractionLearningCompleted = columnSubtractionLearningSaved === 'true';
+      }
+
+      const columnSubtractionDiagnosticSaved = getItem('columnSubtractionDiagnosticPassed');
+      if (columnSubtractionDiagnosticSaved !== null) {
+        this.columnSubtractionDiagnosticPassed = columnSubtractionDiagnosticSaved === 'true';
+      }
     },
 
     updateCountingScore(points: number): void {
@@ -258,6 +296,9 @@ export const useScoresStore = defineStore('scores', {
       this.firstGradeDecompositionScore = 0;
       this.multiplicationScore = 0;
       this.equationsScore = 0;
+      this.columnSubtractionScore = 0;
+      this.columnSubtractionLearningCompleted = false;
+      this.columnSubtractionDiagnosticPassed = false;
       this.currentMultiplicationLevel = 2;
       this.manualEquationsSolved = 0;
       this.totalEquationsAttempted = 0;
@@ -268,6 +309,9 @@ export const useScoresStore = defineStore('scores', {
       this.saveFirstGradeDecompositionScore();
       this.saveMultiplicationScore();
       this.saveEquationsScore();
+      this.saveColumnSubtractionScore();
+      this.saveColumnSubtractionLearningCompleted();
+      this.saveColumnSubtractionDiagnosticPassed();
       this.saveCurrentMultiplicationLevel();
       this.saveManualEquationsSolved();
       this.saveTotalEquationsAttempted();
@@ -313,6 +357,37 @@ export const useScoresStore = defineStore('scores', {
     saveTotalDecompositionAttempted(): void {
       const { setItem } = useStorage();
       setItem('totalDecompositionAttempted', this.totalDecompositionAttempted.toString());
+    },
+
+    // Column Subtraction методы
+    updateColumnSubtractionScore(points: number): void {
+      this.columnSubtractionScore += points;
+      this.saveColumnSubtractionScore();
+    },
+
+    setColumnSubtractionLearningCompleted(completed: boolean): void {
+      this.columnSubtractionLearningCompleted = completed;
+      this.saveColumnSubtractionLearningCompleted();
+    },
+
+    setColumnSubtractionDiagnosticPassed(passed: boolean): void {
+      this.columnSubtractionDiagnosticPassed = passed;
+      this.saveColumnSubtractionDiagnosticPassed();
+    },
+
+    saveColumnSubtractionScore(): void {
+      const { setItem } = useStorage();
+      setItem('columnSubtractionScore', this.columnSubtractionScore.toString());
+    },
+
+    saveColumnSubtractionLearningCompleted(): void {
+      const { setItem } = useStorage();
+      setItem('columnSubtractionLearningCompleted', this.columnSubtractionLearningCompleted.toString());
+    },
+
+    saveColumnSubtractionDiagnosticPassed(): void {
+      const { setItem } = useStorage();
+      setItem('columnSubtractionDiagnosticPassed', this.columnSubtractionDiagnosticPassed.toString());
     }
   }
 });
