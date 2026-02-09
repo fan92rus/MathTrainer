@@ -104,6 +104,20 @@
               </div>
             </div>
           </div>
+          <div
+            v-if="availableExercises.columnSubtraction.available"
+            class="game-card"
+            @click="goToColumnSubtraction"
+          >
+            <div class="game-content">
+              <div class="game-icon">📦</div>
+              <div class="game-info">
+                <div class="game-title">{{ availableExercises.columnSubtraction.title }}</div>
+                <div class="game-description">{{ availableExercises.columnSubtraction.description }}</div>
+                <div class="game-score">⭐ {{ columnSubtractionScore }}</div>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -221,6 +235,7 @@
       const firstGradeDecompositionScore = computed(() => scoresStore.firstGradeDecompositionScore);
       const multiplicationScore = computed(() => scoresStore.multiplicationScore);
       const equationsScore = computed(() => scoresStore.equationsScore);
+      const columnSubtractionScore = computed(() => scoresStore.columnSubtractionScore);
       const isGradeSelected = computed(() => settingsStore.isGradeSelected);
       const selectedGrade = computed(() => settingsStore.selectedGrade);
       const gradeName = computed(() => selectedGrade.value ? getGradeName(selectedGrade.value) : '');
@@ -257,6 +272,11 @@
               available: false,
               title: 'Простые уравнения',
               description: 'Решай простые уравнения с неизвестным'
+            },
+            columnSubtraction: {
+              available: false,
+              title: 'Вычитание в столбик',
+              description: 'Научись вычитать с заимствованием из десятков'
             }
           };
         }
@@ -282,6 +302,20 @@
 
       const goToEquations = () => {
         router.push('/equations');
+      };
+
+      const goToColumnSubtraction = () => {
+        // Определяем, куда перейти: обучение, диагностика или тренировка
+        const learningCompleted = scoresStore.columnSubtractionLearningCompleted;
+        const diagnosticPassed = scoresStore.columnSubtractionDiagnosticPassed;
+
+        if (!learningCompleted) {
+          router.push('/column-subtraction/learning');
+        } else if (!diagnosticPassed) {
+          router.push('/column-subtraction/diagnostic');
+        } else {
+          router.push('/column-subtraction');
+        }
       };
 
       const goToAchievements = () => {
@@ -343,6 +377,7 @@
         firstGradeDecompositionScore,
         multiplicationScore,
         equationsScore,
+        columnSubtractionScore,
         isGradeSelected,
         gradeName,
         quarterName,
@@ -361,6 +396,7 @@
         goToFirstGradeDecomposition,
         goToMultiplication,
         goToEquations,
+        goToColumnSubtraction,
         goToAchievements,
         goToCity,
         goToDailyTasks,

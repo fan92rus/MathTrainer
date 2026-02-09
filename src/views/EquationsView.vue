@@ -227,23 +227,6 @@
 </script>
 
 <style scoped>
-  .back-button {
-    background: linear-gradient(135deg, #667eea, #764ba2);
-    color: white;
-    border: none;
-    border-radius: 20px;
-    padding: 8px 16px;
-    font-size: 14px;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    box-shadow: 0 3px 8px rgba(102, 126, 234, 0.3);
-  }
-
-  .back-button:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 5px 12px rgba(102, 126, 234, 0.4);
-  }
 
   .level-info {
     display: flex;

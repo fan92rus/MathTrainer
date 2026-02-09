@@ -60,7 +60,6 @@ export default {
 </script>
 
 <style scoped>
-/* Удалены дублирующие стили - теперь используются глобальные из main.css */
 
 .title {
   text-align: center;

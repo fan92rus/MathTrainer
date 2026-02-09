@@ -301,7 +301,6 @@ export default {
 </script>
 
 <style scoped>
-/* Удалены дублирующие стили - теперь используются глобальные из main.css */
 
 .progress-text {
   background: linear-gradient(135deg, #fbbf24, #f59e0b);

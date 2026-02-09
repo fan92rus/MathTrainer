@@ -1137,25 +1137,6 @@
     }
   }
 
-  .back-button {
-    background: linear-gradient(135deg, #667eea, #764ba2);
-    color: white;
-    border: none;
-    border-radius: 20px;
-    padding: clamp(8px, 2vw, 12px) clamp(12px, 3vw, 20px);
-    font-size: clamp(12px, 3vw, 16px);
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    box-shadow: 0 3px 8px rgba(102, 126, 234, 0.3);
-    touch-action: manipulation;
-  }
-
-  .back-button:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 5px 12px rgba(102, 126, 234, 0.4);
-  }
-
   .level-info {
     display: flex;
     flex-direction: column;
