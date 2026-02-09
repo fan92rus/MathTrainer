@@ -20,6 +20,7 @@ export interface AvailableExercises {
   decomposition: ExerciseInfo;
   multiplication: ExerciseInfo;
   equations: ExerciseInfo;
+  columnSubtraction: ExerciseInfo;
 }
 
 // Функция для определения текущей четверти учебного года
@@ -199,6 +200,11 @@ export function getAvailableExercises(grade: GradeLevel, quarter: number): Avail
       available: (grade === 2 && quarter >= 2) || grade > 2, // Уравнения доступны для 2 класса со 2 четверти и далее
       title: 'Простые уравнения',
       description: 'Решай простые уравнения с неизвестным'
+    },
+    columnSubtraction: {
+      available: (grade === 2 && quarter >= 2) || grade > 2, // Вычитание в столбик для 2 класса со 2 четверти и далее
+      title: 'Вычитание в столбик',
+      description: 'Научись вычитать с заимствованием из десятков'
     }
   };
 
