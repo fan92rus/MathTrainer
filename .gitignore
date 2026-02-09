@@ -151,3 +151,9 @@ dist-ssr
 
 # Special Windows files
 nul
+
+# Debug and temporary files
+debug-*.json
+screenshots/
+*.png
+!public/*.png
