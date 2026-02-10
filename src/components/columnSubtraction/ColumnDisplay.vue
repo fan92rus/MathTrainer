@@ -105,7 +105,7 @@ const resultDigits = computed(() => {
   box-shadow: 0 4px 8px rgba(0,0,0,0.12);
   font-family: 'Rubik', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   position: relative;
-  padding-left: 50px;
+  padding-left: clamp(35px, 10vw, 50px);
 }
 
 .number-row {
@@ -117,7 +117,7 @@ const resultDigits = computed(() => {
 
 .minus-sign {
   position: absolute;
-  left: 16px;
+  left: 8px;
   top: 50%;
   transform: translateY(-50%);
   font-size: clamp(28px, 7vw, 42px);
@@ -230,6 +230,12 @@ const resultDigits = computed(() => {
 @media (max-width: 360px) {
   .column-display {
     padding: 8px;
+    padding-left: clamp(28px, 9vw, 35px);
+  }
+
+  .minus-sign {
+    left: 4px;
+    font-size: clamp(20px, 6vw, 28px);
   }
 
   .number-row {

@@ -1,3 +1,6 @@
+/* Импорт CSS анимаций для пошагового вычитания */
+@import './subtraction-animations.css';
+
 * {
   margin: 0;
   padding: 0;
@@ -546,14 +549,14 @@ body {
   }
 
   .options-grid {
-    grid-template-columns: 1fr;
+    grid-template-columns: repeat(2, 1fr);
     gap: 6px;
   }
 
   .option-card {
     min-height: 50px;
-    padding: 8px;
-    font-size: 16px;
+    padding: 6px 8px;
+    font-size: clamp(14px, 4vw, 16px);
   }
 
   .math-expression {
