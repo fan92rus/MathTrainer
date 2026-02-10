@@ -40,6 +40,8 @@ export interface InteractiveState {
   errorCount: number;
   /** Показывать подсказку */
   showHint: boolean;
+  /** Текст подсказки */
+  hintText?: string;
 }
 
 /**
@@ -87,15 +89,6 @@ export function useInteractiveSubtraction(
   minuend: number,
   subtrahend: number
 ): InteractiveSubtractionAPI {
-  const currentStep = ref<InteractiveStep>(InteractiveStep.INTRO);
-  const errorCount = ref(0);
-  const showHint = ref(false);
-
-  const unitsAnswer = ref<number | undefined>();
-  const tensAnswer = ref<number | undefined>();
-  const unitsCorrect = ref<boolean | undefined>();
-  const tensCorrect = ref<boolean | undefined>();
-
   // Разбиваем числа на разряды
   const minuendTens = Math.floor(minuend / 10);
   const minuendUnits = minuend % 10;
@@ -104,6 +97,20 @@ export function useInteractiveSubtraction(
   const result = minuend - subtrahend;
   const resultTens = Math.floor(result / 10);
   const resultUnits = result % 10;
+
+  // Начинаем сразу с нужного шага (BORROW если нужно заимствование, иначе SUBTRACT_UNITS)
+  const needsBorrowingInit = minuendUnits < subtrahendUnits;
+
+  const currentStep = ref<InteractiveStep>(
+    needsBorrowingInit ? InteractiveStep.BORROW : InteractiveStep.SUBTRACT_UNITS
+  );
+  const errorCount = ref(0);
+  const showHint = ref(false);
+
+  const unitsAnswer = ref<number | undefined>();
+  const tensAnswer = ref<number | undefined>();
+  const unitsCorrect = ref<boolean | undefined>();
+  const tensCorrect = ref<boolean | undefined>();
 
   // Проверяем, требуется ли заимствование
   const needsBorrowing = computed(() => minuendUnits < subtrahendUnits);
@@ -129,18 +136,14 @@ export function useInteractiveSubtraction(
   const allSteps = computed<InteractiveStep[]>(() => {
     if (needsBorrowing.value) {
       return [
-        InteractiveStep.INTRO,
         InteractiveStep.BORROW,
         InteractiveStep.SUBTRACT_UNITS,
-        InteractiveStep.SUBTRACT_TENS,
-        InteractiveStep.COMPLETE
+        InteractiveStep.SUBTRACT_TENS
       ];
     }
     return [
-      InteractiveStep.INTRO,
       InteractiveStep.SUBTRACT_UNITS,
-      InteractiveStep.SUBTRACT_TENS,
-      InteractiveStep.COMPLETE
+      InteractiveStep.SUBTRACT_TENS
     ];
   });
 
@@ -149,18 +152,6 @@ export function useInteractiveSubtraction(
     const step = currentStep.value;
 
     switch (step) {
-      case InteractiveStep.INTRO:
-        return {
-          step,
-          explanation: `Реши пример: ${minuend} − ${subtrahend}`,
-          instruction: needsBorrowing.value
-            ? 'Из единиц нельзя вычесть. Нужно занять десяток.'
-            : 'Начинаем вычитание с единиц.',
-          canProceed: true,
-          errorCount: errorCount.value,
-          showHint: false
-        };
-
       case InteractiveStep.BORROW:
         return {
           step,
@@ -184,7 +175,8 @@ export function useInteractiveSubtraction(
           unitsAnswer: unitsAnswer.value,
           unitsCorrect: unitsCorrect.value,
           errorCount: errorCount.value,
-          showHint: showHint.value && unitsCorrect.value === false
+          showHint: showHint.value && unitsCorrect.value === false,
+          hintText: `Подсказка: ${unitsText} = ${correctUnits.value}`
         };
 
       case InteractiveStep.SUBTRACT_TENS:
@@ -200,26 +192,13 @@ export function useInteractiveSubtraction(
           tensAnswer: tensAnswer.value,
           tensCorrect: tensCorrect.value,
           errorCount: errorCount.value,
-          showHint: showHint.value && tensCorrect.value === false
-        };
-
-      case InteractiveStep.COMPLETE:
-        return {
-          step,
-          explanation: `Правильно! Ответ: ${result}`,
-          instruction: 'Отлично! Переходим к следующему примеру.',
-          canProceed: true,
-          unitsAnswer: correctUnits.value,
-          tensAnswer: correctTens.value,
-          unitsCorrect: true,
-          tensCorrect: true,
-          errorCount: errorCount.value,
-          showHint: false
+          showHint: showHint.value && tensCorrect.value === false,
+          hintText: `Подсказка: ${tensText} = ${correctTens.value}`
         };
 
       default:
         return {
-          step: InteractiveStep.INTRO,
+          step: InteractiveStep.SUBTRACT_UNITS,
           explanation: '',
           instruction: '',
           canProceed: true,
@@ -301,7 +280,7 @@ export function useInteractiveSubtraction(
 
   // Сброс
   function reset(): void {
-    currentStep.value = InteractiveStep.INTRO;
+    currentStep.value = needsBorrowing.value ? InteractiveStep.BORROW : InteractiveStep.SUBTRACT_UNITS;
     errorCount.value = 0;
     showHint.value = false;
     unitsAnswer.value = undefined;

@@ -13,6 +13,9 @@
         @click="handleTensClick"
       >
         {{ minuendTens }}
+
+        <!-- Точка заимствования над десятками -->
+        <span v-if="borrowed" class="borrow-dot">•</span>
       </div>
 
       <!-- Единицы -->
@@ -23,10 +26,10 @@
           'highlight-pulse': isStepActive('units')
         }"
       >
-        {{ minuendUnits }}
+        <!-- Единичка заимствования над единицами -->
+        <span v-if="borrowed" class="borrow-one">1</span>
 
-        <!-- Точка заимствования -->
-        <span v-if="borrowed" class="borrow-dot">•</span>
+        {{ minuendUnits }}
       </div>
     </div>
 
@@ -57,24 +60,16 @@
       <!-- Десятки результата -->
       <div class="digit result-digit">
         <span v-if="showResultTens">{{ displayTensResult }}</span>
-        <div v-else-if="currentStep === 'tens'" class="input-wrapper">
-          <input
-            ref="tensInputRef"
-            v-model="tensInput"
-            type="number"
-            class="digit-input"
-            :class="{ 'error': tensError, 'success': tensCorrect }"
-            @keyup.enter="submitTens"
-            :disabled="tensCorrect"
-          />
-          <button
-            v-if="tensInput !== '' && !tensCorrect"
-            class="confirm-button"
-            @click="submitTens"
-          >
-            ✓
-          </button>
-        </div>
+        <input
+          v-else-if="currentStep === 'tens'"
+          ref="tensInputRef"
+          v-model="tensInput"
+          type="number"
+          class="digit-input"
+          :class="{ 'error': tensError, 'success': tensCorrect }"
+          @keyup.enter="submitTens"
+          :disabled="tensCorrect"
+        />
         <span v-else class="placeholder">_</span>
         <span v-if="tensCorrect" class="checkmark">✓</span>
       </div>
@@ -82,34 +77,21 @@
       <!-- Единицы результата -->
       <div class="digit result-digit">
         <span v-if="showResultUnits">{{ displayUnitsResult }}</span>
-        <div v-else-if="currentStep === 'units'" class="input-wrapper">
-          <input
-            ref="unitsInputRef"
-            v-model="unitsInput"
-            type="number"
-            class="digit-input"
-            :class="{ 'error': unitsError, 'success': unitsCorrect }"
-            @keyup.enter="submitUnits"
-            :disabled="unitsCorrect"
-          />
-          <button
-            v-if="unitsInput !== '' && !unitsCorrect"
-            class="confirm-button"
-            @click="submitUnits"
-          >
-            ✓
-          </button>
-        </div>
+        <input
+          v-else-if="currentStep === 'units'"
+          ref="unitsInputRef"
+          v-model="unitsInput"
+          type="number"
+          class="digit-input"
+          :class="{ 'error': unitsError, 'success': unitsCorrect }"
+          @keyup.enter="submitUnits"
+          :disabled="unitsCorrect"
+        />
         <span v-else class="placeholder">_</span>
         <span v-if="unitsCorrect" class="checkmark">✓</span>
       </div>
     </div>
 
-    <!-- Подсказка для клика по десяткам -->
-    <div v-if="canClickBorrow" class="click-hint">
-      <span class="hint-icon">👆</span>
-      <span>Нажми на десяток, чтобы занять</span>
-    </div>
   </div>
 </template>
 
@@ -307,8 +289,7 @@ watch(() => props.currentStep, (newStep) => {
 .minus-sign {
   position: absolute;
   left: 6px;
-  top: 50%;
-  transform: translateY(-50%);
+  top: 25%;
   font-size: clamp(20px, 5vw, 32px);
   font-weight: 600;
   color: #667eea;
@@ -348,13 +329,24 @@ watch(() => props.currentStep, (newStep) => {
   }
 }
 
-/* Точка заимствования */
+/* Точка заимствования над десятками */
 .borrow-dot {
   position: absolute;
-  top: -8px;
-  right: -8px;
-  font-size: clamp(24px, 6vw, 32px);
+  top: -10px;
+  right: 6px;
+  font-size: clamp(28px, 7vw, 36px);
   color: #ff9800;
+  font-weight: 700;
+  animation: bounce-in 0.4s ease-out;
+}
+
+/* Единичка заимствования над единицами */
+.borrow-one {
+  position: absolute;
+  top: 0px;
+  right: 3px;
+  font-size: 22px;
+  color: #4caf50;
   font-weight: 700;
   animation: bounce-in 0.4s ease-out;
 }
@@ -451,6 +443,18 @@ watch(() => props.currentStep, (newStep) => {
   color: #333;
   outline: none;
   transition: all 0.2s ease;
+
+  /* Убираем стрелки вверх/вниз */
+  -webkit-appearance: none;
+  -moz-appearance: textfield;
+  appearance: none;
+}
+
+/* Убираем стрелки для WebKit браузеров */
+.digit-input::-webkit-outer-spin-button,
+.digit-input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
 }
 
 .digit-input:focus {
@@ -476,70 +480,6 @@ watch(() => props.currentStep, (newStep) => {
   75% { transform: translateX(5px); }
 }
 
-/* Обёртка для поля ввода с кнопкой подтверждения */
-.input-wrapper {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 4px;
-  width: 100%;
-  height: 100%;
-}
-
-/* Кнопка подтверждения ответа */
-.confirm-button {
-  width: 28px;
-  height: 28px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 16px;
-  font-weight: 700;
-  border: none;
-  border-radius: 6px;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  color: white;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  box-shadow: 0 2px 6px rgba(102, 126, 234, 0.3);
-}
-
-.confirm-button:hover {
-  transform: scale(1.05);
-  box-shadow: 0 3px 8px rgba(102, 126, 234, 0.4);
-}
-
-.confirm-button:active {
-  transform: scale(0.95);
-}
-
-/* Подсказка для клика */
-.click-hint {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  margin-top: 8px;
-  padding: 6px 12px;
-  background: linear-gradient(135deg, #fff8e1 0%, #ffecb3 100%);
-  border-radius: 16px;
-  font-size: clamp(10px, 2.5vw, 13px);
-  color: #f57c00;
-  animation: hint-bounce 2s infinite;
-}
-
-.hint-icon {
-  font-size: clamp(14px, 3.5vw, 18px);
-}
-
-@keyframes hint-bounce {
-  0%, 100% {
-    transform: translateY(0);
-  }
-  50% {
-    transform: translateY(-3px);
-  }
-}
-
 /* Адаптивность для мобильных */
 @media (max-width: 480px) {
   .interactive-column-display {
@@ -555,11 +495,6 @@ watch(() => props.currentStep, (newStep) => {
 
   .digit-input {
     font-size: clamp(18px, 5vw, 26px);
-  }
-
-  .click-hint {
-    font-size: 9px;
-    padding: 5px 10px;
   }
 }
 

@@ -19,6 +19,12 @@
       />
     </div>
 
+    <!-- Подсказка для клика по десяткам -->
+    <div v-if="canClickBorrow" class="click-hint">
+      <span class="hint-icon">👆</span>
+      <span>Нажми на десяток, чтобы занять</span>
+    </div>
+
     <!-- Прогресс этапов -->
     <div class="progress-container">
       <StepProgress
@@ -27,16 +33,11 @@
         :show-all="true"
       />
     </div>
-
-    <!-- Кнопка пропуска (только для обучения) -->
-    <button v-if="showSkipButton" class="skip-button" @click="handleSkip">
-      Пропустить объяснение
-    </button>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, computed, watch, onMounted, onUnmounted } from 'vue';
+import { ref, computed, watch, onUnmounted } from 'vue';
 import { useInteractiveSubtraction, InteractiveStep } from '@/composables/useInteractiveSubtraction';
 import InteractiveColumnDisplay from './InteractiveColumnDisplay.vue';
 import StepProgress from './StepProgress.vue';
@@ -73,7 +74,6 @@ const tensError = ref(false);
 // Время правильного ответа (для автоперехода)
 const unitsCorrectTime = ref<number | null>(null);
 const tensCorrectTime = ref<number | null>(null);
-const completeStepTime = ref<number | null>(null);
 
 // Интервал для периодической проверки
 let advanceCheckInterval: ReturnType<typeof setInterval> | null = null;
@@ -83,9 +83,13 @@ const borrowed = computed(() => {
   const step = interactive.currentStep.value;
   const needsBorrowing = interactive.needsBorrowing.value;
   const isAfterBorrow = step === InteractiveStep.SUBTRACT_UNITS ||
-    step === InteractiveStep.SUBTRACT_TENS ||
-    step === InteractiveStep.COMPLETE;
+    step === InteractiveStep.SUBTRACT_TENS;
   return needsBorrowing && isAfterBorrow;
+});
+
+// Можно ли кликнуть по десяткам для заимствования
+const canClickBorrow = computed(() => {
+  return interactive.currentStep.value === InteractiveStep.BORROW && !borrowed.value;
 });
 
 // Обработка клика "Занять"
@@ -112,21 +116,12 @@ function startAdvanceCheck() {
       }
     }
 
-    // Проверяем десятки
+    // Проверяем десятки - после правильного ответа завершаем через 1 секунду
     if (currentStep === InteractiveStep.SUBTRACT_TENS &&
         interactive.currentState.value.tensCorrect === true &&
         tensCorrectTime.value) {
       if (now - tensCorrectTime.value >= 1000) {
         tensCorrectTime.value = null;
-        interactive.nextStep();
-        return;
-      }
-    }
-
-    // Проверяем COMPLETE - пауза 2 секунды перед завершением
-    if (currentStep === InteractiveStep.COMPLETE && completeStepTime.value) {
-      if (now - completeStepTime.value >= 2000) {
-        completeStepTime.value = null;
         stopAdvanceCheck();
         emit('complete', interactive.finalResult.value);
         return;
@@ -184,29 +179,9 @@ function handleTensSubmit(value: number) {
   }
 }
 
-// Пропустить объяснение
-function handleSkip() {
-  interactive.currentStep.value = InteractiveStep.COMPLETE;
-}
-
 // Отслеживание изменений шага (только для уведомлений)
 watch(() => interactive.currentStep.value, (newStep) => {
   emit('step-change', newStep);
-
-  // Фиксируем время при переходе на COMPLETE
-  if (newStep === InteractiveStep.COMPLETE && props.autoAdvance) {
-    completeStepTime.value = Date.now();
-    startAdvanceCheck();
-  }
-});
-
-// Автоматический переход с INTRO при autoAdvance
-onMounted(() => {
-  if (props.autoAdvance && interactive.currentStep.value === InteractiveStep.INTRO) {
-    setTimeout(() => {
-      interactive.nextStep();
-    }, 1500); // Переход через 1.5 секунды
-  }
 });
 
 // Очистка интервала при размонтировании
@@ -222,7 +197,6 @@ function reset() {
   tensError.value = false;
   unitsCorrectTime.value = null;
   tensCorrectTime.value = null;
-  completeStepTime.value = null;
 }
 
 // Метод для перехода к конкретному шагу
@@ -257,6 +231,32 @@ defineExpose({
   display: flex;
   justify-content: center;
   padding: 12px;
+}
+
+/* Подсказка для клика */
+.click-hint {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 14px;
+  background: linear-gradient(135deg, #fff8e1 0%, #ffecb3 100%);
+  border-radius: 16px;
+  font-size: clamp(11px, 2.8vw, 14px);
+  color: #f57c00;
+  animation: hint-bounce 2s infinite;
+}
+
+.hint-icon {
+  font-size: clamp(14px, 3.5vw, 18px);
+}
+
+@keyframes hint-bounce {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-3px);
+  }
 }
 
 .progress-container {
