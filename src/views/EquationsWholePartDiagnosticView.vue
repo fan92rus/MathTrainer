@@ -131,10 +131,10 @@ export default {
       }, 1000);
     }
 
-    function handleHint(): void {
-      // Показать подсказку
-      alert('Подсказка: представь квадрат, где целое разделено на части');
-    }
+    // Резерв для будущей функциональности подсказок
+    // function handleHint(): void {
+    //   alert('Подсказка: представь квадрат, где целое разделено на части');
+    // }
 
     function nextProblem() {
       if (currentIndex.value < problems.value.length - 1) {

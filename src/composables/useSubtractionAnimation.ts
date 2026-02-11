@@ -206,9 +206,9 @@ export function useSubtractionAnimation(
     }
   });
 
-  const currentStepState = computed(() => {
+  const currentStepState = computed<StepState>(() => {
     const step = currentStep.value;
-    return steps.value[step] || steps.value[0];
+    return steps.value[step] ?? steps.value[0]!;
   });
 
   const totalSteps = computed(() => steps.value.length - 1);

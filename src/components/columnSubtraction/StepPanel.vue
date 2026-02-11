@@ -90,8 +90,9 @@ const stepClass = computed(() => {
   return `step-${props.state.step}`;
 });
 
-// Иконка этапа
-const icon = computed(() => {
+// Иконка этапа (резерв для будущего использования)
+/*
+const _icon = computed(() => {
   const icons: Record<InteractiveStep, string> = {
     [InteractiveStep.INTRO]: '📝',
     [InteractiveStep.BORROW]: '🔄',
@@ -101,6 +102,7 @@ const icon = computed(() => {
   };
   return icons[props.state.step] || '';
 });
+*/
 
 // Заголовок этапа
 const title = computed(() => {
@@ -134,8 +136,9 @@ const error = computed(() => {
   return false;
 });
 
-// Успех
-const success = computed(() => {
+// Успех (резерв для будущего использования)
+/*
+const _success = computed(() => {
   if (props.state.step === InteractiveStep.SUBTRACT_UNITS) {
     return props.state.unitsCorrect === true;
   }
@@ -144,6 +147,7 @@ const success = computed(() => {
   }
   return props.state.step === InteractiveStep.COMPLETE;
 });
+*/
 
 // Правильный ответ для подсказки
 const correctAnswer = computed(() => {

@@ -80,7 +80,7 @@ import { ref, computed, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 import { useScoresStore } from '@/store/scores';
 import { useCoins } from '@/composables/useCoins';
-import { generateDiagnosticProblems, DIAGNOSTIC_PROBLEMS_COUNT, DIAGNOSTIC_PASS_THRESHOLD, DIAGNOSTIC_MEDIUM_THRESHOLD } from '@/utils/math/columnSubtraction';
+import { generateDiagnosticProblems, DIAGNOSTIC_PASS_THRESHOLD, DIAGNOSTIC_MEDIUM_THRESHOLD } from '@/utils/math/columnSubtraction';
 import type { ColumnSubtractionProblem } from '@/types';
 import InteractiveSubtraction from '@/components/columnSubtraction/InteractiveSubtraction.vue';
 import ProgressBar from '@/components/common/ProgressBar.vue';

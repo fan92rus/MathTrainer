@@ -63,7 +63,7 @@ const props = withDefaults(defineProps<Props>(), {
 });
 
 const emit = defineEmits<{
-  'step-click': [step: InteractiveStep];
+  stepClick: [step: InteractiveStep];
 }>();
 
 // Этапы для отображения (включая INTRO и COMPLETE)
@@ -120,7 +120,7 @@ const progressPercent = computed(() => {
 // Обработка клика по этапу
 function handleStepClick(step: InteractiveStep, clickable: boolean) {
   if (clickable) {
-    emit('step-click', step);
+    emit('stepClick', step);
   }
 }
 </script>

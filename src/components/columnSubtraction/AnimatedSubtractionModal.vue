@@ -117,6 +117,7 @@ function handleNext() {
 }
 
 // Обработка клавиатурных сокращений
+// eslint-disable-next-line no-undef
 function handleKeydown(event: KeyboardEvent) {
   if (!props.show) return;
 

@@ -95,8 +95,6 @@ export function useInteractiveSubtraction(
   const subtrahendTens = Math.floor(subtrahend / 10);
   const subtrahendUnits = subtrahend % 10;
   const result = minuend - subtrahend;
-  const resultTens = Math.floor(result / 10);
-  const resultUnits = result % 10;
 
   // Начинаем сразу с нужного шага (BORROW если нужно заимствование, иначе SUBTRACT_UNITS)
   const needsBorrowingInit = minuendUnits < subtrahendUnits;
@@ -162,7 +160,7 @@ export function useInteractiveSubtraction(
           showHint: false
         };
 
-      case InteractiveStep.SUBTRACT_UNITS:
+      case InteractiveStep.SUBTRACT_UNITS: {
         const unitsText = needsBorrowing.value
           ? `${minuendUnits + 10} − ${subtrahendUnits}`
           : `${minuendUnits} − ${subtrahendUnits}`;
@@ -178,8 +176,9 @@ export function useInteractiveSubtraction(
           showHint: showHint.value && unitsCorrect.value === false,
           hintText: `Подсказка: ${unitsText} = ${correctUnits.value}`
         };
+      }
 
-      case InteractiveStep.SUBTRACT_TENS:
+      case InteractiveStep.SUBTRACT_TENS: {
         const tensText = needsBorrowing.value
           ? `${minuendTens - 1} − ${subtrahendTens}`
           : `${minuendTens} − ${subtrahendTens}`;
@@ -198,6 +197,7 @@ export function useInteractiveSubtraction(
           showHint: showHint.value && tensCorrect.value === false,
           hintText: `Подсказка: ${tensText} = ${correctTens.value}`
         };
+      }
 
       default:
         return {
@@ -224,8 +224,9 @@ export function useInteractiveSubtraction(
   function performBorrow(): void {
     if (currentStep.value === InteractiveStep.BORROW) {
       const currentIndex = allSteps.value.indexOf(currentStep.value);
-      if (currentIndex < allSteps.value.length - 1) {
-        currentStep.value = allSteps.value[currentIndex + 1];
+      const nextStep = allSteps.value[currentIndex + 1];
+      if (currentIndex >= 0 && currentIndex < allSteps.value.length - 1 && nextStep) {
+        currentStep.value = nextStep;
       }
     }
   }
@@ -276,8 +277,9 @@ export function useInteractiveSubtraction(
     if (!canGoNext.value) return;
 
     const currentIndex = allSteps.value.indexOf(currentStep.value);
-    if (currentIndex < allSteps.value.length - 1) {
-      currentStep.value = allSteps.value[currentIndex + 1];
+    const nextStep = allSteps.value[currentIndex + 1];
+    if (currentIndex >= 0 && currentIndex < allSteps.value.length - 1 && nextStep) {
+      currentStep.value = nextStep;
     }
   }
 

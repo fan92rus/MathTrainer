@@ -13,9 +13,9 @@
         :tens-answer="interactive.currentState.value.tensAnswer"
         :units-error="unitsError"
         :tens-error="tensError"
-        @borrow-click="handleBorrowClick"
-        @units-submit="handleUnitsSubmit"
-        @tens-submit="handleTensSubmit"
+        @borrowClick="handleBorrowClick"
+        @unitsSubmit="handleUnitsSubmit"
+        @tensSubmit="handleTensSubmit"
       />
     </div>
 
@@ -59,9 +59,9 @@ const props = withDefaults(defineProps<Props>(), {
 });
 
 const emit = defineEmits<{
-  'complete': [result: number];
-  'step-change': [step: InteractiveStep];
-  'error': [step: InteractiveStep, errorCount: number];
+  complete: [result: number];
+  stepChange: [step: InteractiveStep];
+  error: [step: InteractiveStep, errorCount: number];
 }>();
 
 // Инициализация интерактивного вычитания
@@ -181,7 +181,7 @@ function handleTensSubmit(value: number) {
 
 // Отслеживание изменений шага (только для уведомлений)
 watch(() => interactive.currentStep.value, (newStep) => {
-  emit('step-change', newStep);
+  emit('stepChange', newStep);
 });
 
 // Очистка интервала при размонтировании

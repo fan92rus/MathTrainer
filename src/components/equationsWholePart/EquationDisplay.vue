@@ -71,6 +71,8 @@ const props = withDefaults(defineProps<Level2DisplayProps>(), {
   showResult: false,
 });
 
+const emit = defineEmits<Level2DisplayEmits>();
+
 /**
  * События компонента
  */
@@ -90,11 +92,10 @@ export interface CompletionResult {
   timestamp: number;
 }
 
-const emit = defineEmits<Level2DisplayEmits>();
-
 // Состояние
 const inputValue = ref<number | null>(null);
 const isCorrect = ref(false);
+// eslint-disable-next-line no-undef
 const answerInputRef = ref<HTMLInputElement | null>(null);
 
 /**

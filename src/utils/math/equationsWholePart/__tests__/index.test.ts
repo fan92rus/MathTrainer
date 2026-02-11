@@ -19,7 +19,7 @@ import {
   generateDiagnosticProblems,
   generateWrongOptions
 } from '../index';
-import type { EquationWholePartProblem, EquationWholePartType } from '@/types';
+import type { EquationWholePartType } from '@/types';
 
 // Алиас для краткости в тестах
 type EquationType = EquationWholePartType;

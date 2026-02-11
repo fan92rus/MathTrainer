@@ -14,7 +14,6 @@ import { mount, VueWrapper } from '@vue/test-utils';
 import { createPinia, setActivePinia } from 'pinia';
 import { useScoresStore } from '@/store/scores';
 import EquationsWholePartView from '../EquationsWholePartView.vue';
-import type { EquationWholePartProblem } from '@/types';
 
 // Мокаем компоненты
 vi.mock('@/components/equationsWholePart/EquationDisplay.vue', () => ({

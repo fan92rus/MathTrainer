@@ -342,8 +342,9 @@ export function generateDiagnosticProblems(): EquationWholePartProblem[] {
   // Генерируем 10 задач равномерно по типам
   for (let i = 0; i < DIAGNOSTIC_PROBLEMS_COUNT; i++) {
     const typeIndex = i % types.length;
+    const selectedType = types[typeIndex]!;
     const problem = generateEquationWholePartProblem(i, 5, {
-      equationTypes: [types[typeIndex]],
+      equationTypes: [selectedType],
       supportLevel: 2,
       maxNumber: 20,
     });

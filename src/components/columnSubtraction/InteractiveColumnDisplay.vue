@@ -120,9 +120,9 @@ const props = withDefaults(defineProps<Props>(), {
 });
 
 const emit = defineEmits<{
-  'borrow-click': [];
-  'units-submit': [value: number];
-  'tens-submit': [value: number];
+  borrowClick: [];
+  unitsSubmit: [value: number];
+  tensSubmit: [value: number];
 }>();
 
 // Разбиваем числа на разряды (computed свойства)
@@ -140,7 +140,9 @@ const savedUnitsInput = ref<number | ''>('');
 const savedTensInput = ref<number | ''>('');
 
 // Ref для элементов input
+// eslint-disable-next-line no-undef
 const unitsInputRef = ref<HTMLInputElement | null>(null);
+// eslint-disable-next-line no-undef
 const tensInputRef = ref<HTMLInputElement | null>(null);
 
 // Можно ли кликнуть по десяткам для заимствования
@@ -185,18 +187,10 @@ const displayTensResult = computed(() => {
   return '';
 });
 
-// Проверка, активен ли разряд
-function isStepActive(place: 'tens' | 'units'): boolean {
-  if (place === 'units') {
-    return props.currentStep === InteractiveStep.SUBTRACT_UNITS;
-  }
-  return props.currentStep === InteractiveStep.SUBTRACT_TENS;
-}
-
 // Обработка клика по десяткам
 function handleTensClick() {
   if (canClickBorrow.value) {
-    emit('borrow-click');
+    emit('borrowClick');
   }
 }
 
@@ -204,7 +198,7 @@ function handleTensClick() {
 function submitUnits() {
   if (unitsInput.value !== '') {
     savedUnitsInput.value = unitsInput.value; // Сохраняем значение
-    emit('units-submit', Number(unitsInput.value));
+    emit('unitsSubmit', Number(unitsInput.value));
   }
 }
 
@@ -212,7 +206,7 @@ function submitUnits() {
 function submitTens() {
   if (tensInput.value !== '') {
     savedTensInput.value = tensInput.value; // Сохраняем значение
-    emit('tens-submit', Number(tensInput.value));
+    emit('tensSubmit', Number(tensInput.value));
   }
 }
 
