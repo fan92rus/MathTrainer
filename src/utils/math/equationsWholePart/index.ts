@@ -219,18 +219,20 @@ function generateUnknownSubtrahend(maxWhole: number): EquationWholePartProblem {
  * @returns Задача типа unknownMinuend
  */
 function generateUnknownMinuend(maxWhole: number): EquationWholePartProblem {
-  // Генерируем известную часть (вычитаемое) от 1 до maxWhole - 1
-  // Для maxWhole = 2, получаем диапазон [0, 0] + 1 = 1
-  const range = Math.max(0, maxWhole - 2);
-  const knownPart = Math.floor(Math.random() * (range + 1)) + 1;
+  // Генерируем целое от 2 до maxWhole
+  // Для maxWhole = 2, получаем диапазон [0, 0] + 2 = 2
+  const wholeRange = Math.max(0, maxWhole - 2);
+  const whole = Math.floor(Math.random() * (wholeRange + 1)) + 2;
 
-  // Генерируем результат от 0 до maxWhole - knownPart
-  const maxResult = maxWhole - knownPart;
-  const result = Math.floor(Math.random() * (maxResult + 1));
+  // Генерируем известную часть (вычитаемое) от 1 до whole - 1
+  const knownPartRange = Math.max(0, whole - 2);
+  const knownPart = Math.floor(Math.random() * (knownPartRange + 1)) + 1;
+
+  // Результат (известная часть после вычитания)
+  const result = whole - knownPart;
 
   // Неизвестная часть (уменьшаемое) = целое
-  const unknownPart = knownPart + result;
-  const whole = unknownPart;
+  const unknownPart = whole;
 
   // Формируем выражение
   const expression = `x - ${knownPart} = ${result}`;
