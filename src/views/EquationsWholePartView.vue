@@ -28,11 +28,13 @@
           @complete="handleComplete"
         />
 
-        <!-- Progress -->
-        <ProgressBar :progress-percent="progressPercent" />
+        <div class="game-container-footer">
+          <!-- Progress -->
+          <ProgressBar :progress-percent="progressPercent" />
 
-        <!-- StarRating -->
-        <StarRating :score="score" />
+          <!-- StarRating -->
+          <StarRating :score="score" />
+        </div>
       </div>
 
       <!-- Game Over -->

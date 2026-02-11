@@ -455,11 +455,23 @@ body {
   gap: 16px;
   padding: 16px;
   width: 100%;
+  height: 100%;
 }
 
 .game-container-inner > * {
   max-width: 600px;
   width: 100%;
+}
+
+/* Футер с прогресс-баром и звёздами - закреплён внизу */
+.game-container-footer {
+  margin-top: auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  max-width: 600px;
 }
 
 /* Адаптивность для game-container-inner */

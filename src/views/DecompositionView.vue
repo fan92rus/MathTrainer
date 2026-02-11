@@ -41,10 +41,6 @@
           </p>
         </div>
 
-        <ProgressBar :progress-percent="progressPercent" />
-
-        <StarRating :score="score" />
-
         <AnswerOptions
           :options="currentProblem?.options || []"
           :correct-index="currentProblem?.correctIndex || 0"
@@ -53,7 +49,11 @@
           @answer-selected="handleAnswerSelected"
         />
 
-              </div>
+        <div class="game-container-footer">
+          <ProgressBar :progress-percent="progressPercent" />
+          <StarRating :score="score" />
+        </div>
+      </div>
 
       <GameOver
         v-else
