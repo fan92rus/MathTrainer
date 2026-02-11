@@ -165,12 +165,36 @@ describe('getDifficultySettings', () => {
 
 describe('getAvailableExercises', () => {
   describe('counting (Тренажер счета)', () => {
-    test('доступен всегда для любого класса и четверти', () => {
+    test('1 класс все четверти -> доступен', () => {
       const g1q1 = getAvailableExercises(1, 1);
-      const g4q4 = getAvailableExercises(4, 4);
+      const g1q4 = getAvailableExercises(1, 4);
 
       expect(g1q1.counting.available).toBe(true);
-      expect(g4q4.counting.available).toBe(true);
+      expect(g1q4.counting.available).toBe(true);
+    });
+
+    test('2 класс, 1-2 четверть -> доступен', () => {
+      const g2q1 = getAvailableExercises(2, 1);
+      const g2q2 = getAvailableExercises(2, 2);
+
+      expect(g2q1.counting.available).toBe(true);
+      expect(g2q2.counting.available).toBe(true);
+    });
+
+    test('2 класс, 3+ четверть -> недоступен', () => {
+      const g2q3 = getAvailableExercises(2, 3);
+      const g2q4 = getAvailableExercises(2, 4);
+
+      expect(g2q3.counting.available).toBe(false);
+      expect(g2q4.counting.available).toBe(false);
+    });
+
+    test('3+ класс -> недоступен', () => {
+      const g3 = getAvailableExercises(3, 1);
+      const g4 = getAvailableExercises(4, 1);
+
+      expect(g3.counting.available).toBe(false);
+      expect(g4.counting.available).toBe(false);
     });
 
     test('title = "Тренажер счета"', () => {
@@ -244,25 +268,74 @@ describe('getAvailableExercises', () => {
   });
 
   describe('equations (Простые уравнения)', () => {
+    test('2 класс, 1-2 четверть -> доступен', () => {
+      const g2q1 = getAvailableExercises(2, 1);
+      const g2q2 = getAvailableExercises(2, 2);
+
+      expect(g2q1.equations.available).toBe(true);
+      expect(g2q2.equations.available).toBe(true);
+    });
+
+    test('2 класс, 3+ четверть -> недоступен', () => {
+      const g2q3 = getAvailableExercises(2, 3);
+      const g2q4 = getAvailableExercises(2, 4);
+
+      expect(g2q3.equations.available).toBe(false);
+      expect(g2q4.equations.available).toBe(false);
+    });
+
+    test('3+ класс -> недоступен', () => {
+      const g3 = getAvailableExercises(3, 1);
+      const g4 = getAvailableExercises(4, 4);
+
+      expect(g3.equations.available).toBe(false);
+      expect(g4.equations.available).toBe(false);
+    });
+  });
+
+  describe('columnSubtraction (Вычитание в столбик)', () => {
     test('2 класс, 1 четверть -> недоступен', () => {
       const exercises = getAvailableExercises(2, 1);
-      expect(exercises.equations.available).toBe(false);
+      expect(exercises.columnSubtraction.available).toBe(false);
     });
 
     test('2 класс, 2+ четверть -> доступен', () => {
-      const q2 = getAvailableExercises(2, 2);
-      expect(q2.equations.available).toBe(true);
+      const g2q2 = getAvailableExercises(2, 2);
+      const g2q4 = getAvailableExercises(2, 4);
 
-      const q4 = getAvailableExercises(2, 4);
-      expect(q4.equations.available).toBe(true);
+      expect(g2q2.columnSubtraction.available).toBe(true);
+      expect(g2q4.columnSubtraction.available).toBe(true);
     });
 
     test('3+ класс -> доступен всегда', () => {
       const g3 = getAvailableExercises(3, 1);
-      expect(g3.equations.available).toBe(true);
-
       const g4 = getAvailableExercises(4, 4);
-      expect(g4.equations.available).toBe(true);
+
+      expect(g3.columnSubtraction.available).toBe(true);
+      expect(g4.columnSubtraction.available).toBe(true);
+    });
+  });
+
+  describe('equationsWholePart (Уравнения: целое и части)', () => {
+    test('2 класс, 1 четверть -> недоступен', () => {
+      const exercises = getAvailableExercises(2, 1);
+      expect(exercises.equationsWholePart.available).toBe(false);
+    });
+
+    test('2 класс, 2+ четверть -> доступен', () => {
+      const g2q2 = getAvailableExercises(2, 2);
+      const g2q4 = getAvailableExercises(2, 4);
+
+      expect(g2q2.equationsWholePart.available).toBe(true);
+      expect(g2q4.equationsWholePart.available).toBe(true);
+    });
+
+    test('3+ класс -> доступен всегда', () => {
+      const g3 = getAvailableExercises(3, 1);
+      const g4 = getAvailableExercises(4, 4);
+
+      expect(g3.equationsWholePart.available).toBe(true);
+      expect(g4.equationsWholePart.available).toBe(true);
     });
   });
 
@@ -289,6 +362,14 @@ describe('getAvailableExercises', () => {
       expect(exercises.equations).toHaveProperty('title');
       expect(exercises.equations).toHaveProperty('description');
       expect(exercises.equations).toHaveProperty('available');
+
+      expect(exercises.columnSubtraction).toHaveProperty('title');
+      expect(exercises.columnSubtraction).toHaveProperty('description');
+      expect(exercises.columnSubtraction).toHaveProperty('available');
+
+      expect(exercises.equationsWholePart).toHaveProperty('title');
+      expect(exercises.equationsWholePart).toHaveProperty('description');
+      expect(exercises.equationsWholePart).toHaveProperty('available');
     });
 
     test('description не пустая строка', () => {
