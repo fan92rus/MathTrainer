@@ -10,6 +10,8 @@ import { createPinia, setActivePinia } from 'pinia'
 import { useScoresStore } from '../scores'
 import { useAchievementsStore } from '../achievements'
 import { usePlayerStore } from '../player'
+import { useDailyTasksStore } from '../dailyTasks'
+import { useSettingsStore } from '../settings'
 
 describe('Stores - Property Based Tests', () => {
   beforeEach(() => {
@@ -341,35 +343,36 @@ describe('Stores - Property Based Tests', () => {
     })
 
     test('daily task progress is bounded by target', () => {
-      const store = usePlayerStore()
+      const settingsStore = useSettingsStore()
+      settingsStore.selectedGrade = 1
+      settingsStore.currentQuarter = 1
+      const dailyTasksStore = useDailyTasksStore()
+      dailyTasksStore.generateIfNeeded()
 
-      for (const task of store.dailyTasks) {
+      for (const task of dailyTasksStore.tasks) {
         expect(task.current).toBeGreaterThanOrEqual(0)
         expect(task.current).toBeLessThanOrEqual(task.target)
       }
     })
 
     test('completed tasks remain completed', () => {
-      const store = usePlayerStore()
+      const settingsStore = useSettingsStore()
+      settingsStore.selectedGrade = 1
+      settingsStore.currentQuarter = 1
+      const dailyTasksStore = useDailyTasksStore()
+      dailyTasksStore.generateIfNeeded()
 
       // Complete a task by setting progress
-      for (const task of store.dailyTasks) {
-        store.updateDailyTaskProgress(task.id, task.target)
+      for (const task of dailyTasksStore.tasks) {
+        dailyTasksStore.updateProgress(task.type, task.target)
       }
 
-      // Mark as completed
-      for (const task of store.dailyTasks) {
+      // Check that tasks are marked as completed
+      for (const task of dailyTasksStore.tasks) {
         if (task.current >= task.target) {
-          task.completed = true
+          expect(task.completed).toBe(true)
         }
       }
-
-      // Generate new tasks (should preserve completed status for same day)
-      const completedBefore = store.dailyTasks.filter((t) => t.completed).length
-
-      // Check completed status
-      const completedAfter = store.dailyTasks.filter((t) => t.completed).length
-      expect(completedAfter).toBeGreaterThanOrEqual(completedBefore)
     })
 
     test('experience never goes negative', () => {

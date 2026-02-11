@@ -153,6 +153,7 @@
   import AchievementManager from '../components/AchievementManager.vue';
   import { useAchievements } from '../composables/useAchievements';
   import { usePlayerStore } from '../store/player';
+  import { useDailyTasks } from '@/composables/useDailyTasks';
 
   export default {
     name: 'HomeView',
@@ -167,6 +168,7 @@
       const achievementsStore = useAchievementsStore();
       const playerStore = usePlayerStore();
       const { checkAchievements } = useAchievements();
+      const { ensureTasks, dailyTasks } = useDailyTasks();
 
       // Загружаем очки, настройки и ачивки при монтировании компонента
       scoresStore.loadScores();
@@ -174,7 +176,7 @@
       achievementsStore.loadAchievements();
 
       // Генерируем ежедневные задания при необходимости
-      playerStore.generateDailyTasks();
+      ensureTasks();
 
       // Проверяем только неразблокированные достижения на основе текущих очков
       // Это нужно для случаев, когда очки были получены до добавления системы достижений
@@ -382,11 +384,11 @@
       const crystals = computed(() => playerStore.currency.crystals);
 
       const hasUncompletedTasks = computed(() => {
-        return playerStore.dailyTasks.some(task => !task.completed);
+        return dailyTasks.value.some(task => !task.completed);
       });
 
       const uncompletedTasksCount = computed(() => {
-        return playerStore.dailyTasks.filter(task => !task.completed).length;
+        return dailyTasks.value.filter(task => !task.completed).length;
       });
 
       // Функция форматирования чисел

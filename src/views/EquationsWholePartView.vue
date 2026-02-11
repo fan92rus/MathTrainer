@@ -55,6 +55,7 @@
 import { ref, computed, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 import { useScoresStore } from '@/store/scores';
+import { useCoins } from '@/composables/useCoins';
 import { generateEquationWholePartProblem } from '@/utils/math/equationsWholePart';
 import EquationDisplay from '@/components/equationsWholePart/EquationDisplay.vue';
 import ScoreDisplay from '@/components/common/ScoreDisplay.vue';
@@ -79,6 +80,7 @@ export default {
   setup() {
     const router = useRouter();
     const scoresStore = useScoresStore();
+    const { awardCoins } = useCoins();
 
     // Управление состоянием тренировки
     const problems = ref<EquationWholePartProblem[]>([]);
@@ -86,6 +88,7 @@ export default {
     const score = ref(0);
     const answered = ref(false);
     const showResults = ref(false);
+    const errorsPerQuestion = ref<number[]>([]);
 
     // Текущая задача
     const currentProblem = computed(() => problems.value[currentQuestion.value] ?? null);
@@ -128,8 +131,15 @@ export default {
     }
 
     function handleComplete(result: { isCorrect: boolean }): void {
+      // Записываем количество ошибок для этого вопроса (0 если правильно, 1 если неправильно)
+      errorsPerQuestion.value[currentQuestion.value] = result.isCorrect ? 0 : 1;
+
       if (result.isCorrect) {
         score.value++;
+
+        // Выдаем монетки за правильный ответ и обновляем daily tasks
+        const level = currentLevel.value || 1;
+        awardCoins('equationsWholePart', level, 0);
       }
 
       answered.value = true;
@@ -163,6 +173,7 @@ export default {
       currentQuestion.value = 0;
       answered.value = false;
       showResults.value = false;
+      errorsPerQuestion.value = [];
       initializeTraining();
     }
 

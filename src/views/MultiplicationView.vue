@@ -87,8 +87,8 @@
   import { ref, computed, onMounted } from 'vue';
   import { useRouter } from 'vue-router';
   import { useScoresStore } from '../store/scores';
-  import { usePlayerStore } from '../store/player';
   import { useCoins } from '../composables/useCoins';
+  import { useDailyTasks } from '@/composables/useDailyTasks';
   import { generateMultiplicationProblem } from '../utils/math';
   import { calculateExercisePoints } from '../utils/gradeHelpers';
   import GameOver from '../components/common/GameOver.vue';
@@ -105,8 +105,8 @@
     setup() {
       const router = useRouter();
       const scoresStore = useScoresStore();
-      const playerStore = usePlayerStore();
       const { showCoinAnimation, coinsEarned, awardCoins } = useCoins();
+      const { ensureTasks } = useDailyTasks();
 
       // Состояние игры
       const currentProblem = ref(null);
@@ -251,7 +251,7 @@
       // Загружаем очки при монтировании компонента
       onMounted(() => {
         scoresStore.loadScores();
-        playerStore.generateDailyTasks(); // Генерируем ежедневные задания
+        ensureTasks(); // Генерируем ежедневные задания
         generateNewProblem();
       });
 

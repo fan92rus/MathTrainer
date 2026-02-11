@@ -1,8 +1,11 @@
 import { ref } from 'vue';
 import { usePlayerStore } from '@/store/player';
+import { useDailyTasks } from './useDailyTasks';
+import type { DailyTaskType } from '@/types/gamification';
 
 export function useCoins() {
   const playerStore = usePlayerStore();
+  const dailyTasks = useDailyTasks();
   const showCoinAnimation = ref(false);
   const coinsEarned = ref(0);
 
@@ -23,6 +26,12 @@ export function useCoins() {
         baseCoins = 3;
         break;
       case 'equations':
+        baseCoins = 2;
+        break;
+      case 'columnSubtraction':
+        baseCoins = 2;
+        break;
+      case 'equationsWholePart':
         baseCoins = 2;
         break;
       default:
@@ -60,9 +69,10 @@ export function useCoins() {
       // Добавляем монетки игроку
       playerStore.addCoins(coins);
 
-      // Обновляем daily tasks
-      playerStore.updateTaskProgress('solve_5', 1);
-      playerStore.updateTaskProgress('solve_20', 1);
+      // Обновляем daily tasks на основе типа упражнения
+      // Используем новый composable вместо прямого вызова playerStore
+      dailyTasks.ensureTasks();
+      dailyTasks.updateExerciseProgress(exerciseType as DailyTaskType, 1);
 
       // Показываем анимацию
       if (showAnimation) {

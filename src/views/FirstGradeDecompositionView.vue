@@ -60,9 +60,9 @@
   import { onMounted } from 'vue';
   import { useRouter } from 'vue-router';
   import { useScoresStore } from '../store/scores';
-  import { usePlayerStore } from '../store/player';
   import { useGameLogic } from '../composables/useGameLogic';
   import { useCoins } from '../composables/useCoins';
+  import { useDailyTasks } from '@/composables/useDailyTasks';
   import { generateFirstGradeDecompositionProblem } from '../utils/math';
   import ScoreDisplay from '../components/common/ScoreDisplay.vue';
   import ProgressBar from '../components/common/ProgressBar.vue';
@@ -86,8 +86,8 @@
     setup() {
       const router = useRouter();
       const scoresStore = useScoresStore();
-      const playerStore = usePlayerStore();
       const { showCoinAnimation, coinsEarned, awardCoins } = useCoins();
+      const { ensureTasks } = useDailyTasks();
       const totalQuestions = 10;
 
       // Инициализируем игру
@@ -141,7 +141,7 @@
       // Инициализация при монтировании
       onMounted(() => {
         scoresStore.loadScores();
-        playerStore.generateDailyTasks(); // Генерируем ежедневные задания
+        ensureTasks(); // Генерируем ежедневные задания
         restartGame();
       });
 

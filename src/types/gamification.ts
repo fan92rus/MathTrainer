@@ -35,9 +35,18 @@ export interface Player {
   unlockedBuildings: string[];
 }
 
+export type DailyTaskType =
+  | 'equations'
+  | 'multiplication'
+  | 'counting'
+  | 'decomposition'
+  | 'decomposition_easy'
+  | 'columnSubtraction'
+  | 'equationsWholePart';
+
 export interface DailyTask {
   id: string;
-  type: 'equations' | 'multiplication' | 'counting' | 'decomposition' | 'decomposition_easy';
+  type: DailyTaskType;
   description: string;
   target: number;
   current: number;

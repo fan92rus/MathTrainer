@@ -1,4 +1,5 @@
 import type { GradeLevel } from '@/types';
+import { EXERCISE_AVAILABILITY, isExerciseAvailable } from '@/config/exerciseAvailability';
 
 // Интерфейс для настроек сложности
 export interface DifficultySettings {
@@ -23,6 +24,17 @@ export interface AvailableExercises {
   columnSubtraction: ExerciseInfo;
   equationsWholePart: ExerciseInfo;
 }
+
+// Типы упражнений для итерации
+const EXERCISE_TYPES = [
+  'counting',
+  'firstGradeDecomposition',
+  'decomposition',
+  'multiplication',
+  'equations',
+  'columnSubtraction',
+  'equationsWholePart',
+] as const;
 
 // Функция для определения текущей четверти учебного года
 export function getCurrentQuarter(): number {
@@ -175,44 +187,18 @@ export function getQuarterName(quarter: number): string {
 }
 
 // Функция для определения доступности упражнений в зависимости от класса и четверти
+// Использует общую конфигурацию из exerciseAvailability.ts
 export function getAvailableExercises(grade: GradeLevel, quarter: number): AvailableExercises {
-  const exercises: AvailableExercises = {
-    counting: {
-      available: grade === 1 || (grade === 2 && quarter <= 2), // 1 класс все четверти + 2 класс 1-2 четверть
-      title: 'Тренажер счета',
-      description: 'Решай примеры на сложение и вычитание'
-    },
-    firstGradeDecomposition: {
-      available: grade === 1 && quarter >= 2, // Разложение чисел (1 класс) только для 1 класса со 2 четверти
-      title: 'Состав числа (1 класс)',
-      description: 'Изучи состав чисел до 10'
-    },
-    decomposition: {
-      available: grade >= 2, // Разложение чисел доступно со 2 класса
-      title: 'Вычисление удобным способом',
-      description: 'Выбирай удобный способ вычисления'
-    },
-    multiplication: {
-      available: (grade === 2 && quarter >= 3) || grade > 2, // Умножение доступно постоянно начиная с 3 четверти 2 класса и далее
-      title: 'Таблица умножения',
-      description: 'Изучай таблицу умножения постепенно'
-    },
-    equations: {
-      available: grade === 2 && quarter <= 2, // Только 2 класс, 1-2 четверть (не включая 3 четверть)
-      title: 'Простые уравнения',
-      description: 'Решай простые уравнения с неизвестным'
-    },
-    columnSubtraction: {
-      available: (grade === 2 && quarter >= 2) || grade > 2, // Вычитание в столбик для 2 класса со 2 четверти и далее
-      title: 'Вычитание в столбик',
-      description: 'Научись вычитать с заимствованием из десятков'
-    },
-    equationsWholePart: {
-      available: (grade === 2 && quarter >= 2) || grade > 2, // Уравнения "целое и части" для 2 класса со 2 четверти и далее
-      title: 'Уравнения: целое и части',
-      description: 'Решай уравнения методом частей'
-    }
-  };
+  const exercises = {} as AvailableExercises;
+
+  for (const type of EXERCISE_TYPES) {
+    const config = EXERCISE_AVAILABILITY[type];
+    exercises[type] = {
+      available: config.available(grade, quarter),
+      title: config.title,
+      description: config.description,
+    };
+  }
 
   return exercises;
 }
