@@ -118,6 +118,20 @@
               </div>
             </div>
           </div>
+          <div
+            v-if="availableExercises.equationsWholePart.available"
+            class="game-card"
+            @click="goToEquationsWholePart"
+          >
+            <div class="game-content">
+              <div class="game-icon">🔢</div>
+              <div class="game-info">
+                <div class="game-title">{{ availableExercises.equationsWholePart.title }}</div>
+                <div class="game-description">{{ availableExercises.equationsWholePart.description }}</div>
+                <div class="game-score">⭐ {{ equationsWholePartScore }}</div>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -125,8 +139,8 @@
 </template>
 
 <script lang="ts">
-  import { computed, onMounted, nextTick } from 'vue';
-  import { useRouter } from 'vue-router';
+  import { computed, onMounted, onActivated, watch, nextTick } from 'vue';
+  import { useRouter, useRoute } from 'vue-router';
   import { useScoresStore } from '../store/scores';
   import { useSettingsStore } from '../store/settings';
   import { useAchievementsStore } from '../store/achievements';
@@ -147,6 +161,7 @@
     },
     setup() {
       const router = useRouter();
+      const route = useRoute();
       const scoresStore = useScoresStore();
       const settingsStore = useSettingsStore();
       const achievementsStore = useAchievementsStore();
@@ -236,6 +251,7 @@
       const multiplicationScore = computed(() => scoresStore.multiplicationScore);
       const equationsScore = computed(() => scoresStore.equationsScore);
       const columnSubtractionScore = computed(() => scoresStore.columnSubtractionScore);
+      const equationsWholePartScore = computed(() => scoresStore.equationsWholePartScore);
       const isGradeSelected = computed(() => settingsStore.isGradeSelected);
       const selectedGrade = computed(() => settingsStore.selectedGrade);
       const gradeName = computed(() => selectedGrade.value ? getGradeName(selectedGrade.value) : '');
@@ -277,6 +293,11 @@
               available: false,
               title: 'Вычитание в столбик',
               description: 'Научись вычитать с заимствованием из десятков'
+            },
+            equationsWholePart: {
+              available: false,
+              title: 'Уравнения: целое и части',
+              description: 'Решай уравнения методом частей'
             }
           };
         }
@@ -315,6 +336,20 @@
           router.push('/column-subtraction/diagnostic');
         } else {
           router.push('/column-subtraction');
+        }
+      };
+
+      const goToEquationsWholePart = () => {
+        // Определяем, куда перейти: обучение, диагностика или тренировка
+        const learningCompleted = scoresStore.equationsWholePartLearningCompleted;
+        const diagnosticPassed = scoresStore.equationsWholePartDiagnosticPassed;
+
+        if (!learningCompleted) {
+          router.push('/equations-whole-part/learning');
+        } else if (!diagnosticPassed) {
+          router.push('/equations-whole-part/diagnostic');
+        } else {
+          router.push('/equations-whole-part');
         }
       };
 
@@ -371,6 +406,21 @@
         });
       });
 
+      // Перезагружаем очки при каждом возвращении на главную страницу
+      onActivated(() => {
+        scoresStore.loadScores();
+      });
+
+      // Дополнительно следим за изменением роута (для случаев без KeepAlive)
+      watch(
+        () => route.path,
+        (newPath) => {
+          if (newPath === '/') {
+            scoresStore.loadScores();
+          }
+        }
+      );
+
       return {
         countingScore,
         decompositionScore,
@@ -378,6 +428,7 @@
         multiplicationScore,
         equationsScore,
         columnSubtractionScore,
+        equationsWholePartScore,
         isGradeSelected,
         gradeName,
         quarterName,
@@ -397,6 +448,7 @@
         goToMultiplication,
         goToEquations,
         goToColumnSubtraction,
+        goToEquationsWholePart,
         goToAchievements,
         goToCity,
         goToDailyTasks,

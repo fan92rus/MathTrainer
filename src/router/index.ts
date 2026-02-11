@@ -11,6 +11,9 @@ import ManualDecompositionView from '@/views/ManualDecompositionView.vue';
 import ColumnSubtractionView from '@/views/ColumnSubtractionView.vue';
 import ColumnSubtractionLearningView from '@/views/ColumnSubtractionLearningView.vue';
 import ColumnSubtractionDiagnosticView from '@/views/ColumnSubtractionDiagnosticView.vue';
+import EquationsWholePartView from '@/views/EquationsWholePartView.vue';
+import EquationsWholePartLearningView from '@/views/EquationsWholePartLearningView.vue';
+import EquationsWholePartDiagnosticView from '@/views/EquationsWholePartDiagnosticView.vue';
 import AchievementsView from '@/views/AchievementsView.vue';
 import DailyTasksView from '@/views/DailyTasksView.vue';
 import CityView from '@/views/CityView.vue';
@@ -78,6 +81,22 @@ const routes: Array<RouteRecordRaw> = [
     path: '/column-subtraction/diagnostic',
     name: 'column-subtraction-diagnostic',
     component: ColumnSubtractionDiagnosticView
+  },
+  {
+    path: '/equations-whole-part',
+    name: 'equations-whole-part',
+    component: EquationsWholePartView,
+    meta: { exerciseType: 'equationsWholePart' }
+  },
+  {
+    path: '/equations-whole-part/learning',
+    name: 'equations-whole-part-learning',
+    component: EquationsWholePartLearningView
+  },
+  {
+    path: '/equations-whole-part/diagnostic',
+    name: 'equations-whole-part-diagnostic',
+    component: EquationsWholePartDiagnosticView
   },
   {
     path: '/achievements',

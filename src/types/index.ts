@@ -299,3 +299,68 @@ export interface ColumnSubtractionProblem {
   /** Второе число для совместимости с MathProblem (等于 subtrahend) */
   num2: number;
 }
+
+/**
+ * Типы уравнений для метода "целое и части"
+ */
+export type EquationWholePartType = 'unknownAddend' | 'unknownSubtrahend' | 'unknownMinuend';
+
+/**
+ * Интерфейс для задачи на уравнения методом "целое и части"
+ * Специфический тип для упражнения Equations Whole Part
+ *
+ * Метод "целое и части" обучает детей решению уравнений через визуализацию:
+ * - Целое = часть₁ + часть₂
+ * - Целое - часть₁ = часть₂
+ *
+ * Три типа уравнений:
+ * 1. unknownAddend: x + a = b (найти неизвестное слагаемое)
+ * 2. unknownSubtrahend: a - x = b (найти вычитаемое)
+ * 3. unknownMinuend: x - a = b (найти уменьшаемое)
+ */
+export interface EquationWholePartProblem {
+  /** Уникальный идентификатор задачи */
+  id?: string;
+  /** Математическое выражение в виде строки (например, "x + 5 = 12") */
+  expression: string;
+  /** Тип операции */
+  operation: 'equation';
+  /** Первое число для совместимости с MathProblem */
+  num1: number;
+  /** Второе число для совместимости с MathProblem */
+  num2: number;
+  /** Правильный ответ (значение x) */
+  correctAnswer: number;
+  /** Массив вариантов ответов для выбора */
+  options: string[];
+  /** Индекс правильного ответа в массиве options */
+  correctIndex: number;
+  /** Уровень сложности задачи (1-10) */
+  difficulty: number;
+
+  // Специфичные поля для equations-whole-part
+  /** Тип уравнения */
+  equationType: EquationWholePartType;
+  /** Целое (сумма или уменьшаемое) */
+  whole: number;
+  /** Известная часть (слагаемое или вычитаемое) */
+  knownPart: number;
+  /** Неизвестная часть (x - искомое значение) */
+  unknownPart: number;
+  /** Знак операции в уравнении */
+  operationSign: '+' | '-';
+  /** Уровень поддержки (1 - визуальная схема, 2 - текстовые метки, 3 - чистое уравнение) */
+  supportLevel: 1 | 2 | 3;
+}
+
+/**
+ * Опции генерации задачи для equations-whole-part
+ */
+export interface EquationWholePartOptions {
+  /** Максимальное значение целого */
+  maxNumber?: number;
+  /** Ограничить генерацию конкретными типами уравнений */
+  equationTypes?: EquationWholePartType[];
+  /** Уровень поддержки (1, 2, 3) */
+  supportLevel?: 1 | 2 | 3;
+}

@@ -7,8 +7,7 @@
         class="digit tens-digit"
         :class="{
           'clickable': canClickBorrow,
-          'highlight-pulse': canClickBorrow,
-          'active-step': isStepActive('tens')
+          'highlight-pulse': canClickBorrow
         }"
         @click="handleTensClick"
       >
@@ -19,13 +18,7 @@
       </div>
 
       <!-- Единицы -->
-      <div
-        class="digit units-digit"
-        :class="{
-          'active-step': isStepActive('units'),
-          'highlight-pulse': isStepActive('units')
-        }"
-      >
+      <div class="digit units-digit">
         <!-- Единичка заимствования над единицами -->
         <span v-if="borrowed" class="borrow-one">1</span>
 
@@ -38,16 +31,10 @@
 
     <!-- Нижнее число (вычитаемое) -->
     <div class="number-row subtrahend">
-      <div
-        class="digit"
-        :class="{ 'active-step': isStepActive('tens') }"
-      >
+      <div class="digit">
         {{ subtrahendTens }}
       </div>
-      <div
-        class="digit"
-        :class="{ 'active-step': isStepActive('units') }"
-      >
+      <div class="digit">
         {{ subtrahendUnits }}
       </div>
     </div>
@@ -60,15 +47,15 @@
       <!-- Десятки результата -->
       <div class="digit result-digit">
         <span v-if="showResultTens">{{ displayTensResult }}</span>
+        <span v-else-if="tensCorrect" class="result-value">{{ savedTensInput || props.tensAnswer }}</span>
         <input
-          v-else-if="currentStep === 'tens'"
+          v-else-if="showTensInput"
           ref="tensInputRef"
           v-model="tensInput"
           type="number"
           class="digit-input"
-          :class="{ 'error': tensError, 'success': tensCorrect }"
+          :class="{ 'error': tensError }"
           @keyup.enter="submitTens"
-          :disabled="tensCorrect"
         />
         <span v-else class="placeholder">_</span>
         <span v-if="tensCorrect" class="checkmark">✓</span>
@@ -77,15 +64,15 @@
       <!-- Единицы результата -->
       <div class="digit result-digit">
         <span v-if="showResultUnits">{{ displayUnitsResult }}</span>
+        <span v-else-if="unitsCorrect" class="result-value">{{ savedUnitsInput || props.unitsAnswer }}</span>
         <input
-          v-else-if="currentStep === 'units'"
+          v-else-if="showUnitsInput"
           ref="unitsInputRef"
           v-model="unitsInput"
           type="number"
           class="digit-input"
-          :class="{ 'error': unitsError, 'success': unitsCorrect }"
+          :class="{ 'error': unitsError }"
           @keyup.enter="submitUnits"
-          :disabled="unitsCorrect"
         />
         <span v-else class="placeholder">_</span>
         <span v-if="unitsCorrect" class="checkmark">✓</span>
@@ -148,6 +135,10 @@ const subtrahendUnits = computed(() => props.subtrahend % 10);
 const unitsInput = ref<number | ''>('');
 const tensInput = ref<number | ''>('');
 
+// Сохранённые значения правильных ответов (для отображения)
+const savedUnitsInput = ref<number | ''>('');
+const savedTensInput = ref<number | ''>('');
+
 // Ref для элементов input
 const unitsInputRef = ref<HTMLInputElement | null>(null);
 const tensInputRef = ref<HTMLInputElement | null>(null);
@@ -155,6 +146,16 @@ const tensInputRef = ref<HTMLInputElement | null>(null);
 // Можно ли кликнуть по десяткам для заимствования
 const canClickBorrow = computed(() => {
   return props.currentStep === InteractiveStep.BORROW && !props.borrowed;
+});
+
+// Показывать input для единиц
+const showUnitsInput = computed(() => {
+  return props.currentStep === InteractiveStep.SUBTRACT_UNITS && !props.unitsCorrect;
+});
+
+// Показывать input для десятков
+const showTensInput = computed(() => {
+  return props.currentStep === InteractiveStep.SUBTRACT_TENS && !props.tensCorrect;
 });
 
 // Показывать результат единиц
@@ -202,6 +203,7 @@ function handleTensClick() {
 // Отправка ответа единиц
 function submitUnits() {
   if (unitsInput.value !== '') {
+    savedUnitsInput.value = unitsInput.value; // Сохраняем значение
     emit('units-submit', Number(unitsInput.value));
   }
 }
@@ -209,6 +211,7 @@ function submitUnits() {
 // Отправка ответа десятков
 function submitTens() {
   if (tensInput.value !== '') {
+    savedTensInput.value = tensInput.value; // Сохраняем значение
     emit('tens-submit', Number(tensInput.value));
   }
 }
@@ -217,21 +220,16 @@ function submitTens() {
 watch(() => props.currentStep, (newStep) => {
   if (newStep === InteractiveStep.SUBTRACT_UNITS) {
     unitsInput.value = '';
+    // Не сбрасываем savedUnitsInput если ответ уже правильный
+    if (!props.unitsCorrect) {
+      savedUnitsInput.value = '';
+    }
   } else if (newStep === InteractiveStep.SUBTRACT_TENS) {
     tensInput.value = '';
-  }
-});
-
-// Сброс ввода при ошибке
-watch(() => props.unitsCorrect, (isCorrect) => {
-  if (isCorrect) {
-    unitsInput.value = props.unitsAnswer ?? '';
-  }
-});
-
-watch(() => props.tensCorrect, (isCorrect) => {
-  if (isCorrect) {
-    tensInput.value = props.tensAnswer ?? '';
+    // Не сбрасываем savedTensInput если ответ уже правильный
+    if (!props.tensCorrect) {
+      savedTensInput.value = '';
+    }
   }
 });
 
@@ -345,7 +343,7 @@ watch(() => props.currentStep, (newStep) => {
   position: absolute;
   top: 0px;
   right: 3px;
-  font-size: 22px;
+  font-size: clamp(14px, 3.5vw, 22px);
   color: #4caf50;
   font-weight: 700;
   animation: bounce-in 0.4s ease-out;
@@ -474,6 +472,18 @@ watch(() => props.currentStep, (newStep) => {
   color: #4caf50;
 }
 
+/* Отображение введённого значения когда ответ правильный */
+.result-value {
+  width: 100%;
+  height: clamp(36px, 8vw, 52px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: clamp(22px, 6vw, 32px);
+  font-weight: 600;
+  color: #4caf50;
+}
+
 @keyframes shake {
   0%, 100% { transform: translateX(0); }
   25% { transform: translateX(-5px); }
@@ -495,6 +505,10 @@ watch(() => props.currentStep, (newStep) => {
 
   .digit-input {
     font-size: clamp(18px, 5vw, 26px);
+  }
+
+  .borrow-one {
+    font-size: clamp(12px, 3vw, 18px);
   }
 }
 

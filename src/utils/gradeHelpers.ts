@@ -21,6 +21,7 @@ export interface AvailableExercises {
   multiplication: ExerciseInfo;
   equations: ExerciseInfo;
   columnSubtraction: ExerciseInfo;
+  equationsWholePart: ExerciseInfo;
 }
 
 // Функция для определения текущей четверти учебного года
@@ -177,7 +178,7 @@ export function getQuarterName(quarter: number): string {
 export function getAvailableExercises(grade: GradeLevel, quarter: number): AvailableExercises {
   const exercises: AvailableExercises = {
     counting: {
-      available: true, // Счет доступен с 1 класса с 1 четверти
+      available: grade === 1 || (grade === 2 && quarter <= 2), // 1 класс все четверти + 2 класс 1-2 четверть
       title: 'Тренажер счета',
       description: 'Решай примеры на сложение и вычитание'
     },
@@ -197,7 +198,7 @@ export function getAvailableExercises(grade: GradeLevel, quarter: number): Avail
       description: 'Изучай таблицу умножения постепенно'
     },
     equations: {
-      available: (grade === 2 && quarter >= 2) || grade > 2, // Уравнения доступны для 2 класса со 2 четверти и далее
+      available: grade === 2 && quarter <= 2, // Только 2 класс, 1-2 четверть (не включая 3 четверть)
       title: 'Простые уравнения',
       description: 'Решай простые уравнения с неизвестным'
     },
@@ -205,6 +206,11 @@ export function getAvailableExercises(grade: GradeLevel, quarter: number): Avail
       available: (grade === 2 && quarter >= 2) || grade > 2, // Вычитание в столбик для 2 класса со 2 четверти и далее
       title: 'Вычитание в столбик',
       description: 'Научись вычитать с заимствованием из десятков'
+    },
+    equationsWholePart: {
+      available: (grade === 2 && quarter >= 2) || grade > 2, // Уравнения "целое и части" для 2 класса со 2 четверти и далее
+      title: 'Уравнения: целое и части',
+      description: 'Решай уравнения методом частей'
     }
   };
 

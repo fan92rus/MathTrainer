@@ -16,6 +16,10 @@ export interface ScoresState {
   totalEquationsAttempted: number;
   manualDecompositionSolved: number;
   totalDecompositionAttempted: number;
+  // Equations Whole Part
+  equationsWholePartScore: number;
+  equationsWholePartLearningCompleted: boolean;
+  equationsWholePartDiagnosticPassed: boolean;
 }
 
 // Интерфейс для всех очков
@@ -41,8 +45,12 @@ export const useScoresStore = defineStore('scores', {
     currentMultiplicationLevel: 2, // Текущий открытый уровень таблицы умножения
     manualEquationsSolved: 0, // Количество решенных уравнений в ручном режиме
     totalEquationsAttempted: 0, // Общее количество попыток решения уравнений
-    manualDecompositionSolved: 0, // Количество решенных разложений в ручном режиме
-    totalDecompositionAttempted: 0 // Общее количество попыток разложения
+    manualDecompositionSolved: 0, // Количество решённых разложений в ручном режиме
+    totalDecompositionAttempted: 0, // Общее количество попыток разложения
+    // Equations Whole Part
+    equationsWholePartScore: 0,
+    equationsWholePartLearningCompleted: false,
+    equationsWholePartDiagnosticPassed: false
   }),
 
   getters: {
@@ -75,7 +83,30 @@ export const useScoresStore = defineStore('scores', {
 
     getColumnSubtractionLearningCompleted: (state): boolean => state.columnSubtractionLearningCompleted,
 
-    getColumnSubtractionDiagnosticPassed: (state): boolean => state.columnSubtractionDiagnosticPassed
+    getColumnSubtractionDiagnosticPassed: (state): boolean => state.columnSubtractionDiagnosticPassed,
+
+    // Equations Whole Part getters
+    getEquationsWholePartScore: (state): number => state.equationsWholePartScore,
+
+    getEquationsWholePartLevel: (state): number => {
+      // Уровень 1: score 0-4 → числа до 10
+      // Уровень 2: score 5-9 → числа до 20
+      // Уровень 3: score 10+ → числа до 100
+      if (state.equationsWholePartScore < 5) return 1;
+      if (state.equationsWholePartScore < 10) return 2;
+      return 3;
+    },
+
+    getEquationsWholePartMaxNumber: (state): number => {
+      // Максимальное число для текущего уровня
+      if (state.equationsWholePartScore < 5) return 10;
+      if (state.equationsWholePartScore < 10) return 20;
+      return 100;
+    },
+
+    getEquationsWholePartLearningCompleted: (state): boolean => state.equationsWholePartLearningCompleted,
+
+    getEquationsWholePartDiagnosticPassed: (state): boolean => state.equationsWholePartDiagnosticPassed
   },
 
   actions: {
@@ -217,6 +248,32 @@ export const useScoresStore = defineStore('scores', {
       const columnSubtractionDiagnosticSaved = getItem('columnSubtractionDiagnosticPassed');
       if (columnSubtractionDiagnosticSaved !== null) {
         this.columnSubtractionDiagnosticPassed = columnSubtractionDiagnosticSaved === 'true';
+      }
+
+      // Equations Whole Part - загрузка scores
+      const equationsWholePartScoreSaved = getItem('equationsWholePartScore');
+      if (equationsWholePartScoreSaved !== null) {
+        const parsedScore = parseInt(equationsWholePartScoreSaved, 10);
+        if (isNaN(parsedScore) || parsedScore < 0) {
+          this.equationsWholePartScore = 0;
+          this.saveEquationsWholePartScore();
+        } else {
+          this.equationsWholePartScore = parsedScore;
+        }
+      } else {
+        // Инициализируем нулём если не найдено в хранилище
+        this.equationsWholePartScore = 0;
+        this.saveEquationsWholePartScore();
+      }
+
+      const equationsWholePartLearningSaved = getItem('equationsWholePartLearningCompleted');
+      if (equationsWholePartLearningSaved !== null) {
+        this.equationsWholePartLearningCompleted = equationsWholePartLearningSaved === 'true';
+      }
+
+      const equationsWholePartDiagnosticSaved = getItem('equationsWholePartDiagnosticPassed');
+      if (equationsWholePartDiagnosticSaved !== null) {
+        this.equationsWholePartDiagnosticPassed = equationsWholePartDiagnosticSaved === 'true';
       }
     },
 
@@ -388,6 +445,37 @@ export const useScoresStore = defineStore('scores', {
     saveColumnSubtractionDiagnosticPassed(): void {
       const { setItem } = useStorage();
       setItem('columnSubtractionDiagnosticPassed', this.columnSubtractionDiagnosticPassed.toString());
+    },
+
+    // Equations Whole Part методы
+    updateEquationsWholePartScore(points: number): void {
+      this.equationsWholePartScore += points;
+      this.saveEquationsWholePartScore();
+    },
+
+    setEquationsWholePartLearningCompleted(completed: boolean): void {
+      this.equationsWholePartLearningCompleted = completed;
+      this.saveEquationsWholePartLearningCompleted();
+    },
+
+    setEquationsWholePartDiagnosticPassed(passed: boolean): void {
+      this.equationsWholePartDiagnosticPassed = passed;
+      this.saveEquationsWholePartDiagnosticPassed();
+    },
+
+    saveEquationsWholePartScore(): void {
+      const { setItem } = useStorage();
+      setItem('equationsWholePartScore', this.equationsWholePartScore.toString());
+    },
+
+    saveEquationsWholePartLearningCompleted(): void {
+      const { setItem } = useStorage();
+      setItem('equationsWholePartLearningCompleted', this.equationsWholePartLearningCompleted.toString());
+    },
+
+    saveEquationsWholePartDiagnosticPassed(): void {
+      const { setItem } = useStorage();
+      setItem('equationsWholePartDiagnosticPassed', this.equationsWholePartDiagnosticPassed.toString());
     }
   }
 });

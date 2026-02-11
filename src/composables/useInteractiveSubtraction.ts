@@ -189,6 +189,9 @@ export function useInteractiveSubtraction(
           explanation: `Вычитаем десятки: ${tensText}`,
           instruction: `Сколько получится? Введи число:`,
           canProceed: tensCorrect.value === true,
+          // Сохраняем состояние единиц при переходе к десяткам
+          unitsAnswer: unitsAnswer.value,
+          unitsCorrect: unitsCorrect.value,
           tensAnswer: tensAnswer.value,
           tensCorrect: tensCorrect.value,
           errorCount: errorCount.value,
