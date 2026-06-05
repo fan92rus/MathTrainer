@@ -1,11 +1,13 @@
 import { ref } from 'vue';
 import { usePlayerStore } from '@/store/player';
 import { useDailyTasks } from './useDailyTasks';
+import { useStreaksStore } from '@/store/streaks';
 import type { DailyTaskType } from '@/types/gamification';
 
 export function useCoins() {
   const playerStore = usePlayerStore();
   const dailyTasks = useDailyTasks();
+  const streaksStore = useStreaksStore();
   const showCoinAnimation = ref(false);
   const coinsEarned = ref(0);
 
@@ -73,6 +75,9 @@ export function useCoins() {
       // Используем новый composable вместо прямого вызова playerStore
       dailyTasks.ensureTasks();
       dailyTasks.updateExerciseProgress(exerciseType as DailyTaskType, 1);
+
+      // Записываем активность для стрика
+      streaksStore.recordActivity();
 
       // Показываем анимацию
       if (showAnimation) {

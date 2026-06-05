@@ -24,6 +24,11 @@
             </div>
           </div>
         </div>
+        <MotivationBar
+          v-if="isGradeSelected"
+          @streakClick="goToAchievements"
+          @achievementsClick="goToAchievements"
+        />
         <div class="games-container">
           <div
             v-if="availableExercises.firstGradeDecomposition.available"
@@ -145,6 +150,7 @@
   import { useAchievements } from '../composables/useAchievements';
   import { usePlayerStore } from '../store/player';
   import { useDailyTasks } from '@/composables/useDailyTasks';
+  import MotivationBar from '@/components/motivation/MotivationBar.vue';
 
   export default {
     name: 'HomeView',
