@@ -160,7 +160,9 @@
   export default {
     name: 'HomeView',
     components: {
-      AchievementManager
+      AchievementManager,
+      MotivationBar,
+      ProgressPath
     },
     setup() {
       const router = useRouter();
