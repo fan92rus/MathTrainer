@@ -239,6 +239,9 @@ export const useAchievementsStore = defineStore('achievements', {
       // Проверяем скрытые ачивки
       this.checkHiddenAchievements(now, exerciseData, scoresStore, newlyUnlocked)
 
+      // Проверяем стрик-ачивки (ежедневные)
+      this.checkDailyStreakAchievements(newlyUnlocked)
+
       // Показываем уведомление для новых ачивок
       if (newlyUnlocked.length > 0) {
         this.lastUnlocked = newlyUnlocked
@@ -358,6 +361,27 @@ export const useAchievementsStore = defineStore('achievements', {
         if (morningAchievement && !morningAchievement.unlocked) {
           // TODO: Добавить отслеживание правильных ответов утром
         }
+      }
+    },
+
+    // Проверка стрик-ачивок (ежедневные)
+    checkDailyStreakAchievements(newlyUnlocked: string[]): void {
+      const streaksStorage = localStorage.getItem('streaks')
+      if (!streaksStorage) return
+      try {
+        const streakData = JSON.parse(streaksStorage)
+        const currentStreak = streakData.currentStreak ?? 0
+
+        this.achievements.forEach(achievement => {
+          if (achievement.condition.type === 'daily_streak' && !achievement.unlocked) {
+            this.updateAchievementProgress(achievement.id, currentStreak)
+            if (currentStreak >= achievement.condition.target && !newlyUnlocked.includes(achievement.id)) {
+              newlyUnlocked.push(achievement.id)
+            }
+          }
+        })
+      } catch {
+        // Некорректные данные стрика
       }
     },
 

@@ -10,7 +10,7 @@ export interface Achievement {
   id: string
   name: string
   description: string
-  category: 'points' | 'streak' | 'level' | 'time' | 'diversity' | 'hidden'
+  category: 'points' | 'streak' | 'level' | 'time' | 'diversity' | 'hidden' | 'streak_daily'
   icon: string
   condition: AchievementCondition
   reward: number // бонусные очки

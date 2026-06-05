@@ -378,6 +378,51 @@ export const ACHIEVEMENTS_DATA: Achievement[] = [
     reward: 250,
     unlocked: false,
     progress: 0
+  },
+  // === Стрик-ачивки (ежедневные) ===
+  {
+    id: 'streak_3',
+    name: 'Начало пути',
+    description: '3 дня подряд',
+    category: 'streak_daily',
+    icon: '🔥',
+    condition: { type: 'daily_streak', target: 3 },
+    reward: 15,
+    unlocked: false,
+    progress: 0
+  },
+  {
+    id: 'streak_7',
+    name: 'Неделя практики',
+    description: '7 дней подряд',
+    category: 'streak_daily',
+    icon: '🔥',
+    condition: { type: 'daily_streak', target: 7 },
+    reward: 30,
+    unlocked: false,
+    progress: 0
+  },
+  {
+    id: 'streak_14',
+    name: 'Две недели!',
+    description: '14 дней подряд',
+    category: 'streak_daily',
+    icon: '🔥',
+    condition: { type: 'daily_streak', target: 14 },
+    reward: 50,
+    unlocked: false,
+    progress: 0
+  },
+  {
+    id: 'streak_30',
+    name: 'Месяц мастерства',
+    description: '30 дней подряд',
+    category: 'streak_daily',
+    icon: '🔥',
+    condition: { type: 'daily_streak', target: 30 },
+    reward: 100,
+    unlocked: false,
+    progress: 0
   }
 ]
 
@@ -389,5 +434,46 @@ export const ACHIEVEMENT_CATEGORIES = [
   { id: 'level', name: 'Уровни', icon: '📈' },
   { id: 'time', name: 'Время', icon: '⏱️' },
   { id: 'diversity', name: 'Разнообразие', icon: '🌈' },
+  { id: 'streak_daily', name: 'Стрики', icon: '🔥' },
   { id: 'hidden', name: 'Секретные', icon: '🔒' }
 ] as const
+
+// Ачивки за ежедневные стрики
+export const STREAK_DAILY_ACHIEVEMENTS: Omit<Achievement, 'unlocked' | 'unlockedAt' | 'progress'>[] = [
+  {
+    id: 'streak_3',
+    name: 'Начало пути',
+    description: '3 дня подряд',
+    category: 'streak_daily',
+    icon: '🔥',
+    condition: { type: 'daily_streak', target: 3 },
+    reward: 15,
+  },
+  {
+    id: 'streak_7',
+    name: 'Неделя практики',
+    description: '7 дней подряд',
+    category: 'streak_daily',
+    icon: '🔥',
+    condition: { type: 'daily_streak', target: 7 },
+    reward: 30,
+  },
+  {
+    id: 'streak_14',
+    name: 'Две недели!',
+    description: '14 дней подряд',
+    category: 'streak_daily',
+    icon: '🔥',
+    condition: { type: 'daily_streak', target: 14 },
+    reward: 50,
+  },
+  {
+    id: 'streak_30',
+    name: 'Месяц мастерства',
+    description: '30 дней подряд',
+    category: 'streak_daily',
+    icon: '🔥',
+    condition: { type: 'daily_streak', target: 30 },
+    reward: 100,
+  },
+]
