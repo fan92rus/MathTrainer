@@ -1,25 +1,26 @@
 <template>
-  <div class="progress-path">
+  <div class="progress-path" :class="{ 'compact-mode': compact }">
     <!-- Заголовок -->
     <div class="path-header">
-      <span class="path-title">🗺️ Путь обучения</span>
+      <span class="path-title">🗺️ {{ compact ? 'Мой прогресс' : 'Путь обучения' }}</span>
       <span class="path-progress">{{ progress.earned }}/{{ progress.total }} ★</span>
     </div>
 
     <!-- Группы по четвертям -->
     <div class="path-groups">
       <div
-        v-for="group in groups"
+        v-for="group in displayGroups"
         :key="group.title"
         class="path-group"
       >
-        <div class="group-title">{{ group.title }}</div>
-        <div class="group-nodes">
+        <div v-if="!compact" class="group-title">{{ group.title }}</div>
+        <div class="group-nodes" :class="{ 'compact-nodes': compact }">
           <PathNode
             v-for="node in group.nodes"
             :key="node.id"
             :node="node"
             :is-current="currentNodeId === node.id"
+            :compact="compact"
             @click="handleNodeClick"
           />
         </div>
@@ -33,23 +34,39 @@
  * ProgressPath — визуальный путь обучения
  *
  * Горизонтальный скролл с узлами по четвертям текущего класса
+ * compact: показывает только текущую четверть, узлы компактнее
  */
 import { computed } from 'vue'
 import PathNode from './PathNode.vue'
 import { useProgressPathStore } from '@/store/progressPath'
+import { useSettingsStore } from '@/store/settings'
 import { useRouter } from 'vue-router'
 import type { PathNode as PathNodeType } from '@/types/motivation'
+
+const props = withDefaults(defineProps<{
+  compact?: boolean
+}>(), {
+  compact: false
+})
 
 const emit = defineEmits<{
   navigate: [exerciseType: string]
 }>()
 
 const progressPathStore = useProgressPathStore()
+const settingsStore = useSettingsStore()
 const router = useRouter()
 
 const groups = computed(() => progressPathStore.currentGradeGroups)
 const progress = computed(() => progressPathStore.currentGradeProgress)
 const currentNodeId = computed(() => progressPathStore.currentNode?.id ?? null)
+
+/** В компактном режиме показываем только текущую четверть */
+const displayGroups = computed(() => {
+  if (!props.compact) return groups.value
+  const currentQ = settingsStore.currentQuarter
+  return groups.value.filter(g => g.quarter === currentQ)
+})
 
 /** Маппинг exerciseType → route path */
 const EXERCISE_ROUTES: Record<string, string> = {
@@ -162,5 +179,25 @@ function handleNodeClick(node: PathNodeType) {
   .group-nodes {
     gap: 8px;
   }
+}
+
+/* Compact mode */
+.compact-mode .path-header {
+  margin-bottom: 6px;
+}
+
+.compact-mode .path-title {
+  font-size: 13px;
+}
+
+.compact-mode .path-progress {
+  font-size: 12px;
+}
+
+.compact-mode .group-nodes {
+  gap: 8px;
+  flex-wrap: nowrap;
+  overflow-x: auto;
+  padding-bottom: 2px;
 }
 </style>

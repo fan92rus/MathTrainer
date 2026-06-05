@@ -3,36 +3,31 @@
     <AchievementManager />
     <div class="game-container">
       <div class="main-container">
-        <div v-if="isGradeSelected" class="grade-info-container">
-          <div class="grade-info">
-            <span class="grade-label">Текущий класс:</span>
-            <span class="grade-value">{{ gradeName }}, {{ quarterName }}</span>
-          </div>
-          <div class="grade-actions">
-            <button class="change-grade-button" @click="changeGrade">Изменить класс</button>
-            <button class="achievements-button" @click="goToAchievements">
-              <span class="achievements-icon">🏆</span>
-              <span v-if="hasNewAchievements" class="new-achievements-count">{{ newAchievementsCount }}</span>
-            </button>
-            <button class="daily-tasks-button" @click="goToDailyTasks" title="Ежедневные задания">
-              <span class="daily-tasks-icon">📅</span>
-              <span v-if="hasUncompletedTasks" class="pending-tasks-count">{{ uncompletedTasksCount }}</span>
-            </button>
-            <div title="Монетки">
-              <span class="coins-icon">🪙</span>
-            <span class="coins-count">{{ formatNumber(coins) }}</span>
+        <!-- Hero секция: приветствие + мотивация -->
+        <div v-if="isGradeSelected" class="hero-section">
+          <div class="hero-top">
+            <div class="grade-badge" @click="changeGrade">
+              <span class="grade-badge-number">{{ gradeNumber }}</span>
+              <span class="grade-badge-label">класс</span>
+            </div>
+            <MotivationBar
+              @streakClick="goToAchievements"
+              @achievementsClick="goToAchievements"
+            />
+            <div class="hero-actions">
+              <button class="icon-btn achievements-btn" @click="goToAchievements" title="Достижения">
+                <span>🏆</span>
+                <span v-if="hasNewAchievements" class="badge-dot">{{ newAchievementsCount }}</span>
+              </button>
+              <button class="icon-btn daily-btn" @click="goToDailyTasks" title="Ежедневные задания">
+                <span>📅</span>
+                <span v-if="hasUncompletedTasks" class="badge-dot">{{ uncompletedTasksCount }}</span>
+              </button>
             </div>
           </div>
+          <!-- Компактный прогресс-путь -->
+          <ProgressPath compact class="home-progress-path" />
         </div>
-        <MotivationBar
-          v-if="isGradeSelected"
-          @streakClick="goToAchievements"
-          @achievementsClick="goToAchievements"
-        />
-        <ProgressPath
-          v-if="isGradeSelected"
-          class="home-progress-path"
-        />
         <div class="games-container">
           <div
             v-if="availableExercises.firstGradeDecomposition.available"
@@ -432,6 +427,7 @@
         equationsWholePartScore,
         isGradeSelected,
         gradeName,
+        gradeNumber: selectedGrade,
         quarterName,
         availableExercises,
         unlockedCount,
@@ -458,305 +454,172 @@
 </script>
 
 <style scoped>
+  /* ============================================
+     HOMEVIEW — Полный редизайн
+  /* ============================================
+     HOMEVIEW — Полный редизайн
+     ============================================ */
+
   .main-container {
     display: flex;
     flex-direction: column;
     align-items: center;
-    justify-content: center;
-    padding: 20px;
-    gap: 20px;
+    padding: 16px;
+    gap: 16px;
     flex: 1;
+    width: 100%;
+    justify-content: flex-start;
   }
 
-  .grade-info-container {
-    background: linear-gradient(135deg, #ffffff, #f8f9ff);
-    border-radius: 15px;
-    padding: 20px;
-    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
-    margin-bottom: 20px;
+  /* === Hero секция === */
+  .hero-section {
     width: 100%;
     display: flex;
-    justify-content: space-between;
-    align-items: center;
-  }
-
-  .grade-info {
-    display: flex;
     flex-direction: column;
-    align-items: flex-start;
-  }
-
-  .grade-label {
-    font-size: 14px;
-    color: #666;
-    margin-bottom: 5px;
-  }
-
-  .grade-value {
-    font-size: 18px;
-    font-weight: 600;
-    color: #333;
-  }
-
-  .grade-actions {
-    display: flex;
-    gap: 12px;
-    align-items: center;
-    flex-wrap: nowrap;
-  }
-
-  .achievements-button {
-    background: linear-gradient(135deg, #4CAF50, #8BC34A);
-    color: white;
-    border: none;
-    border-radius: 50%;
-    width: 48px;
-    height: 48px;
-    font-size: 14px;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    box-shadow: 0 3px 8px rgba(76, 175, 80, 0.3);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    position: relative;
+    gap: 10px;
     flex-shrink: 0;
   }
 
-  .achievements-button:hover {
+  .hero-top {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    width: 100%;
+  }
+
+  /* Бейдж класса */
+  .grade-badge {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    width: 52px;
+    height: 52px;
+    border-radius: 16px;
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    color: white;
+    cursor: pointer;
+    transition: transform 0.2s, box-shadow 0.2s;
+    box-shadow: 0 3px 10px rgba(102, 126, 234, 0.3);
+    flex-shrink: 0;
+  }
+
+  .grade-badge:hover {
+    transform: scale(1.08);
+    box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+  }
+
+  .grade-badge:active {
+    transform: scale(0.95);
+  }
+
+  .grade-badge-number {
+    font-size: 22px;
+    font-weight: 800;
+    line-height: 1;
+  }
+
+  .grade-badge-label {
+    font-size: 9px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    opacity: 0.9;
+  }
+
+  /* Hero actions (ачивки, задания) */
+  .hero-actions {
+    display: flex;
+    gap: 8px;
+    flex-shrink: 0;
+  }
+
+  .icon-btn {
+    position: relative;
+    width: 44px;
+    height: 44px;
+    border-radius: 14px;
+    border: none;
+    font-size: 22px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: transform 0.2s, box-shadow 0.2s;
+  }
+
+  .icon-btn:active {
+    transform: scale(0.92);
+  }
+
+  .achievements-btn {
+    background: linear-gradient(135deg, #4CAF50, #66BB6A);
+    box-shadow: 0 3px 8px rgba(76, 175, 80, 0.3);
+  }
+
+  .achievements-btn:hover {
     transform: translateY(-2px);
     box-shadow: 0 5px 12px rgba(76, 175, 80, 0.4);
   }
 
-  .achievements-icon {
-    font-size: 24px;
-  }
-
-  .daily-tasks-button {
-    background: linear-gradient(135deg, #8b5cf6, #7c3aed);
-    color: white;
-    border: none;
-    border-radius: 50%;
-    width: 48px;
-    height: 48px;
-    font-size: 14px;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.3s ease;
+  .daily-btn {
+    background: linear-gradient(135deg, #8b5cf6, #a78bfa);
     box-shadow: 0 3px 8px rgba(139, 92, 246, 0.3);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    position: relative;
-    flex-shrink: 0;
   }
 
-  .daily-tasks-button:hover {
+  .daily-btn:hover {
     transform: translateY(-2px);
     box-shadow: 0 5px 12px rgba(139, 92, 246, 0.4);
   }
 
-  .daily-tasks-icon {
-    font-size: 24px;
-  }
-
-  .pending-tasks-count {
+  .badge-dot {
     position: absolute;
     top: -4px;
     right: -4px;
     background: #ff4757;
     color: white;
     border-radius: 50%;
-    width: 18px;
+    min-width: 18px;
     height: 18px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 11px;
-    font-weight: bold;
-  }
-
-  .coins-button {
-    background: linear-gradient(135deg, #fbbf24, #f59e0b, #d97706);
-    color: white;
-    border: none;
-    border-radius: 2rem;
-    padding: 0.5rem 1rem;
-    font-size: 14px;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    box-shadow: 0 4px 6px rgba(251, 191, 36, 0.3), inset 0 -2px 4px rgba(0, 0, 0, 0.1);
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    position: relative;
-    flex-shrink: 0;
-  }
-
-  .coins-button:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 6px 12px rgba(251, 191, 36, 0.4), inset 0 -2px 4px rgba(0, 0, 0, 0.1);
-  }
-
-  .coins-button:active {
-    transform: translateY(0);
-    box-shadow: 0 2px 4px rgba(251, 191, 36, 0.3), inset 0 1px 2px rgba(0, 0, 0, 0.2);
-  }
-
-  .coins-icon {
-    font-size: 24px;
-    line-height: 1;
-    filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.2));
-  }
-
-  .coins-count {
-    font-size: 14px;
-    font-weight: bold;
-    line-height: 1;
-    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
-  }
-
-  .new-achievements-count {
-    position: absolute;
-    top: -4px;
-    right: -4px;
-    background: #ff4757;
-    color: white;
-    border-radius: 50%;
-    width: 20px;
-    height: 20px;
-    font-size: 11px;
+    font-size: 10px;
     font-weight: 700;
     display: flex;
     align-items: center;
     justify-content: center;
     border: 2px solid white;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    box-shadow: 0 2px 4px rgba(0,0,0,0.15);
   }
 
-  .change-grade-button {
-    background: linear-gradient(135deg, #667eea, #764ba2);
-    color: white;
-    border: none;
-    border-radius: 20px;
-    padding: 10px 16px;
-    font-size: 14px;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    box-shadow: 0 3px 8px rgba(102, 126, 234, 0.3);
-    width: 100px;
+  /* === Прогресс-путь (компактный на главной) === */
+  .home-progress-path {
+    background: rgba(255, 255, 255, 0.45);
+    border-radius: 14px;
+    padding: 8px 10px;
+    max-height: 120px;
+    overflow: hidden;
   }
 
-  .change-grade-button:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 5px 12px rgba(102, 126, 234, 0.4);
-  }
-
-  .buttons-container {
-    display: flex;
-    gap: 15px;
-    flex-wrap: wrap;
-    justify-content: center;
-    margin-top: 40px;
-  }
-
-  .difficulty-info-button {
-    padding: 10px 20px;
-    background: linear-gradient(135deg, #4caf50, #45a049);
-    color: white;
-    border: none;
-    border-radius: 30px;
-    font-size: clamp(14px, 3vw, 16px);
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    box-shadow: 0 4px 8px rgba(76, 175, 80, 0.3);
-  }
-
-  .difficulty-info-button:hover {
-    transform: scale(1.05);
-    box-shadow: 0 6px 12px rgba(76, 175, 80, 0.4);
-  }
-
-  .main-title {
-    font-size: clamp(32px, 6vw, 48px);
-    font-weight: 700;
-    margin-bottom: 30px;
-    text-align: center;
-    background: linear-gradient(135deg, #667eea, #764ba2);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
-  }
-
-  .scores-container {
-    display: flex;
-    gap: 20px;
-    flex-wrap: wrap;
-    justify-content: center;
-  }
-
-  .score-card-title {
-    background: linear-gradient(135deg, #ffffff, #f8f9ff);
-    border-radius: 20px;
-    padding: 10px;
-    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
-    text-align: center;
-    min-width: 70px;
-    transition: transform 0.3s ease;
-    font-size: clamp(16px, 3vw, 20px);
-    color: #666;
-    margin-bottom: 10px;
-  }
-
+  /* === Сетка упражнений === */
   .games-container {
-    display: flex;
-    flex-direction: column;
-    gap: 20px;
-    max-height: 70vh;
-    overflow-y: auto;
-    scroll-snap-type: y mandatory;
-    scroll-behavior: smooth;
-    scroll-padding: 10px 0;
-    padding: 10px 0;
-    margin: 0;
-    scrollbar-width: thin;
-    scrollbar-color: rgba(102, 126, 234, 0.3) transparent;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+    gap: 14px;
+    width: 100%;
+    max-width: 560px;
+    padding: 4px 0;
   }
 
-  .games-container::-webkit-scrollbar {
-    width: 6px;
-  }
-
-  .games-container::-webkit-scrollbar-track {
-    background: transparent;
-  }
-
-  .games-container::-webkit-scrollbar-thumb {
-    background-color: rgba(102, 126, 234, 0.3);
-    border-radius: 3px;
-  }
-
-  .games-container::-webkit-scrollbar-thumb:hover {
-    background-color: rgba(102, 126, 234, 0.5);
-  }
-
+  /* === Карточка упражнения === */
   .game-card {
-    background: linear-gradient(135deg, #ffffff, #f8f9ff);
-    border-radius: 20px;
-    padding: 10px;
-    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
-    transition: all 0.3s ease;
+    background: white;
+    border-radius: 18px;
+    padding: 16px;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06);
+    transition: transform 0.25s ease, box-shadow 0.25s ease;
     cursor: pointer;
-    width: 600px;
-    flex-shrink: 0;
     position: relative;
     overflow: hidden;
-    scroll-snap-align: start;
-    scroll-snap-stop: always;
+    border: 2px solid transparent;
   }
 
   .game-card::before {
@@ -765,252 +628,159 @@
     top: 0;
     left: 0;
     right: 0;
-    height: 6px;
-    background: linear-gradient(90deg, #ff9a8b, #ff6a88, #ff99ac);
+    height: 5px;
+    background: linear-gradient(90deg, #ddd, #eee);
+    transition: height 0.2s;
   }
 
   .game-card:hover {
-    transform: translateY(-10px);
-    box-shadow: 0 15px 30px rgba(0, 0, 0, 0.15);
+    transform: translateY(-4px);
+    box-shadow: 0 8px 28px rgba(0, 0, 0, 0.1);
   }
 
-  /* Color-coded top bars for exercise types */
-  .game-card--counting::before {
-    background: linear-gradient(90deg, #4fc3f7, #29b6f6, #03a9f4);
+  .game-card:hover::before {
+    height: 6px;
   }
-  .game-card--decomposition::before {
-    background: linear-gradient(90deg, #ff9a8b, #ff6a88, #ff99ac);
+
+  .game-card:active {
+    transform: translateY(-2px) scale(0.98);
   }
-  .game-card--multiplication::before {
-    background: linear-gradient(90deg, #ff7043, #f4511e, #e64a19);
-  }
-  .game-card--column::before {
-    background: linear-gradient(90deg, #ffb74d, #ffa726, #ff9800);
-  }
-  .game-card--equations::before {
-    background: linear-gradient(90deg, #81c784, #66bb6a, #4caf50);
-  }
+
+  /* Цветные полоски */
+  .game-card--counting::before { background: linear-gradient(90deg, #4fc3f7, #03a9f4); }
+  .game-card--decomposition::before { background: linear-gradient(90deg, #ff9a8b, #ff6a88); }
+  .game-card--multiplication::before { background: linear-gradient(90deg, #ff7043, #e64a19); }
+  .game-card--column::before { background: linear-gradient(90deg, #ffb74d, #ff9800); }
+  .game-card--equations::before { background: linear-gradient(90deg, #81c784, #4caf50); }
+
+  /* Цветной border-bottom при hover */
+  .game-card--counting:hover { border-color: #4fc3f7; }
+  .game-card--decomposition:hover { border-color: #ff9a8b; }
+  .game-card--multiplication:hover { border-color: #ff7043; }
+  .game-card--column:hover { border-color: #ffb74d; }
+  .game-card--equations:hover { border-color: #81c784; }
 
   .game-content {
     display: flex;
-    align-items: flex-start;
-    gap: 15px;
+    align-items: center;
+    gap: 14px;
   }
 
   .game-icon {
-    font-size: clamp(40px, 8vw, 60px);
+    font-size: clamp(36px, 7vw, 48px);
     flex-shrink: 0;
-    margin-top: 5px;
   }
 
   .game-info {
     flex: 1;
-    display: flex;
-    flex-direction: column;
+    min-width: 0;
   }
 
   .game-title {
-    font-size: clamp(18px, 4vw, 22px);
+    font-size: clamp(15px, 3vw, 18px);
     font-weight: 700;
-    color: #333;
-    margin-bottom: 8px;
+    color: #2d3748;
+    margin-bottom: 4px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
 
   .game-description {
-    font-size: clamp(14px, 2.5vw, 16px);
-    color: #666;
-    margin-bottom: 8px;
+    font-size: clamp(12px, 2.2vw, 14px);
+    color: #718096;
+    margin-bottom: 6px;
+    line-height: 1.3;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
   }
 
   .game-score {
-    font-size: clamp(16px, 3vw, 18px);
+    font-size: clamp(13px, 2.5vw, 15px);
     font-weight: 700;
-    color: #ff9800;
-    background: rgba(255, 152, 0, 0.1);
-    border-radius: 15px;
-    padding: 6px 12px;
+    color: #f59e0b;
+    background: rgba(245, 158, 11, 0.1);
+    border-radius: 10px;
+    padding: 3px 10px;
     display: inline-block;
-    align-self: flex-start;
   }
 
+  /* === Responsive: планшет === */
   @media (max-width: 768px) {
     .main-container {
-      padding: 15px;
+      padding: 12px;
+      gap: 12px;
     }
 
-    .grade-info-container {
-      margin-bottom: 15px;
-      padding: 15px;
+    .hero-top {
+      gap: 10px;
     }
 
-    .coins-button {
-      padding: 0.4rem 0.8rem;
-      font-size: 13px;
+    .grade-badge {
+      width: 46px;
+      height: 46px;
+      border-radius: 14px;
     }
 
-    .coins-icon {
+    .grade-badge-number {
       font-size: 20px;
     }
 
-    .coins-count {
-      font-size: 12px;
-    }
-
-    .grade-info {
-      margin-bottom: 10px;
-    }
-
-    .grade-value {
-      font-size: 16px;
-    }
-
-    .grade-actions {
-      gap: 10px;
-      justify-content: flex-end;
-    }
-
-    .achievements-button {
-      width: 44px;
-      height: 44px;
-    }
-
-    .achievements-icon {
-      font-size: 22px;
-    }
-
-    .new-achievements-count {
-      width: 18px;
-      height: 18px;
-      font-size: 10px;
-    }
-
-    .change-grade-button {
-      padding: 8px 12px;
-      font-size: 12px;
-      width: 100px;
-    }
-
-    .scores-container {
-      gap: 10px;
-      margin-bottom: 15px;
-    }
-
-    .score-card-title {
-      min-width: 120px;
-      padding: 8px 12px;
-      font-size: 14px;
-    }
-
     .games-container {
-      height: 70vh;
-      gap: 15px;
-      scroll-padding: 10px 0;
-      padding: 10px 0;
-    }
-
-    .game-card {
-      width: 90vw;
-      max-width: 400px;
-      padding: 15px;
-      flex-shrink: 0;
-      scroll-snap-align: start;
-      scroll-snap-stop: always;
-    }
-
-    .game-content {
+      grid-template-columns: 1fr;
       gap: 12px;
     }
 
-    .game-icon {
-      font-size: 36px;
-    }
-
-    .game-title {
-      font-size: 16px;
-      margin-bottom: 6px;
-    }
-
-    .game-description {
-      font-size: 13px;
-      margin-bottom: 6px;
-    }
-
-    .game-score {
-      font-size: 14px;
-      padding: 5px 10px;
+    .game-card {
+      padding: 14px;
     }
   }
 
-  /* Для очень маленьких экранов */
+  /* === Responsive: телефон === */
   @media (max-width: 480px) {
     .main-container {
       padding: 10px;
-    }
-
-    .grade-info-container {
-      flex-direction: column;
       gap: 10px;
-      padding: 10px;
     }
 
-    .grade-actions {
-      flex-wrap: wrap;
-      justify-content: center;
+    .hero-section {
+      gap: 8px;
     }
 
-    .coins-button {
-      padding: 0.3rem 0.6rem;
-      font-size: 12px;
+    .hero-top {
+      gap: 8px;
     }
 
-    .coins-icon {
+    .grade-badge {
+      width: 42px;
+      height: 42px;
+      border-radius: 12px;
+    }
+
+    .grade-badge-number {
       font-size: 18px;
     }
 
-    .coins-count {
-      font-size: 11px;
+    .grade-badge-label {
+      font-size: 8px;
     }
 
-    .grade-info {
-      align-items: center;
-    }
-
-    .grade-actions {
-      align-self: stretch;
-      justify-content: space-between;
-    }
-
-    .change-grade-button {
-      width: 100px;
-      max-width: 100px;
-    }
-
-    .scores-container {
-      gap: 8px;
-      margin-bottom: 12px;
-    }
-
-    .score-card-title {
-      min-width: 100px;
-      padding: 6px 10px;
-      font-size: 12px;
+    .icon-btn {
+      width: 40px;
+      height: 40px;
+      border-radius: 12px;
+      font-size: 20px;
     }
 
     .games-container {
-      height: 70vh;
-      gap: 12px;
-      width: 100%;
-      scroll-padding: 10px 0;
-      padding: 10px 0;
+      gap: 10px;
     }
 
     .game-card {
-      width: 100%;
-      max-width: none;
       padding: 12px;
-      flex-shrink: 0;
-      scroll-snap-align: start;
-      scroll-snap-stop: always;
+      border-radius: 14px;
     }
 
     .game-content {
@@ -1022,19 +792,15 @@
     }
 
     .game-title {
-      font-size: 16px;
-      margin-bottom: 6px;
+      font-size: 14px;
     }
 
     .game-description {
       font-size: 12px;
-      margin-bottom: 6px;
     }
 
     .game-score {
       font-size: 12px;
-      padding: 4px 8px;
     }
   }
-
-  </style>
+</style>

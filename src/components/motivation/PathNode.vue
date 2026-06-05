@@ -1,12 +1,13 @@
 <template>
   <div
     class="path-node"
-    :class="{
+    :class="[{
       'is-locked': node.locked,
       'is-completed': node.starCount === 3 && !node.locked,
       'is-current': isCurrent && !node.locked,
       'has-progress': node.starCount > 0 && node.starCount < 3 && !node.locked,
-    }"
+      'compact-node': compact
+    }]""
     @click="!node.locked && $emit('click', node)"
   >
     <!-- Иконка -->
@@ -43,6 +44,7 @@ import type { PathNode } from '@/types/motivation'
 defineProps<{
   node: PathNode
   isCurrent?: boolean
+  compact?: boolean
 }>()
 
 defineEmits<{
@@ -188,5 +190,34 @@ defineEmits<{
   .star {
     font-size: 12px;
   }
+}
+
+/* Compact variant */
+.path-node:has(> .node-icon-wrap[style*="30px"]) {
+  /* fallback — less relevant */
+}
+
+/* Compact через prop — добавим через :class в template */
+.path-node[data-compact="true"],
+.path-node.compact-node {
+  padding: 8px 10px;
+  gap: 8px;
+  min-width: 130px;
+  border-radius: 12px;
+}
+
+.compact-node .node-icon-wrap {
+  width: 30px;
+  height: 30px;
+  font-size: 16px;
+  border-radius: 8px;
+}
+
+.compact-node .node-title {
+  font-size: 11px;
+}
+
+.compact-node .star {
+  font-size: 11px;
 }
 </style>
