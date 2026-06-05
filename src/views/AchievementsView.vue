@@ -97,7 +97,15 @@ const totalCount = computed(() => achievementsStore.totalCount)
 const allAchievements = computed(() => {
   const achievements = achievementsStore.allAchievements
   // Фильтруем скрытые достижения, которые еще не разблокированы
-  return achievements.filter(a => a.category !== 'hidden' || a.unlocked)
+  const filtered = achievements.filter(a => a.category !== 'hidden' || a.unlocked)
+  // Сортируем: разблокированные первыми, затем по убыванию прогресса
+  return [...filtered].sort((a, b) => {
+    if (a.unlocked && !b.unlocked) return -1
+    if (!a.unlocked && b.unlocked) return 1
+    const aProgress = a.progress ?? 0
+    const bProgress = b.progress ?? 0
+    return bProgress - aProgress
+  })
 })
 
 const showAchievementDetails = (achievement: Achievement): void => {

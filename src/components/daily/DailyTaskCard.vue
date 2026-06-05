@@ -74,6 +74,13 @@ defineProps<Props>();
 .daily-task-card.completed {
   background: linear-gradient(135deg, #ecfdf5, #d1fae5);
   border-color: #86efac;
+  animation: task-complete-glow 1.5s ease-in-out;
+}
+
+@keyframes task-complete-glow {
+  0% { transform: scale(1); }
+  30% { transform: scale(1.03); box-shadow: 0 0 20px rgba(16, 185, 129, 0.4); }
+  100% { transform: scale(1); }
 }
 
 .daily-task-card.in-progress {

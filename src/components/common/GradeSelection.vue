@@ -135,6 +135,16 @@
   .grade-icon {
     font-size: clamp(40px, 8vw, 60px);
     margin-bottom: 10px;
+    animation: grade-bounce 2s ease-in-out infinite;
+  }
+
+  .grade-card:nth-child(2) .grade-icon { animation-delay: 0.2s; }
+  .grade-card:nth-child(3) .grade-icon { animation-delay: 0.4s; }
+  .grade-card:nth-child(4) .grade-icon { animation-delay: 0.6s; }
+
+  @keyframes grade-bounce {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-8px); }
   }
 
   .grade-name {

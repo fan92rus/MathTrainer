@@ -282,11 +282,12 @@ watch(() => props.problem.id, () => {
 }
 
 .answer-input {
-  width: clamp(80px, 20vw, 120px);
-  padding: 10px 16px;
+  width: clamp(100px, 25vw, 150px);
+  min-height: 52px;
+  padding: 12px 20px;
   border: 2px solid #ddd;
-  border-radius: 8px;
-  font-size: clamp(16px, 4vw, 24px);
+  border-radius: 12px;
+  font-size: clamp(20px, 5vw, 28px);
   text-align: center;
   transition: all 0.3s ease;
 }
@@ -404,9 +405,10 @@ watch(() => props.problem.id, () => {
   }
 
   .answer-input {
-    width: clamp(60px, 18vw, 80px);
-    padding: 8px 10px;
-    font-size: clamp(16px, 4vw, 20px);
+    width: clamp(90px, 22vw, 120px);
+    min-height: 48px;
+    padding: 10px 16px;
+    font-size: clamp(18px, 4.5vw, 24px);
   }
 
   .check-button {

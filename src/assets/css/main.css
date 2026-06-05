@@ -1,6 +1,49 @@
 /* Импорт CSS анимаций для пошагового вычитания */
 @import './subtraction-animations.css';
 
+/* === Design Tokens === */
+:root {
+  /* Primary palette */
+  --color-primary: #667eea;
+  --color-primary-dark: #764ba2;
+
+  /* Accent palette */
+  --color-accent-pink: #ff9a8b;
+  --color-accent-red: #ff6a88;
+  --color-accent-rose: #ff99ac;
+
+  /* Semantic colors */
+  --color-math: #5c6bc0;
+  --color-text: #333;
+  --color-text-secondary: #666;
+  --color-text-muted: #999;
+  --color-star-empty: #ddd;
+  --color-star-filled: #ffd700;
+  --color-total-score: #ff6b6b;
+  --color-score-orange: #ff9800;
+  --color-success: #4caf50;
+  --color-success-dark: #45a049;
+  --color-error: #f44336;
+
+  /* Backgrounds */
+  --color-bg: #ffffff;
+  --color-bg-light: #f8f9ff;
+  --color-bg-subtle: #f5f7ff;
+  --color-bg-accent: #e8ecff;
+  --color-border-light: #e0e6ff;
+  --color-progress-bg: #e0e0e0;
+
+  /* Border radius */
+  --radius-lg: 20px;
+  --radius-md: 15px;
+  --radius-sm: 12px;
+  --radius-xs: 4px;
+
+  /* Font */
+  --font-family: 'Rubik', sans-serif;
+}
+
+
 * {
   margin: 0;
   padding: 0;
@@ -8,8 +51,8 @@
 }
 
 body {
-  font-family: 'Rubik', sans-serif;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  font-family: var(--font-family);
+  background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-dark) 100%);
   min-height: 100vh;
   display: flex;
   justify-content: center;
@@ -28,8 +71,8 @@ body {
 }
 
 .game-container {
-  background-color: #ffffff;
-  border-radius: 20px;
+  background-color: var(--color-bg);
+  border-radius: var(--radius-lg);
   box-shadow: 0 15px 30px rgba(0, 0, 0, 0.15);
   padding: 20px;
   position: relative;
@@ -47,7 +90,7 @@ body {
   left: 0;
   right: 0;
   height: 6px;
-  background: linear-gradient(90deg, #ff9a8b, #ff6a88, #ff99ac);
+  background: linear-gradient(90deg, var(--color-accent-pink), var(--color-accent-red), var(--color-accent-rose));
 }
 
 .header {
@@ -59,9 +102,9 @@ body {
 .title {
   font-size: clamp(22px, 5vw, 32px);
   font-weight: 700;
-  color: #333;
+  color: var(--color-text);
   margin-bottom: 10px;
-  background: linear-gradient(135deg, #667eea, #764ba2);
+  background: linear-gradient(135deg, var(--color-primary), var(--color-primary-dark));
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -71,7 +114,7 @@ body {
   background: linear-gradient(135deg, #fbbf24, #f59e0b);
   color: white;
   padding: 6px 12px;
-  border-radius: 12px;
+  border-radius: var(--radius-sm);
   font-size: clamp(12px, 2.5vw, 14px);
   font-weight: 600;
   box-shadow: 0 2px 4px rgba(251, 191, 36, 0.3);
@@ -84,8 +127,8 @@ body {
   align-items: center;
   margin: 2px 0;
   padding: 10px;
-  background-color: #f8f9ff;
-  border-radius: 12px;
+  background-color: var(--color-bg-light);
+  border-radius: var(--radius-sm);
   flex-shrink: 0;
 }
 
@@ -99,40 +142,44 @@ body {
   flex-direction: column;
   align-items: center;
   padding: 5px 10px;
-  background-color: #f8f9ff;
+  background-color: var(--color-bg-light);
   border-radius: 10px;
   min-width: 80px;
 }
 
 .score-label {
   font-size: clamp(10px, 2vw, 12px);
-  color: #666;
+  color: var(--color-text-secondary);
   margin-bottom: 2px;
 }
 
 .score-value {
   font-size: clamp(18px, 4vw, 22px);
   font-weight: 700;
-  color: #333;
+  color: var(--color-text);
 }
 
 .total-score-value {
-  color: #667eea;
+  color: var(--color-primary);
 }
 
 .progress-info {
-  font-size: clamp(12px, 2.5vw, 14px);
-  color: #666;
+  font-size: clamp(14px, 3vw, 16px);
+  color: var(--color-text-secondary);
+  font-weight: 600;
+  background: var(--color-bg-light);
+  padding: 6px 16px;
+  border-radius: var(--radius-sm);
 }
 
 .math-expression {
   font-size: clamp(28px, 7vw, 42px);
   font-weight: 700;
-  color: #5c6bc0;
+  color: var(--color-math);
   margin: 15px 0;
   padding: 15px;
-  background: linear-gradient(135deg, #f5f7ff, #e8ecff);
-  border-radius: 15px;
+  background: linear-gradient(135deg, var(--color-bg-subtle), var(--color-bg-accent));
+  border-radius: var(--radius-md);
   text-align: center;
   box-shadow: 0 6px 12px rgba(92, 107, 192, 0.1);
   position: relative;
@@ -162,8 +209,8 @@ body {
 
 .progress-bar {
   height: 8px;
-  background-color: #e0e0e0;
-  border-radius: 4px;
+  background-color: var(--color-progress-bg);
+  border-radius: var(--radius-xs);
   margin: 15px 0;
   overflow: hidden;
   position: relative;
@@ -172,10 +219,10 @@ body {
 
 .progress {
   height: 100%;
-  background: linear-gradient(90deg, #667eea, #764ba2);
+  background: linear-gradient(90deg, var(--color-primary), var(--color-primary-dark));
   width: 0%;
   transition: width 0.5s ease;
-  border-radius: 4px;
+  border-radius: var(--radius-xs);
   position: relative;
 }
 
@@ -209,13 +256,13 @@ body {
 
 .star {
   font-size: clamp(24px, 5vw, 36px);
-  color: #ddd;
+  color: var(--color-star-empty);
   transition: all 0.3s ease;
   filter: grayscale(1);
 }
 
 .star.filled {
-  color: #ffd700;
+  color: var(--color-star-filled);
   filter: grayscale(0);
   animation: star-pop 0.5s ease;
 }
@@ -237,18 +284,16 @@ body {
   grid-template-columns: repeat(2, 1fr);
   gap: 10px;
   margin: 20px 0;
-  flex: 1;
-  min-height: 0;
 }
 
 .option-card {
   padding: 12px;
-  background: linear-gradient(135deg, #ffffff, #f8f9ff);
-  border: 2px solid #e0e6ff;
-  border-radius: 12px;
+  background: linear-gradient(135deg, var(--color-bg), var(--color-bg-light));
+  border: 2px solid var(--color-border-light);
+  border-radius: var(--radius-sm);
   font-size: clamp(16px, 4vw, 22px);
   font-weight: 500;
-  color: #333;
+  color: var(--color-text);
   cursor: pointer;
   transition: all 0.3s ease;
   display: flex;
@@ -273,7 +318,7 @@ body {
 .option-card:hover:not(.disabled) {
   transform: translateY(-3px) scale(1.02);
   box-shadow: 0 6px 12px rgba(102, 126, 234, 0.2);
-  border-color: #667eea;
+  border-color: var(--color-primary);
 }
 
 .option-card:hover:not(.disabled)::before {
@@ -282,13 +327,13 @@ body {
 
 .option-card.correct {
   background: linear-gradient(135deg, #e8f5e9, #c8e6c9);
-  border-color: #4caf50;
+  border-color: var(--color-success);
   animation: correct-pulse 0.6s ease;
 }
 
 .option-card.incorrect {
   background: linear-gradient(135deg, #ffebee, #ffcdd2);
-  border-color: #f44336;
+  border-color: var(--color-error);
   animation: incorrect-shake 0.6s ease;
 }
 
@@ -333,10 +378,10 @@ body {
   align-items: center;
   gap: 4px;
   padding: 8px 15px;
-  background: linear-gradient(135deg, #667eea, #764ba2);
+  background: linear-gradient(135deg, var(--color-primary), var(--color-primary-dark));
   color: white;
   border: none;
-  border-radius: 20px;
+  border-radius: var(--radius-lg);
   font-size: clamp(12px, 2.5vw, 14px);
   font-weight: 600;
   cursor: pointer;
@@ -374,7 +419,7 @@ body {
 .game-over h1 {
   font-size: clamp(26px, 5vw, 40px);
   margin-bottom: 20px;
-  background: linear-gradient(135deg, #667eea, #764ba2);
+  background: linear-gradient(135deg, var(--color-primary), var(--color-primary-dark));
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -383,17 +428,17 @@ body {
 .final-score {
   font-size: clamp(20px, 3.5vw, 28px);
   margin: 20px 0;
-  color: #333;
+  color: var(--color-text);
 }
 
 .final-score-number {
   font-size: clamp(32px, 6vw, 48px);
   font-weight: 700;
-  color: #667eea;
+  color: var(--color-primary);
 }
 
 .total-score-number {
-  color: #ff6b6b;
+  color: var(--color-total-score);
 }
 
 .score-summary {
@@ -408,17 +453,17 @@ body {
   flex-direction: column;
   align-items: center;
   padding: 10px 20px;
-  background-color: #f8f9ff;
-  border-radius: 15px;
+  background-color: var(--color-bg-light);
+  border-radius: var(--radius-md);
   min-width: 120px;
 }
 
 .achievement {
   display: inline-block;
   padding: 8px 16px;
-  background: linear-gradient(135deg, #ffd700, #ffb300);
+  background: linear-gradient(135deg, var(--color-star-filled), #ffb300);
   color: white;
-  border-radius: 20px;
+  border-radius: var(--radius-lg);
   font-weight: 600;
   margin: 8px 4px;
   box-shadow: 0 3px 6px rgba(255, 179, 0, 0.3);
@@ -428,12 +473,13 @@ body {
 /* Класс для внутреннего контейнера игры (новые компоненты) */
 
 /* Общий заголовок для View компонентов */
+/* Заголовок для View компонентов (переопределяет базовый .title) */
 .title {
   text-align: center;
   margin: 16px 0;
   font-size: clamp(18px, 4vw, 24px);
   font-weight: 600;
-  color: #333;
+  color: var(--color-text);
 }
 
 /* Header структура для View компонентов */
@@ -455,7 +501,9 @@ body {
   gap: 16px;
   padding: 16px;
   width: 100%;
-  height: 100%;
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
 }
 
 .game-container-inner > * {
@@ -472,6 +520,18 @@ body {
   gap: 12px;
   width: 100%;
   max-width: 600px;
+}
+
+/* Элементы внутри футера занимают всю ширину */
+.game-container-footer > * {
+  width: 100%;
+  max-width: 100%;
+}
+
+/* Убираем лишние margins у progress-bar и stars-container внутри футера */
+.game-container-footer .progress-bar,
+.game-container-footer .stars-container {
+  margin: 0;
 }
 
 /* Адаптивность для game-container-inner */
@@ -498,7 +558,7 @@ body {
     width: 100%;
     max-width: 100%;
     padding: 15px;
-    border-radius: 15px;
+    border-radius: var(--radius-md);
     max-height: 98vh;
   }
 }
@@ -507,7 +567,7 @@ body {
 @media (max-width: 768px) {
   .game-container {
     padding: 15px;
-    border-radius: 15px;
+    border-radius: var(--radius-md);
     max-height: 98vh;
   }
 
@@ -734,28 +794,106 @@ body {
 
 /* Для планшетов в альбомной ориентации */
 @media (max-height: 600px) and (orientation: landscape) {
+  .app-container {
+    padding: 2px;
+  }
+
   .game-container {
-    padding: 10px;
+    padding: 8px;
+    max-height: 99vh;
+    border-radius: 10px;
+  }
+
+  .game-container::before {
+    height: 3px;
   }
 
   .header {
-    margin-bottom: 20px;
+    margin-bottom: 4px;
+  }
+
+  .title {
+    display: none;
   }
 
   .math-expression {
-    margin: 10px 0;
-    padding: 10px;
+    margin: 6px 0;
+    padding: 8px;
+    font-size: clamp(20px, 5vw, 28px);
   }
 
   .progress-bar {
-    margin: 10px 0;
+    margin: 6px 0;
+    height: 5px;
   }
 
   .stars-container {
-    margin: 10px 0;
+    margin: 6px 0;
+    gap: 6px;
+  }
+
+  .star {
+    font-size: 18px;
   }
 
   .options-grid {
-    margin: 15px 0;
+    margin: 8px 0;
+    gap: 6px;
+  }
+
+  .option-card {
+    min-height: 44px;
+    padding: 6px;
+  }
+
+  .stats-bar {
+    padding: 4px 8px;
+    margin: 2px 0;
+  }
+
+  .back-button {
+    padding: 4px 10px;
+    font-size: 11px;
+  }
+}
+
+/* === P2: Micro-interactions === */
+
+/* Active state для всех кнопок */
+button:active:not(:disabled) {
+  transform: scale(0.96);
+  transition: transform 0.1s ease;
+}
+
+/* Ripple-подобный эффект на option-card */
+.option-card:active:not(.disabled) {
+  transform: scale(0.97);
+}
+
+/* Game card active */
+.game-card:active {
+  transform: translateY(-4px) scale(0.98);
+}
+
+/* Grade card active */
+.grade-card:active {
+  transform: scale(0.95);
+}
+
+/* === P2: Dark mode foundation === */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --color-primary: #818cf8;
+    --color-primary-dark: #a78bfa;
+    --color-text: #e2e8f0;
+    --color-text-secondary: #94a3b8;
+    --color-text-muted: #64748b;
+    --color-bg: #1e293b;
+    --color-bg-light: #334155;
+    --color-bg-subtle: #1e293b;
+    --color-bg-accent: #334155;
+    --color-border-light: #475569;
+    --color-progress-bg: #475569;
+    --color-star-empty: #475569;
   }
 }

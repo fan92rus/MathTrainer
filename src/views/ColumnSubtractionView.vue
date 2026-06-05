@@ -37,6 +37,7 @@
             :show-skip-button="false"
             :auto-advance="true"
             @complete="handleInteractiveComplete"
+            @error="handleInteractiveError"
           />
         </div>
 
@@ -51,9 +52,10 @@
           <p>Переход к следующему примеру...</p>
         </div>
 
-        <ProgressBar :progress-percent="game.progressPercent.value" />
-
-        <StarRating :score="game.score.value" />
+        <div class="game-container-footer">
+          <ProgressBar :progress-percent="game.progressPercent.value" />
+          <StarRating :score="game.score.value" />
+        </div>
       </div>
 
       <GameOver
@@ -75,6 +77,7 @@ import { useScoresStore } from '@/store/scores';
 import { useGameLogic } from '@/composables/useGameLogic';
 import { useCoins } from '@/composables/useCoins';
 import { generateColumnSubtractionProblem, TRAINING_QUESTIONS_COUNT } from '@/utils/math/columnSubtraction';
+import { calculateExercisePoints } from '@/utils/gradeHelpers';
 import type { ColumnSubtractionProblem } from '@/types';
 import InteractiveSubtraction from '@/components/columnSubtraction/InteractiveSubtraction.vue';
 import ScoreDisplay from '@/components/common/ScoreDisplay.vue';
@@ -201,23 +204,42 @@ export default {
       const isCorrect = result === problem.correctAnswer;
 
       if (isCorrect) {
-        // Правильный ответ - даём очки
-        const points = 10;
+        // Инициализируем счётчик ошибок для текущего вопроса
+        if (game.errorsPerQuestion.value.length <= game.currentQuestion.value) {
+          game.errorsPerQuestion.value[game.currentQuestion.value] = 0;
+        }
+
+        const errors = game.errorsPerQuestion.value[game.currentQuestion.value] || 0;
+        const points = calculateExercisePoints(errors);
+
+        // Обновляем счёт игры (звёзды)
+        game.score.value += points;
+        game.correctAnswers.value++;
+        game.totalAnswers.value++;
+        game.answered.value = true;
+        game.selectedIndex.value = problem.correctIndex;
+
+        // Обновляем общий счёт в store
         scoresStore.updateColumnSubtractionScore(points);
 
         // Выдаем монетки за правильный ответ
-        awardCoins('columnSubtraction', game.currentLevel.value, 0);
+        awardCoins('columnSubtraction', game.currentLevel.value, errors);
 
-        game.answered.value = true;
-
-        // Пауза 2.5 секунды для показа сообщения, затем следующий пример
-        // InteractiveSubtraction уже ждёт 2 секунды перед emit complete
+        // Пауза перед следующим примером
         setTimeout(() => {
           if (game.currentQuestion.value < TRAINING_QUESTIONS_COUNT - 1) {
             game.nextQuestion();
           }
         }, 500);
       }
+    }
+
+    function handleInteractiveError(_step: unknown, errorCount: number) {
+      // Обновляем счётчик ошибок для текущего вопроса
+      if (game.errorsPerQuestion.value.length <= game.currentQuestion.value) {
+        game.errorsPerQuestion.value[game.currentQuestion.value] = 0;
+      }
+      game.errorsPerQuestion.value[game.currentQuestion.value] = errorCount;
     }
 
     // Сохраняем результат при завершении игры
@@ -240,7 +262,8 @@ export default {
       goBack,
       goHome,
       restartTraining,
-      handleInteractiveComplete
+      handleInteractiveComplete,
+      handleInteractiveError
     };
   }
 };

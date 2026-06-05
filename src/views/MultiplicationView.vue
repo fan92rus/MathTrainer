@@ -8,7 +8,7 @@
     />
 
     <div class="game-container">
-      <div class="main-container">
+      <div v-if="!showGameOver" class="game-container-inner">
         <div class="header-container">
           <button class="back-button" @click="goBack">← Назад</button>
           <div style="display: flex; align-items: center; gap: 20px;">
@@ -20,40 +20,40 @@
           </div>
         </div>
 
-        <div class="game-area" v-if="!showGameOver">
-          <div class="level-info">
-            <div class="current-level">Таблица умножения (доступно до {{ maxMultiplier }})</div>
-            <div class="progress-info">
-              <span>Следующий уровень через: {{ pointsToNextLevel }} очков</span>
-            </div>
+        <div class="level-info">
+          <div class="current-level">Таблица умножения (доступно до {{ maxMultiplier }})</div>
+          <div class="progress-info">
+            <span>Следующий уровень через: {{ pointsToNextLevel }} очков</span>
           </div>
+        </div>
 
-          <div class="problem-container" v-if="currentProblem">
-            <div class="problem-expression">{{ currentProblem.expression }} = ?</div>
-            <div class="options-container">
-              <button
-                v-for="(option, index) in currentProblem.options"
-                :key="index"
-                class="option-button"
-                :class="{
-                  correct: selectedAnswer === index && index === currentProblem.correctIndex,
-                  incorrect: selectedAnswer === index && index !== currentProblem.correctIndex
-                }"
-                @click="checkAnswer(index)"
-                :disabled="isCorrect"
-              >
-                {{ option }}
-              </button>
-            </div>
-            <div
-              v-if="showFeedback"
-              class="feedback"
-              :class="{ 'correct-feedback': isCorrect, 'incorrect-feedback': !isCorrect }"
+        <div class="problem-container" v-if="currentProblem">
+          <div class="problem-expression">{{ currentProblem.expression }} = ?</div>
+          <div class="options-grid">
+            <button
+              v-for="(option, index) in currentProblem.options"
+              :key="index"
+              class="option-card"
+              :class="{
+                correct: selectedAnswer === index && index === currentProblem.correctIndex,
+                incorrect: selectedAnswer === index && index !== currentProblem.correctIndex
+              }"
+              @click="checkAnswer(index)"
+              :disabled="isCorrect"
             >
-              {{ isCorrect ? 'Правильно! 🎉' : 'Неправильно! Попробуйте еще раз.' }}
-            </div>
+              {{ option }}
+            </button>
           </div>
+          <div
+            v-if="showFeedback"
+            class="feedback"
+            :class="{ 'correct-feedback': isCorrect, 'incorrect-feedback': !isCorrect }"
+          >
+            {{ isCorrect ? 'Правильно! 🎉' : 'Неправильно! Попробуйте еще раз.' }}
+          </div>
+        </div>
 
+        <div class="game-container-footer">
           <div class="progress-container">
             <div class="progress-info">
               <span>Правильных ответов: {{ correctAnswers }}</span>
@@ -69,16 +69,16 @@
             </div>
           </div>
         </div>
-
-        <GameOver
-          v-else
-          :correct-answers="correctAnswers"
-          :total-answers="totalAnswers"
-          :score="scoreGained"
-          @restart="restartGame"
-          @exit="goBack"
-        />
       </div>
+
+      <GameOver
+        v-else
+        :correct-answers="correctAnswers"
+        :total-answers="totalAnswers"
+        :score="scoreGained"
+        @restart="restartGame"
+        @exit="goBack"
+      />
     </div>
   </div>
 </template>
@@ -280,17 +280,6 @@
 </script>
 
 <style scoped>
-  .main-container {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    padding: 20px;
-    flex: 1;
-    width: 100%;
-    max-width: 800px;
-    margin: 0 auto;
-  }
-
   .header-container {
     display: flex;
     justify-content: space-between;
@@ -319,13 +308,6 @@
     font-weight: 600;
     color: #333;
     font-weight: 600;
-  }
-
-  .game-area {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    width: 100%;
   }
 
   .level-info {
@@ -371,43 +353,17 @@
     margin-bottom: 30px;
   }
 
-  .options-container {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 15px;
-    margin-bottom: 20px;
-  }
-
-  .option-button {
-    background: linear-gradient(135deg, #f8f9ff, #ffffff);
-    border: 2px solid #e0e0e0;
-    border-radius: 15px;
-    padding: 15px;
-    font-size: 20px;
-    font-weight: 600;
-    color: #333;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    box-shadow: 0 3px 8px rgba(0, 0, 0, 0.1);
-  }
-
-  .option-button:hover:not(:disabled) {
-    transform: translateY(-3px);
-    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
-    border-color: #667eea;
-  }
-
   .option-button:disabled {
     cursor: not-allowed;
   }
 
-  .option-button.correct {
+  .option-card.correct {
     background: linear-gradient(135deg, #4caf50, #45a049);
     color: white;
     border-color: #4caf50;
   }
 
-  .option-button.incorrect {
+  .option-card.incorrect {
     background: linear-gradient(135deg, #ff6b6b, #ee5a24);
     color: white;
     border-color: #ff6b6b;
@@ -451,7 +407,6 @@
 
   .progress-container {
     width: 100%;
-    max-width: 500px;
   }
 
   .progress-info {
@@ -476,10 +431,6 @@
   }
 
   @media (max-width: 768px) {
-    .main-container {
-      padding: 15px;
-    }
-
     .header-container {
       margin-bottom: 15px;
     }
@@ -497,11 +448,11 @@
       margin-bottom: 20px;
     }
 
-    .options-container {
+    .options-grid {
       gap: 10px;
     }
 
-    .option-button {
+    .option-card {
       padding: 12px;
       font-size: 18px;
     }
@@ -512,10 +463,6 @@
   }
 
   @media (max-width: 480px) {
-    .main-container {
-      padding: 10px;
-    }
-
     .problem-container {
       padding: 15px;
     }
@@ -524,7 +471,7 @@
       font-size: 24px;
     }
 
-    .options-container {
+    .options-grid {
       grid-template-columns: 1fr;
     }
   }

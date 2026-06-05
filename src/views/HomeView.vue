@@ -34,8 +34,7 @@
         <div class="games-container">
           <div
             v-if="availableExercises.firstGradeDecomposition.available"
-            class="game-card"
-            @click="goToFirstGradeDecomposition"
+            class="game-card game-card--counting""
           >
             <div class="game-content">
               <div class="game-icon">🔢</div>
@@ -50,8 +49,7 @@
           </div>
           <div
             v-if="availableExercises.decomposition.available"
-            class="game-card"
-            @click="goToDecomposition"
+            class="game-card game-card--decomposition""
           >
             <div class="game-content">
               <div class="game-icon">➕</div>
@@ -64,7 +62,7 @@
               </div>
             </div>
           </div>
-          <div v-if="availableExercises.counting.available" class="game-card" @click="goToCounting">
+          <div v-if="availableExercises.counting.available" class="game-card game-card--counting" @click="goToCounting">
             <div class="game-content">
               <div class="game-icon">🔢</div>
               <div class="game-info">
@@ -76,7 +74,7 @@
           </div>
           <div
             v-if="availableExercises.multiplication.available"
-            class="game-card"
+            class="game-card game-card--multiplication"
             @click="goToMultiplication"
           >
             <div class="game-content">
@@ -106,7 +104,7 @@
           </div>
           <div
             v-if="availableExercises.columnSubtraction.available"
-            class="game-card"
+            class="game-card game-card--column"
             @click="goToColumnSubtraction"
           >
             <div class="game-content">
@@ -120,7 +118,7 @@
           </div>
           <div
             v-if="availableExercises.equationsWholePart.available"
-            class="game-card"
+            class="game-card game-card--equations"
             @click="goToEquationsWholePart"
           >
             <div class="game-content">
@@ -787,7 +785,7 @@
     display: flex;
     flex-direction: column;
     gap: 20px;
-    height: 70vh;
+    max-height: 70vh;
     overflow-y: auto;
     scroll-snap-type: y mandatory;
     scroll-behavior: smooth;
@@ -836,13 +834,30 @@
     top: 0;
     left: 0;
     right: 0;
-    height: 5px;
+    height: 6px;
     background: linear-gradient(90deg, #ff9a8b, #ff6a88, #ff99ac);
   }
 
   .game-card:hover {
     transform: translateY(-10px);
     box-shadow: 0 15px 30px rgba(0, 0, 0, 0.15);
+  }
+
+  /* Color-coded top bars for exercise types */
+  .game-card--counting::before {
+    background: linear-gradient(90deg, #4fc3f7, #29b6f6, #03a9f4);
+  }
+  .game-card--decomposition::before {
+    background: linear-gradient(90deg, #ff9a8b, #ff6a88, #ff99ac);
+  }
+  .game-card--multiplication::before {
+    background: linear-gradient(90deg, #ff7043, #f4511e, #e64a19);
+  }
+  .game-card--column::before {
+    background: linear-gradient(90deg, #ffb74d, #ffa726, #ff9800);
+  }
+  .game-card--equations::before {
+    background: linear-gradient(90deg, #81c784, #66bb6a, #4caf50);
   }
 
   .game-content {

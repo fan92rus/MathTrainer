@@ -288,8 +288,8 @@ watch(() => props.currentStep, (newStep) => {
 }
 
 .digit {
-  width: clamp(36px, 8vw, 52px);
-  height: clamp(36px, 8vw, 52px);
+  width: clamp(44px, 10vw, 60px);
+  height: clamp(44px, 10vw, 60px);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -304,6 +304,7 @@ watch(() => props.currentStep, (newStep) => {
 .digit.clickable {
   cursor: pointer;
   border-radius: 8px;
+  padding: 8px;
   animation: pulse-glow 1.5s infinite;
 }
 
@@ -425,7 +426,7 @@ watch(() => props.currentStep, (newStep) => {
 /* Поле ввода для цифры */
 .digit-input {
   width: 100%;
-  height: clamp(36px, 8vw, 52px);
+  height: clamp(44px, 10vw, 60px);
   text-align: center;
   font-size: clamp(22px, 6vw, 32px);
   font-weight: 600;
@@ -469,7 +470,7 @@ watch(() => props.currentStep, (newStep) => {
 /* Отображение введённого значения когда ответ правильный */
 .result-value {
   width: 100%;
-  height: clamp(36px, 8vw, 52px);
+  height: clamp(44px, 10vw, 60px);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -492,8 +493,8 @@ watch(() => props.currentStep, (newStep) => {
   }
 
   .digit {
-    width: clamp(32px, 8vw, 44px);
-    height: clamp(32px, 8vw, 44px);
+    width: clamp(40px, 10vw, 52px);
+    height: clamp(40px, 10vw, 52px);
     font-size: clamp(20px, 5vw, 28px);
   }
 

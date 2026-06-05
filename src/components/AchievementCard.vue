@@ -237,7 +237,7 @@ const handleClick = (): void => {
 
 .progress-bar {
   width: 100%;
-  height: 6px;
+  height: 10px;
   background: linear-gradient(90deg, #e2e8f0, #cbd5e1);
   border-radius: 4px;
   overflow: hidden;
