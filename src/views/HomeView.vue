@@ -29,6 +29,10 @@
           @streakClick="goToAchievements"
           @achievementsClick="goToAchievements"
         />
+        <ProgressPath
+          v-if="isGradeSelected"
+          class="home-progress-path"
+        />
         <div class="games-container">
           <div
             v-if="availableExercises.firstGradeDecomposition.available"
@@ -151,6 +155,7 @@
   import { usePlayerStore } from '../store/player';
   import { useDailyTasks } from '@/composables/useDailyTasks';
   import MotivationBar from '@/components/motivation/MotivationBar.vue';
+  import ProgressPath from '@/components/motivation/ProgressPath.vue';
 
   export default {
     name: 'HomeView',
