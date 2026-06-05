@@ -1,9 +1,9 @@
 <template>
   <div class="motivation-bar">
-    <!-- Стрик -->
-    <button class="motivation-item streak-item" @click="$emit('streakClick')">
+    <!-- Стрик (информационный, без перехода) -->
+    <div class="motivation-item streak-item">
       <StreakCounter :streak="currentStreak" />
-    </button>
+    </div>
 
     <!-- Очки -->
     <div class="motivation-item points-item">
@@ -32,7 +32,6 @@ import { useScoresStore } from '@/store/scores'
 import { useAchievementsStore } from '@/store/achievements'
 
 defineEmits<{
-  streakClick: []
   achievementsClick: []
 }>()
 

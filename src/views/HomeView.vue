@@ -11,7 +11,6 @@
               <span class="grade-badge-label">класс</span>
             </div>
             <MotivationBar
-              @streakClick="goToAchievements"
               @achievementsClick="goToAchievements"
             />
             <div class="hero-actions">
