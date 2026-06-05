@@ -16,7 +16,6 @@ import EquationsWholePartLearningView from '@/views/EquationsWholePartLearningVi
 import EquationsWholePartDiagnosticView from '@/views/EquationsWholePartDiagnosticView.vue';
 import AchievementsView from '@/views/AchievementsView.vue';
 import DailyTasksView from '@/views/DailyTasksView.vue';
-import CityView from '@/views/CityView.vue';
 import { useSettingsStore } from '@/store/settings';
 import { getAvailableExercises } from '@/utils/gradeHelpers';
 
@@ -107,11 +106,6 @@ const routes: Array<RouteRecordRaw> = [
     path: '/daily-tasks',
     name: 'daily-tasks',
     component: DailyTasksView
-  },
-  {
-    path: '/city',
-    name: 'city',
-    component: CityView
   }
 ];
 

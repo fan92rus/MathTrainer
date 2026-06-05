@@ -18,13 +18,6 @@
               <span class="daily-tasks-icon">📅</span>
               <span v-if="hasUncompletedTasks" class="pending-tasks-count">{{ uncompletedTasksCount }}</span>
             </button>
-            <button class="crystals-button" v-if="false" @click="goToCity" title="Кристаллы">
-              <span class="crystals-icon">💎</span>
-              <span class="crystals-count">{{ formatNumber(crystals) }}</span>
-            </button>
-            <button class="city-button" style="display: none !important;" @click="goToCity" title="Мой город">
-              <span class="city-icon">🏙️</span>
-            </button>
             <div title="Монетки">
               <span class="coins-icon">🪙</span>
             <span class="coins-count">{{ formatNumber(coins) }}</span>
@@ -358,10 +351,6 @@
         router.push('/achievements');
       };
 
-      const goToCity = () => {
-        router.push('/city');
-      };
-
       const goToDailyTasks = () => {
         router.push('/daily-tasks');
       };
@@ -379,7 +368,6 @@
 
       // Вычисляемые свойства для монеток и ежедневных заданий
       const coins = computed(() => playerStore.currency.coins);
-      const crystals = computed(() => playerStore.currency.crystals);
 
       const hasUncompletedTasks = computed(() => {
         return dailyTasks.value.some(task => !task.completed);
@@ -438,7 +426,6 @@
         hasNewAchievements,
         newAchievementsCount,
         coins,
-        crystals,
         hasUncompletedTasks,
         uncompletedTasksCount,
         formatNumber,
@@ -450,7 +437,6 @@
         goToColumnSubtraction,
         goToEquationsWholePart,
         goToAchievements,
-        goToCity,
         goToDailyTasks,
         changeGrade
       };
@@ -534,33 +520,6 @@
     font-size: 24px;
   }
 
-  .city-button {
-    background: linear-gradient(135deg, #FF9800, #F57C00);
-    color: white;
-    border: none;
-    border-radius: 50%;
-    width: 48px;
-    height: 48px;
-    font-size: 14px;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    box-shadow: 0 3px 8px rgba(255, 152, 0, 0.3);
-    display: none;
-    align-items: center;
-    justify-content: center;
-    flex-shrink: 0;
-  }
-
-  .city-button:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 5px 12px rgba(255, 152, 0, 0.4);
-  }
-
-  .city-icon {
-    font-size: 24px;
-  }
-
   .daily-tasks-button {
     background: linear-gradient(135deg, #8b5cf6, #7c3aed);
     color: white;
@@ -640,47 +599,6 @@
   }
 
   .coins-count {
-    font-size: 14px;
-    font-weight: bold;
-    line-height: 1;
-    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
-  }
-
-  .crystals-button {
-    background: linear-gradient(135deg, #818cf8, #6366f1, #4f46e5);
-    color: white;
-    border: none;
-    border-radius: 2rem;
-    padding: 0.5rem 1rem;
-    font-size: 14px;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    box-shadow: 0 4px 6px rgba(129, 140, 248, 0.3), inset 0 -2px 4px rgba(0, 0, 0, 0.1);
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    position: relative;
-    flex-shrink: 0;
-  }
-
-  .crystals-button:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 6px 12px rgba(129, 140, 248, 0.4), inset 0 -2px 4px rgba(0, 0, 0, 0.1);
-  }
-
-  .crystals-button:active {
-    transform: translateY(0);
-    box-shadow: 0 2px 4px rgba(129, 140, 248, 0.3), inset 0 1px 2px rgba(0, 0, 0, 0.2);
-  }
-
-  .crystals-icon {
-    font-size: 24px;
-    line-height: 1;
-    filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.2));
-  }
-
-  .crystals-count {
     font-size: 14px;
     font-weight: bold;
     line-height: 1;
@@ -912,19 +830,16 @@
       padding: 15px;
     }
 
-    .coins-button,
-    .crystals-button {
+    .coins-button {
       padding: 0.4rem 0.8rem;
       font-size: 13px;
     }
 
-    .coins-icon,
-    .crystals-icon {
+    .coins-icon {
       font-size: 20px;
     }
 
-    .coins-count,
-    .crystals-count {
+    .coins-count {
       font-size: 12px;
     }
 
@@ -1030,19 +945,16 @@
       justify-content: center;
     }
 
-    .coins-button,
-    .crystals-button {
+    .coins-button {
       padding: 0.3rem 0.6rem;
       font-size: 12px;
     }
 
-    .coins-icon,
-    .crystals-icon {
+    .coins-icon {
       font-size: 18px;
     }
 
-    .coins-count,
-    .crystals-count {
+    .coins-count {
       font-size: 11px;
     }
 

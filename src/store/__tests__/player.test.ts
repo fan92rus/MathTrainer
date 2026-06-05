@@ -42,15 +42,13 @@ describe('Player Store', () => {
       expect(playerStore.player.experience).toBeLessThan(playerStore.player.experienceToNext);
     });
 
-    it('should unlock buildings on level up', () => {
+    it('should increase level without building logic', () => {
       playerStore.player.level = 1;
-      const initialBuildings = playerStore.player.unlockedBuildings.length;
-
-      // Повышаем уровень до 2
       playerStore.player.experience = playerStore.player.experienceToNext;
       playerStore.addExperience(1);
 
-      expect(playerStore.player.unlockedBuildings.length).toBeGreaterThan(initialBuildings);
+      expect(playerStore.player.level).toBe(2);
+      expect(playerStore.player.experience).toBeLessThan(playerStore.player.experienceToNext);
     });
   });
 
@@ -107,15 +105,7 @@ describe('Player Store', () => {
     });
   });
 
-  describe('isBuildingUnlocked', () => {
-    it('should return true for unlocked building', () => {
-      expect(playerStore.isBuildingUnlocked('small_house')).toBe(true);
-    });
 
-    it('should return false for locked building', () => {
-      expect(playerStore.isBuildingUnlocked('shop')).toBe(false);
-    });
-  });
 
   describe('resetProgress', () => {
     it('should reset all progress', () => {

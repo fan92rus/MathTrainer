@@ -9,8 +9,6 @@ export const usePlayerStore = defineStore('player', () => {
     experience: 0,
     experienceToNext: 100,
     totalCoinsEarned: 0,
-    cityLevel: 1,
-    unlockedBuildings: ['small_house'], // Базовый домик разблокирован
   });
 
   // Валюта
@@ -31,9 +29,6 @@ export const usePlayerStore = defineStore('player', () => {
       player.value.experience -= player.value.experienceToNext;
       player.value.level++;
       player.value.experienceToNext = Math.floor(player.value.experienceToNext * 1.5);
-
-      // Разблокировка новых зданий при повышении уровня
-      unlockBuildingsForLevel(player.value.level);
     }
   };
 
@@ -55,33 +50,6 @@ export const usePlayerStore = defineStore('player', () => {
   // Добавить кристаллы
   const addCrystals = (amount: number) => {
     currency.value.crystals += amount;
-  };
-
-  // Разблокировать здания для уровня
-  const unlockBuildingsForLevel = (level: number) => {
-    const unlockedAtLevel = {
-      1: ['small_house'],
-      2: ['cottage', 'park'],
-      3: ['shop'],
-      4: ['hospital', 'playground'],
-      5: ['school'],
-      6: ['apartment'],
-    };
-
-    Object.entries(unlockedAtLevel).forEach(([lvl, buildings]) => {
-      if (level >= parseInt(lvl)) {
-        buildings.forEach(buildingId => {
-          if (!player.value.unlockedBuildings.includes(buildingId)) {
-            player.value.unlockedBuildings.push(buildingId);
-          }
-        });
-      }
-    });
-  };
-
-  // Проверить разблокировано ли здание
-  const isBuildingUnlocked = (buildingId: string): boolean => {
-    return player.value.unlockedBuildings.includes(buildingId);
   };
 
   // Проверить ежедневный бонус
@@ -106,8 +74,6 @@ export const usePlayerStore = defineStore('player', () => {
       coins: currency.value.coins,
       crystals: currency.value.crystals,
       totalCoinsEarned: player.value.totalCoinsEarned,
-      cityLevel: player.value.cityLevel,
-      unlockedBuildingsCount: player.value.unlockedBuildings.length,
     };
   };
 
@@ -118,8 +84,6 @@ export const usePlayerStore = defineStore('player', () => {
       experience: 0,
       experienceToNext: 100,
       totalCoinsEarned: 0,
-      cityLevel: 1,
-      unlockedBuildings: ['small_house'],
     };
 
     currency.value = {
@@ -138,7 +102,6 @@ export const usePlayerStore = defineStore('player', () => {
     addCoins,
     spendCoins,
     addCrystals,
-    isBuildingUnlocked,
     checkDailyBonus,
     getPlayerStats,
     resetProgress,
