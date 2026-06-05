@@ -57,7 +57,7 @@ interface Props {
   showCompletionReward?: boolean;
 }
 
-const props = withDefaults(defineProps<Props>(), {
+withDefaults(defineProps<Props>(), {
   showDayProgress: true,
   showDate: true,
   showCompletionReward: true,

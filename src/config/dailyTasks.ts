@@ -31,8 +31,8 @@ export const DAILY_TASKS_CONFIG: DailyTaskConfig[] = [
     reward: { coins: 6, experience: 12 },
     priority: 1,
     required: true,
-    grade: EXERCISE_AVAILABILITY.counting.grades,
-    quarter: EXERCISE_AVAILABILITY.counting.quarters,
+    grade: EXERCISE_AVAILABILITY.counting!.grades,
+    quarter: EXERCISE_AVAILABILITY.counting!.quarters,
   },
   {
     id: 'counting_5',
@@ -43,8 +43,8 @@ export const DAILY_TASKS_CONFIG: DailyTaskConfig[] = [
     reward: { coins: 10, experience: 20 },
     priority: 2,
     required: true,
-    grade: EXERCISE_AVAILABILITY.counting.grades,
-    quarter: EXERCISE_AVAILABILITY.counting.quarters,
+    grade: EXERCISE_AVAILABILITY.counting!.grades,
+    quarter: EXERCISE_AVAILABILITY.counting!.quarters,
   },
 
   // ============================================
@@ -59,8 +59,8 @@ export const DAILY_TASKS_CONFIG: DailyTaskConfig[] = [
     reward: { coins: 5, experience: 10 },
     priority: 3,
     required: false,
-    grade: EXERCISE_AVAILABILITY.firstGradeDecomposition.grades,
-    quarter: EXERCISE_AVAILABILITY.firstGradeDecomposition.quarters,
+    grade: EXERCISE_AVAILABILITY.firstGradeDecomposition!.grades,
+    quarter: EXERCISE_AVAILABILITY.firstGradeDecomposition!.quarters,
   },
   {
     id: 'decomposition_easy_5',
@@ -71,8 +71,8 @@ export const DAILY_TASKS_CONFIG: DailyTaskConfig[] = [
     reward: { coins: 10, experience: 20 },
     priority: 4,
     required: false,
-    grade: EXERCISE_AVAILABILITY.firstGradeDecomposition.grades,
-    quarter: EXERCISE_AVAILABILITY.firstGradeDecomposition.quarters,
+    grade: EXERCISE_AVAILABILITY.firstGradeDecomposition!.grades,
+    quarter: EXERCISE_AVAILABILITY.firstGradeDecomposition!.quarters,
   },
 
   // ============================================
@@ -87,8 +87,8 @@ export const DAILY_TASKS_CONFIG: DailyTaskConfig[] = [
     reward: { coins: 5, experience: 10 },
     priority: 5,
     required: false,
-    grade: EXERCISE_AVAILABILITY.equations.grades,
-    quarter: EXERCISE_AVAILABILITY.equations.quarters,
+    grade: EXERCISE_AVAILABILITY.equations!.grades,
+    quarter: EXERCISE_AVAILABILITY.equations!.quarters,
   },
   {
     id: 'equations_15',
@@ -99,8 +99,8 @@ export const DAILY_TASKS_CONFIG: DailyTaskConfig[] = [
     reward: { coins: 12, experience: 25 },
     priority: 6,
     required: false,
-    grade: EXERCISE_AVAILABILITY.equations.grades,
-    quarter: EXERCISE_AVAILABILITY.equations.quarters,
+    grade: EXERCISE_AVAILABILITY.equations!.grades,
+    quarter: EXERCISE_AVAILABILITY.equations!.quarters,
   },
 
   // ============================================
@@ -115,8 +115,8 @@ export const DAILY_TASKS_CONFIG: DailyTaskConfig[] = [
     reward: { coins: 8, experience: 15 },
     priority: 7,
     required: false,
-    grade: EXERCISE_AVAILABILITY.decomposition.grades,
-    quarter: EXERCISE_AVAILABILITY.decomposition.quarters,
+    grade: EXERCISE_AVAILABILITY.decomposition!.grades,
+    quarter: EXERCISE_AVAILABILITY.decomposition!.quarters,
   },
   {
     id: 'decomposition_5',
@@ -127,8 +127,8 @@ export const DAILY_TASKS_CONFIG: DailyTaskConfig[] = [
     reward: { coins: 14, experience: 28 },
     priority: 8,
     required: false,
-    grade: EXERCISE_AVAILABILITY.decomposition.grades,
-    quarter: EXERCISE_AVAILABILITY.decomposition.quarters,
+    grade: EXERCISE_AVAILABILITY.decomposition!.grades,
+    quarter: EXERCISE_AVAILABILITY.decomposition!.quarters,
   },
 
   // ============================================
@@ -143,8 +143,8 @@ export const DAILY_TASKS_CONFIG: DailyTaskConfig[] = [
     reward: { coins: 7, experience: 15 },
     priority: 9,
     required: false,
-    grade: EXERCISE_AVAILABILITY.multiplication.grades,
-    quarter: EXERCISE_AVAILABILITY.multiplication.quarters,
+    grade: EXERCISE_AVAILABILITY.multiplication!.grades,
+    quarter: EXERCISE_AVAILABILITY.multiplication!.quarters,
   },
   {
     id: 'multiplication_10',
@@ -155,8 +155,8 @@ export const DAILY_TASKS_CONFIG: DailyTaskConfig[] = [
     reward: { coins: 15, experience: 30 },
     priority: 10,
     required: false,
-    grade: EXERCISE_AVAILABILITY.multiplication.grades,
-    quarter: EXERCISE_AVAILABILITY.multiplication.quarters,
+    grade: EXERCISE_AVAILABILITY.multiplication!.grades,
+    quarter: EXERCISE_AVAILABILITY.multiplication!.quarters,
   },
 
   // ============================================
@@ -171,8 +171,8 @@ export const DAILY_TASKS_CONFIG: DailyTaskConfig[] = [
     reward: { coins: 8, experience: 15 },
     priority: 11,
     required: false,
-    grade: EXERCISE_AVAILABILITY.columnSubtraction.grades,
-    quarter: EXERCISE_AVAILABILITY.columnSubtraction.quarters,
+    grade: EXERCISE_AVAILABILITY.columnSubtraction!.grades,
+    quarter: EXERCISE_AVAILABILITY.columnSubtraction!.quarters,
   },
   {
     id: 'column_subtraction_5',
@@ -183,8 +183,8 @@ export const DAILY_TASKS_CONFIG: DailyTaskConfig[] = [
     reward: { coins: 14, experience: 28 },
     priority: 12,
     required: false,
-    grade: EXERCISE_AVAILABILITY.columnSubtraction.grades,
-    quarter: EXERCISE_AVAILABILITY.columnSubtraction.quarters,
+    grade: EXERCISE_AVAILABILITY.columnSubtraction!.grades,
+    quarter: EXERCISE_AVAILABILITY.columnSubtraction!.quarters,
   },
 
   // ============================================
@@ -199,8 +199,8 @@ export const DAILY_TASKS_CONFIG: DailyTaskConfig[] = [
     reward: { coins: 7, experience: 15 },
     priority: 13,
     required: false,
-    grade: EXERCISE_AVAILABILITY.equationsWholePart.grades,
-    quarter: EXERCISE_AVAILABILITY.equationsWholePart.quarters,
+    grade: EXERCISE_AVAILABILITY.equationsWholePart!.grades,
+    quarter: EXERCISE_AVAILABILITY.equationsWholePart!.quarters,
   },
   {
     id: 'equations_whole_part_5',
@@ -211,7 +211,7 @@ export const DAILY_TASKS_CONFIG: DailyTaskConfig[] = [
     reward: { coins: 12, experience: 25 },
     priority: 14,
     required: false,
-    grade: EXERCISE_AVAILABILITY.equationsWholePart.grades,
-    quarter: EXERCISE_AVAILABILITY.equationsWholePart.quarters,
+    grade: EXERCISE_AVAILABILITY.equationsWholePart!.grades,
+    quarter: EXERCISE_AVAILABILITY.equationsWholePart!.quarters,
   },
 ];

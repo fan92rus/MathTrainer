@@ -46,7 +46,7 @@ export const EXERCISE_AVAILABILITY: Record<string, ExerciseAvailabilityConfig> =
     quarters: [2, 3, 4],
   },
   decomposition: {
-    available: (grade: GradeLevel, quarter: number) => grade >= 2,
+    available: (grade: GradeLevel, _quarter: number) => grade >= 2,
     title: 'Вычисление удобным способом',
     description: 'Выбирай удобный способ вычисления',
     grades: [2, 3, 4],

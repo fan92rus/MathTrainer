@@ -62,7 +62,6 @@
   import { useRouter } from 'vue-router';
   import { useScoresStore } from '../store/scores';
   import { useSettingsStore } from '../store/settings';
-  import { usePlayerStore } from '../store/player';
   import { useDailyTasks } from '../composables/useDailyTasks';
   import { useGameLogic } from '../composables/useGameLogic';
   import { useAchievements, useSessionTimeTracker } from '../composables/useAchievements';
@@ -93,7 +92,6 @@
       const router = useRouter();
       const scoresStore = useScoresStore();
       const settingsStore = useSettingsStore();
-      const playerStore = usePlayerStore();
       const { ensureTasks } = useDailyTasks();
       const { checkAchievements } = useAchievements();
       const { startSession, addProblem, getSessionData } = useSessionTimeTracker();

@@ -156,12 +156,12 @@ describe('useDailyTasksStore (Integration)', () => {
       settingsStore.currentQuarter = 1;
 
       dailyTasksStore.generateIfNeeded();
-      const firstTasks = [...dailyTasksStore.tasks];
+      [...dailyTasksStore.tasks];
 
       // Меняем класс
       settingsStore.selectedGrade = 2;
       dailyTasksStore.generateIfNeeded();
-      const secondTasks = [...dailyTasksStore.tasks];
+      [...dailyTasksStore.tasks];
 
       // Задания могут быть разными, но проверяем что генерация произошла
       expect(dailyTasksStore.lastGeneratedDate).toBe('2024-02-11');

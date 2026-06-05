@@ -18,11 +18,11 @@
               <span class="daily-tasks-icon">📅</span>
               <span v-if="hasUncompletedTasks" class="pending-tasks-count">{{ uncompletedTasksCount }}</span>
             </button>
-            <button class="crystals-button" v-if="crystals > 0" @click="goToCity" title="Кристаллы">
+            <button class="crystals-button" v-if="false" @click="goToCity" title="Кристаллы">
               <span class="crystals-icon">💎</span>
               <span class="crystals-count">{{ formatNumber(crystals) }}</span>
             </button>
-            <button class="city-button" @click="goToCity" title="Мой город">
+            <button class="city-button" style="display: none !important;" @click="goToCity" title="Мой город">
               <span class="city-icon">🏙️</span>
             </button>
             <div title="Монетки">

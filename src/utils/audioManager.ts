@@ -1,58 +1,72 @@
-/* global HTMLAudioElement OscillatorType */
-// Простой аудио-менеджер для звуков в игре
+/* global OscillatorType */
+// Аудио-менеджер для звуков в игре
+// Использует ленивую инициализацию AudioContext для обхода
+// autoplay policy в Safari/Chrome
+
+type SoundPlayFn = () => void;
+
 export class AudioManager {
-  private sounds: Map<string, HTMLAudioElement> = new Map();
+  private sounds: Map<string, SoundPlayFn> = new Map();
   private enabled: boolean = true;
   private volume: number = 0.5;
+  private audioContext: InstanceType<typeof window.AudioContext> | null = null;
+  private initialized: boolean = false;
 
-  constructor() {
-    this.loadSounds();
+  /** Ленивая инициализация — вызывается только по первому клику */
+  private ensureContext(): InstanceType<typeof window.AudioContext> {
+    if (!this.audioContext) {
+      const AudioContextClass = window.AudioContext || (window as unknown as { webkitAudioContext: typeof window.AudioContext }).webkitAudioContext;
+      this.audioContext = new AudioContextClass();
+    }
+    // Возобновляем контекст, если браузер его приостановил
+    if (this.audioContext.state === 'suspended') {
+      this.audioContext.resume();
+    }
+    return this.audioContext;
   }
 
-  // Загрузка звуков
-  private loadSounds() {
-    // Используем встроенные в браузер Web Audio API для генерации звуков
-    this.createSound('build', 440, 0.1, 'sine');
-    this.createSound('coin', 880, 0.1, 'square');
-    this.createSound('click', 220, 0.05, 'sawtooth');
-    this.createSound('hover', 660, 0.05, 'triangle');
-    this.createSound('levelup', 523, 0.2, 'sine');
-    this.createSound('success', 659, 0.15, 'sine');
+  /** Создаёт именованный звук (не создаёт AudioContext до первого play) */
+  private registerSound(name: string, frequency: number, duration: number, type: OscillatorType): void {
+    this.sounds.set(name, () => {
+      if (!this.enabled) return;
+
+      const ctx = this.ensureContext();
+      const oscillator = ctx.createOscillator();
+      const gainNode = ctx.createGain();
+
+      oscillator.connect(gainNode);
+      gainNode.connect(ctx.destination);
+
+      oscillator.frequency.value = frequency;
+      oscillator.type = type;
+
+      gainNode.gain.setValueAtTime(this.volume, ctx.currentTime);
+      gainNode.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + duration);
+
+      oscillator.start(ctx.currentTime);
+      oscillator.stop(ctx.currentTime + duration);
+    });
   }
 
-  // Создание простого звука с помощью Web Audio API
-  private createSound(name: string, frequency: number, duration: number, type: OscillatorType) {
-    // Создаем аудио контекст
-    const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
+  /** Регистрирует все звуки. Безопасно вызывать при загрузке модуля. */
+  private registerAllSounds(): void {
+    if (this.initialized) return;
+    this.initialized = true;
 
-    // Сохраняем функцию для воспроизведения
-    this.sounds.set(name, {
-      play: () => {
-        if (!this.enabled) return;
-
-        const oscillator = audioContext.createOscillator();
-        const gainNode = audioContext.createGain();
-
-        oscillator.connect(gainNode);
-        gainNode.connect(audioContext.destination);
-
-        oscillator.frequency.value = frequency;
-        oscillator.type = type;
-
-        gainNode.gain.setValueAtTime(this.volume, audioContext.currentTime);
-        gainNode.gain.exponentialRampToValueAtTime(0.001, audioContext.currentTime + duration);
-
-        oscillator.start(audioContext.currentTime);
-        oscillator.stop(audioContext.currentTime + duration);
-      }
-    } as any);
+    this.registerSound('build', 440, 0.1, 'sine');
+    this.registerSound('coin', 880, 0.1, 'square');
+    this.registerSound('click', 220, 0.05, 'sawtooth');
+    this.registerSound('hover', 660, 0.05, 'triangle');
+    this.registerSound('levelup', 523, 0.2, 'sine');
+    this.registerSound('success', 659, 0.15, 'sine');
   }
 
   // Воспроизвести звук
   play(soundName: string): void {
+    this.registerAllSounds();
     const sound = this.sounds.get(soundName);
     if (sound && this.enabled) {
-      sound.play();
+      sound();
     }
   }
 

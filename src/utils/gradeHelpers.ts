@@ -1,5 +1,5 @@
 import type { GradeLevel } from '@/types';
-import { EXERCISE_AVAILABILITY, isExerciseAvailable } from '@/config/exerciseAvailability';
+import { EXERCISE_AVAILABILITY } from '@/config/exerciseAvailability';
 
 // Интерфейс для настроек сложности
 export interface DifficultySettings {
@@ -192,7 +192,7 @@ export function getAvailableExercises(grade: GradeLevel, quarter: number): Avail
   const exercises = {} as AvailableExercises;
 
   for (const type of EXERCISE_TYPES) {
-    const config = EXERCISE_AVAILABILITY[type];
+    const config = EXERCISE_AVAILABILITY[type]!;
     exercises[type] = {
       available: config.available(grade, quarter),
       title: config.title,
