@@ -9,7 +9,7 @@
     }"
   >
     <span class="tower-floor__level">{{ floor.level }}</span>
-    <span class="tower-floor__expression">{{ floor.expression }}</span>
+    <span class="tower-floor__expression">{{ floor.expression }}={{ floor.answer }}</span>
     <span v-if="floor.isMilestone" class="tower-floor__badge">🌟</span>
   </div>
 </template>

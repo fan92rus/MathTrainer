@@ -11,37 +11,40 @@
 
     <div class="game-container">
       <div v-if="!gameOver" class="game-container-inner">
-        <div class="header">
-          <div style="display: flex; justify-content: space-between; align-items: center">
-            <button class="back-button" @click="goToMain">← Назад</button>
-            <div style="display: flex; align-items: center; gap: 15px;">
-              <span class="level-indicator">Уровень {{ currentLevel }}</span>
-              <CurrencyDisplay />
+        <!-- Main game content -->
+        <div class="game-main">
+          <div class="header">
+            <div style="display: flex; justify-content: space-between; align-items: center">
+              <button class="back-button" @click="goToMain">← Назад</button>
+              <div style="display: flex; align-items: center; gap: 15px;">
+                <span class="level-indicator">Уровень {{ currentLevel }}</span>
+                <CurrencyDisplay />
+              </div>
             </div>
+            <h1 class="title">Реши пример</h1>
           </div>
-          <h1 class="title">Реши пример</h1>
-        </div>
 
-        <ScoreDisplay
-          :current-score="score"
-          :total-score="totalScore"
-          :current-question="currentQuestion"
-          :total-questions="totalQuestions"
-        />
+          <ScoreDisplay
+            :current-score="score"
+            :total-score="totalScore"
+            :current-question="currentQuestion"
+            :total-questions="totalQuestions"
+          />
 
-        <div class="math-expression">{{ currentProblem?.expression }} = ?</div>
+          <div class="math-expression">{{ currentProblem?.expression }} = ?</div>
 
-        <AnswerOptions
-          :options="currentProblem?.options || []"
-          :correct-index="currentProblem?.correctIndex || 0"
-          :answered="answered"
-          :selected-index="selectedIndex"
-          @answer-selected="handleAnswerSelected"
-        />
+          <AnswerOptions
+            :options="currentProblem?.options || []"
+            :correct-index="currentProblem?.correctIndex || 0"
+            :answered="answered"
+            :selected-index="selectedIndex"
+            @answer-selected="handleAnswerSelected"
+          />
 
-        <div class="game-container-footer">
-          <ProgressBar :progress-percent="progressPercent" />
-          <StarRating :score="score" />
+          <div class="game-container-footer">
+            <ProgressBar :progress-percent="progressPercent" />
+            <StarRating :score="score" />
+          </div>
         </div>
 
         <!-- Tower (Pattern 7 — side on desktop, below on mobile) -->
@@ -265,6 +268,16 @@
   display: flex;
   flex-direction: column;
   align-items: center;
+  gap: 16px;
+}
+
+/* Main game content column */
+.game-main {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+  max-width: 500px;
 }
 
 /* Desktop: tower sits to the right of the game area */
@@ -272,25 +285,24 @@
   .game-container-inner {
     flex-direction: row;
     align-items: flex-start;
+    justify-content: center;
     gap: 24px;
   }
 
-  .game-container-inner > .header,
-  .game-container-inner > :not(.counting-tower) {
-    flex: 1;
-    max-width: 500px;
+  .game-main {
+    flex: 0 1 auto;
   }
 
   .counting-tower {
     flex-shrink: 0;
     align-self: stretch;
+    max-height: 70vh;
   }
 }
 
 /* Mobile: tower below the footer */
 @media (max-width: 768px) {
   .counting-tower {
-    margin-top: 16px;
     align-self: center;
   }
 }
