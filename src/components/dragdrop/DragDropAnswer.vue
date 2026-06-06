@@ -181,15 +181,15 @@ function handlePointerUp(e: PointerEvent) {
   flex-wrap: wrap;
   padding: 12px 16px;
   border-radius: 16px;
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px dashed rgba(255, 255, 255, 0.15);
+  background: var(--color-bg-light, #f8f9ff);
+  border: 2px solid var(--color-border-light, #e0e6ff);
   min-width: 280px;
 }
 
 /* Tap fallback hint */
 .drag-answer__tap-hint {
   font-size: 12px;
-  color: rgba(255, 255, 255, 0.4);
+  color: var(--color-text-muted, #999);
   margin: 0;
   text-align: center;
 }
@@ -212,15 +212,16 @@ function handlePointerUp(e: PointerEvent) {
   font-size: 18px;
   font-weight: 700;
   font-family: inherit;
-  border: 2px solid rgba(255, 255, 255, 0.2);
-  background: rgba(255, 255, 255, 0.08);
-  color: #fff;
+  border: 2px solid var(--color-border-light, #e0e6ff);
+  background: var(--color-bg, #ffffff);
+  color: var(--color-text, #333);
   cursor: pointer;
   transition: all 0.2s ease;
 }
 
 .drag-answer__tap-btn:hover:not(:disabled) {
-  background: rgba(255, 255, 255, 0.15);
+ background: var(--color-bg-accent, #e8ecff);
+  border-color: var(--color-primary, #667eea);
   transform: translateY(-2px);
 }
 
@@ -229,13 +230,13 @@ function handlePointerUp(e: PointerEvent) {
 }
 
 .drag-answer__tap-btn--correct {
-  background: rgba(76, 175, 80, 0.3);
-  border-color: #4caf50;
-  color: #4caf50;
+  background: rgba(76, 175, 80, 0.15);
+  border-color: var(--color-success, #4caf50);
+  color: var(--color-success, #4caf50);
 }
 
 .drag-answer__tap-btn--incorrect {
-  background: rgba(255, 152, 0, 0.3);
+  background: rgba(255, 152, 0, 0.12);
   border-color: #ff9800;
   color: #ff9800;
 }

@@ -33,8 +33,6 @@ defineProps<{
   font-size: 14px;
   min-height: 36px;
   transition: all 0.3s ease;
-  background: linear-gradient(180deg, #e8e0d6 0%, #d4c8b8 100%);
-  color: #4a3728;
   border: 1px solid rgba(0, 0, 0, 0.08);
 }
 
@@ -43,61 +41,67 @@ defineProps<{
 }
 
 .tower-floor--waiting {
-  border: 2px dashed rgba(102, 126, 234, 0.4);
+ border: 2px dashed var(--color-primary, #667eea);
   opacity: 0.5;
+  background: var(--color-bg-light, #f8f9ff);
+  color: var(--color-text-secondary, #666);
   animation: floor-waiting 1.5s ease-in-out infinite;
 }
 
 .tower-floor--milestone {
-  background: linear-gradient(180deg, #ffd700 0%, #f0c040 100%);
+  background: linear-gradient(135deg, #ffd700 0%, #f0c040 100%);
   border: 2px solid #daa520;
   color: #5c4000;
   font-weight: 600;
 }
 
-/* Theme: Castle */
+/* Theme: Castle — warm sandstone, NOT dark */
 .tower-floor--castle {
-  background: linear-gradient(180deg, #8b7355 0%, #6b5b3e 100%);
-  color: #f5f0e1;
+  background: linear-gradient(180deg, #f5e6d0 0%, #e8d5b8 100%);
+  color: #5c4033;
+  border-color: #d4c0a8;
 }
 
 .tower-floor--castle.tower-floor--milestone {
-  background: linear-gradient(180deg, #ffd700 0%, #f0c040 100%);
+  background: linear-gradient(135deg, #ffd700 0%, #f0c040 100%);
   color: #5c4000;
 }
 
-/* Theme: Rocket */
+/* Theme: Rocket — light blue, cheerful */
 .tower-floor--rocket {
-  background: linear-gradient(180deg, #4a90d9 0%, #2c5f9e 100%);
-  color: #e0eeff;
+  background: linear-gradient(180deg, #b3d9ff 0%, #90c4f7 100%);
+  color: #1a3d6b;
   border-radius: 16px 16px 4px 4px;
+  border-color: #7cb8ee;
 }
 
 .tower-floor--rocket.tower-floor--milestone {
-  background: linear-gradient(180deg, #ff6b6b 0%, #e04040 100%);
-  color: #fff;
+  background: linear-gradient(135deg, #ffb3b3 0%, #ff9999 100%);
+  color: #6b1a1a;
 }
 
-/* Theme: Tree */
+/* Theme: Tree — soft green, leafy */
 .tower-floor--tree {
-  background: linear-gradient(180deg, #5b8c3e 0%, #3d6b28 100%);
-  color: #e0f0d0;
+  background: linear-gradient(180deg, #c8e6a0 0%, #a8d480 100%);
+  color: #2d4a18;
   border-radius: 4px;
+  border-color: #8cc060;
 }
 
 .tower-floor--tree.tower-floor--milestone {
-  background: linear-gradient(180deg, #ffd700 0%, #f0c040 100%);
+  background: linear-gradient(135deg, #ffd700 0%, #f0c040 100%);
   color: #5c4000;
 }
 
-/* Theme: Tower (default) */
+/* Theme: Tower (default) — soft indigo */
 .tower-floor--tower {
-  background: linear-gradient(180deg, #7986cb 0%, #5c6bc0 100%);
-  color: #e8eaf6;
+  background: linear-gradient(180deg, #d1d9f7 0%, #bcc6ee 100%);
+  color: #2d3478;
+  border-color: #a5b0e0;
 }
 
 .tower-floor--tower.tower-floor--milestone {
-  background: linear-gradient(180deg, #ffd700 0%, #f0c040 100%);
+  background: linear-gradient(135deg, #ffd700 0%, #f0c040 100%);
   color: #5c4000;
 }
 
@@ -121,5 +125,19 @@ defineProps<{
 @keyframes floor-waiting {
   0%, 100% { border-color: rgba(102, 126, 234, 0.3); transform: scaleY(0.97); }
   50%      { border-color: rgba(102, 126, 234, 0.7); transform: scaleY(1); }
+}
+
+/* Mobile responsive */
+@media (max-width: 480px) {
+  .tower-floor {
+    padding: 4px 8px;
+    font-size: 12px;
+    min-height: 32px;
+    gap: 4px;
+  }
+  .tower-floor__level {
+    font-size: 10px;
+    min-width: 16px;
+  }
 }
 </style>

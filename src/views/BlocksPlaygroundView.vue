@@ -165,6 +165,7 @@ onMounted(() => {
   min-height: 100vh;
   padding: 16px;
   position: relative;
+  background: var(--color-bg-light);
 }
 
 .blocks-view__header {
@@ -178,7 +179,7 @@ onMounted(() => {
 .blocks-view__title {
   font-size: 20px;
   font-weight: 700;
-  color: #fff;
+  color: var(--color-text);
   margin: 0;
 }
 
@@ -192,13 +193,13 @@ onMounted(() => {
 
 .blocks-view__target-label {
   font-size: 16px;
-  color: rgba(255, 255, 255, 0.6);
+  color: var(--color-text-secondary);
 }
 
 .blocks-view__target-value {
   font-size: 48px;
   font-weight: 800;
-  color: #ffd700;
+  color: #f59e0b;
   min-width: 60px;
   text-align: center;
 }
@@ -206,7 +207,7 @@ onMounted(() => {
 .blocks-view__hint {
   text-align: center;
   font-size: 14px;
-  color: rgba(255, 255, 255, 0.4);
+  color: var(--color-text-muted);
   margin-bottom: 16px;
 }
 
@@ -218,7 +219,7 @@ onMounted(() => {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  background: rgba(0, 0, 0, 0.6);
+  background: rgba(248, 249, 255, 0.9);
   backdrop-filter: blur(8px);
   z-index: 50;
   gap: 16px;
@@ -227,12 +228,12 @@ onMounted(() => {
 .blocks-view__celebration-text {
   font-size: 48px;
   font-weight: 800;
-  color: #ffd700;
+  color: #f59e0b;
 }
 
 .blocks-view__celebration-sub {
   font-size: 20px;
-  color: rgba(255, 255, 255, 0.8);
+  color: var(--color-text);
 }
 
 .blocks-view__next-btn {
@@ -240,13 +241,14 @@ onMounted(() => {
   padding: 12px 32px;
   border-radius: 12px;
   border: none;
-  background: linear-gradient(135deg, #667eea, #764ba2);
-  color: #fff;
+  background: linear-gradient(135deg, #fbbf24, #f59e0b);
+  color: var(--color-bg);
   font-size: 18px;
   font-weight: 700;
   cursor: pointer;
   transition: transform 0.2s ease;
   font-family: 'Rubik', 'Nunito', sans-serif;
+  box-shadow: 0 4px 12px rgba(251, 191, 36, 0.3);
 }
 
 .blocks-view__next-btn:hover {
@@ -280,16 +282,16 @@ onMounted(() => {
 
 .blocks-view__score {
   font-size: 16px;
-  color: rgba(255, 255, 255, 0.7);
+  color: var(--color-text);
   font-weight: 600;
 }
 
 .blocks-view__skip-btn {
   padding: 8px 20px;
   border-radius: 8px;
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  background: transparent;
-  color: rgba(255, 255, 255, 0.6);
+  border: 2px solid var(--color-border-light);
+  background: var(--color-bg);
+  color: var(--color-text-secondary);
   font-size: 14px;
   cursor: pointer;
   transition: all 0.2s ease;
@@ -297,18 +299,31 @@ onMounted(() => {
 }
 
 .blocks-view__skip-btn:hover {
-  background: rgba(255, 255, 255, 0.1);
-  color: #fff;
+  background: var(--color-bg-accent);
+  color: var(--color-text);
 }
 
 /* Mobile responsive */
 @media (max-width: 480px) {
+  .blocks-view {
+    background: var(--color-bg);
+    padding: 12px;
+  }
   .blocks-view__title {
     font-size: 16px;
   }
 
   .blocks-view__target-value {
     font-size: 36px;
+  }
+
+  .blocks-view__celebration-text {
+    font-size: 36px;
+  }
+
+  .blocks-view__next-btn {
+    padding: 10px 24px;
+    font-size: 16px;
   }
 }
 </style>

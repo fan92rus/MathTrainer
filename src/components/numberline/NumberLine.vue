@@ -9,7 +9,7 @@
       <line
         x1="20" :y1="axisY"
         :x2="svgWidth - 20" :y2="axisY"
-        stroke="rgba(255,255,255,0.3)"
+        stroke="#d0d5e0"
         stroke-width="2"
       />
 
@@ -19,7 +19,7 @@
         <line
           :x1="tickX(i)" :y1="axisY - 8"
           :x2="tickX(i)" :y2="axisY + 8"
-          :stroke="isTarget(num) ? '#ffd700' : isHighlighted(num) ? '#667eea' : 'rgba(255,255,255,0.4)'"
+          :stroke="isTarget(num) ? '#f59e0b' : isHighlighted(num) ? '#667eea' : '#c0c8d8'"
           :stroke-width="isTarget(num) ? 3 : 1.5"
         />
         <!-- Number label -->
@@ -27,7 +27,7 @@
           :x="tickX(i)"
           :y="axisY + 26"
           text-anchor="middle"
-          :fill="isTarget(num) ? '#ffd700' : isHighlighted(num) ? '#667eea' : 'rgba(255,255,255,0.6)'"
+          :fill="isTarget(num) ? '#f59e0b' : isHighlighted(num) ? '#667eea' : '#999'"
           :font-size="fontSize"
           :font-weight="isTarget(num) ? 700 : 400"
           class="number-line__tick-label"
@@ -194,7 +194,7 @@ function onTickClick(num: number) {
 }
 
 .number-line__tick-label--tappable:hover {
-  fill: #ffd700 !important;
+  fill: #f59e0b !important;
 }
 
 /* Marker animation */
@@ -220,7 +220,7 @@ function onTickClick(num: number) {
 .number-line__expression {
   font-size: 16px;
   font-weight: 600;
-  color: rgba(255, 255, 255, 0.7);
+  color: var(--color-text-secondary);
   text-align: center;
   margin-top: 4px;
 }

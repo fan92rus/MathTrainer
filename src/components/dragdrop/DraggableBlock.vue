@@ -66,6 +66,7 @@ function onDragStart(_e: PointerEvent): void {
   touch-action: none;
   background: linear-gradient(135deg, #667eea, #764ba2);
   color: #fff;
+  /* white text on dark gradient is acceptable */
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
   transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
@@ -83,10 +84,10 @@ function onDragStart(_e: PointerEvent): void {
 
 /* Цветовая кодировка по диапазону (Dehaene, 2011) */
 .draggable-block--green  { background: linear-gradient(135deg, #43e97b, #38f9d7); color: #1a3a2a; }
-.draggable-block--blue   { background: linear-gradient(135deg, #4facfe, #00f2fe); color: #fff; }
+.draggable-block--blue   { background: linear-gradient(135deg, #4facfe, #00f2fe); color: #1a3d6b; }
 .draggable-block--yellow { background: linear-gradient(135deg, #f6d365, #fda085); color: #4a3520; }
 .draggable-block--orange { background: linear-gradient(135deg, #ff9a9e, #fecfef); color: #4a2020; }
-.draggable-block--red    { background: linear-gradient(135deg, #f5576c, #ff6a88); color: #fff; }
+.draggable-block--red    { background: linear-gradient(135deg, #f5576c, #ff6a88); color: #4a1520; }
 
 @media (min-width: 769px) {
   .draggable-block {

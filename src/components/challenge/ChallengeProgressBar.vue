@@ -55,16 +55,16 @@ const percent = computed(() => {
   width: 100%;
   height: 10px;
   border-radius: 5px;
-  background: rgba(255, 255, 255, 0.15);
+  background: var(--color-progress-bg, #e0e0e0);
   overflow: visible;
 }
 
 .challenge-progress__fill {
   height: 100%;
   border-radius: 5px;
-  background: linear-gradient(90deg, #4caf50, #42a5f5, #ab47bc);
+  background: linear-gradient(90deg, var(--color-primary, #667eea), #42a5f5, #ab47bc);
   transition: width 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
-  box-shadow: 0 0 8px rgba(66, 165, 245, 0.4);
+  box-shadow: 0 0 8px rgba(102, 126, 234, 0.35);
 }
 
 .challenge-progress__milestone {
@@ -74,20 +74,21 @@ const percent = computed(() => {
   width: 4px;
   height: 18px;
   border-radius: 2px;
-  background: rgba(255, 255, 255, 0.3);
+  background: var(--color-border-light, #e0e6ff);
   transition: background 0.3s ease;
   z-index: 1;
 }
 
 .challenge-progress__milestone--reached {
-  background: #ffd700;
+  background: var(--color-star-filled, #ffd700);
   box-shadow: 0 0 6px rgba(255, 215, 0, 0.6);
 }
 
 .challenge-progress__label {
   font-size: 13px;
-  color: rgba(255, 255, 255, 0.7);
+  color: var(--color-text-secondary, #666);
   text-align: center;
+  font-weight: 600;
 }
 
 @media (max-width: 480px) {

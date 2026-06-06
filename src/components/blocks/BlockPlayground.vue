@@ -98,8 +98,8 @@ function onPointerUp() {
   width: 100%;
   min-height: 200px;
   border-radius: 16px;
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px dashed rgba(255, 255, 255, 0.15);
+  background: var(--color-bg-light);
+  border: 2px dashed var(--color-border-light);
   overflow: hidden;
   touch-action: none;
 }
@@ -116,7 +116,7 @@ function onPointerUp() {
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  color: rgba(255, 255, 255, 0.3);
+  color: var(--color-text-muted);
   font-size: 16px;
   text-align: center;
 }

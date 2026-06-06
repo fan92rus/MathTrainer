@@ -325,22 +325,22 @@
 .mode-toggle__btn {
   padding: 6px 14px;
   border-radius: 20px;
-  border: 2px solid rgba(255, 255, 255, 0.2);
-  background: rgba(255, 255, 255, 0.05);
-  color: rgba(255, 255, 255, 0.6);
+  border: 2px solid var(--color-border-light);
+  background: var(--color-bg-light);
+  color: var(--color-text-secondary);
   font-size: 13px;
   cursor: pointer;
   transition: all 0.2s ease;
 }
 
 .mode-toggle__btn:hover {
-  background: rgba(255, 255, 255, 0.1);
+  background: var(--color-bg-accent);
 }
 
 .mode-toggle__btn--active {
-  background: rgba(102, 126, 234, 0.3);
-  border-color: #667eea;
-  color: #fff;
+  background: var(--color-primary);
+  border-color: var(--color-primary);
+  color: white;
 }
 
 /* Desktop: tower sits to the right of the game area */

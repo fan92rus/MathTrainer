@@ -35,9 +35,9 @@ const emit = defineEmits<{
   gap: 12px;
   padding: 20px;
   border-radius: 16px;
-  background: rgba(255, 255, 255, 0.1);
-  backdrop-filter: blur(8px);
-  border: 1px solid rgba(255, 255, 255, 0.15);
+  background: var(--color-bg);
+  box-shadow: 0 6px 24px rgba(102, 126, 234, 0.12);
+  border: 2px solid var(--color-border-light);
   min-width: 240px;
   transition: transform 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94),
               opacity 0.5s ease;
@@ -77,7 +77,7 @@ const emit = defineEmits<{
 .wave-card__expression {
   font-size: 28px;
   font-weight: 700;
-  color: #fff;
+  color: var(--color-math);
 }
 
 .wave-card__options {
@@ -89,9 +89,9 @@ const emit = defineEmits<{
   width: 52px;
   height: 52px;
   border-radius: 12px;
-  border: 2px solid rgba(255, 255, 255, 0.2);
-  background: rgba(255, 255, 255, 0.08);
-  color: #fff;
+  border: 2px solid var(--color-border-light);
+  background: var(--color-bg-light);
+  color: var(--color-text);
   font-size: 18px;
   font-weight: 700;
   cursor: pointer;
@@ -100,7 +100,8 @@ const emit = defineEmits<{
 }
 
 .wave-card__option:hover {
-  background: rgba(255, 255, 255, 0.2);
+  background: var(--color-bg-accent);
+  border-color: var(--color-primary);
   transform: scale(1.05);
 }
 

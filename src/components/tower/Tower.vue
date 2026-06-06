@@ -63,8 +63,9 @@ watch(
 .tower {
   display: flex;
   flex-direction: column;
-  background: rgba(255, 255, 255, 0.05);
-  border-radius: 12px;
+  background: var(--color-bg-light, #f8f9ff);
+  border: 2px solid var(--color-border-light, #e0e6ff);
+  border-radius: var(--radius-sm, 12px);
   padding: 8px;
   min-width: 180px;
   max-width: 220px;
@@ -77,12 +78,20 @@ watch(
   padding: 4px 8px 8px;
   font-size: 13px;
   font-weight: 600;
-  color: rgba(255, 255, 255, 0.8);
+  color: var(--color-primary, #667eea);
+}
+
+.tower__label {
+  font-family: 'Nunito', 'Rubik', sans-serif;
 }
 
 .tower__progress {
   font-size: 12px;
-  opacity: 0.7;
+  font-weight: 700;
+  color: var(--color-text-secondary, #666);
+  background: var(--color-bg-accent, #e8ecff);
+  padding: 2px 8px;
+  border-radius: 10px;
 }
 
 .tower-stack {
@@ -149,14 +158,29 @@ watch(
   100% { box-shadow: 0 0 16px rgba(255, 215, 0, 0.8); }
 }
 
-/* Responsive */
+/* Mobile responsive */
+@media (max-width: 768px) {
+  .tower {
+    min-width: 150px;
+    max-width: 200px;
+  }
+  .tower-stack {
+    max-height: 240px;
+  }
+}
+
 @media (max-width: 480px) {
   .tower {
-    min-width: 140px;
-    max-width: 180px;
+    min-width: 130px;
+    max-width: 170px;
+    padding: 6px;
   }
   .tower-stack {
     max-height: 200px;
+  }
+  .tower__header {
+    font-size: 12px;
+    padding: 2px 6px 6px;
   }
 }
 </style>

@@ -70,7 +70,7 @@ const overflowCount = computed(() => {
 const bowlColor = computed(() => {
   if (props.isBalanced) return '#4caf50'
   if (props.isActive) return '#667eea'
-  return 'rgba(255,255,255,0.4)'
+  return 'rgba(0, 0, 0, 0.2)'
 })
 </script>
 
@@ -116,7 +116,7 @@ const bowlColor = computed(() => {
 
 .balance-pan__overflow {
   font-size: 11px;
-  color: rgba(255, 255, 255, 0.6);
+  color: var(--color-text-muted);
   font-weight: 600;
   align-self: center;
 }
@@ -124,13 +124,13 @@ const bowlColor = computed(() => {
 .balance-pan__value {
   font-size: 20px;
   font-weight: 700;
-  color: #fff;
+  color: var(--color-text);
   font-family: inherit;
   text-align: center;
 }
 
 .balance-pan__value--unknown {
-  color: rgba(255, 255, 255, 0.4);
+  color: var(--color-text-muted);
   animation: pan-unknown-pulse 1.5s ease-in-out infinite;
 }
 

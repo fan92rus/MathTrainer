@@ -96,7 +96,7 @@ function goHome() {
 .challenge-view__expression {
   font-size: 36px;
   font-weight: 700;
-  color: #fff;
+  color: var(--color-math);
   margin: 32px 0 24px;
   text-align: center;
 }

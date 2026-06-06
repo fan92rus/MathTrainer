@@ -40,32 +40,33 @@ const displayValue = computed(() => props.value ?? null)
   width: 96px;
   height: 72px;
   border-radius: 12px;
-  border: 3px dashed rgba(255, 255, 255, 0.3);
+  border: 3px dashed var(--color-primary, #667eea);
   font-size: 32px;
   font-weight: 700;
-  color: rgba(255, 255, 255, 0.6);
+  color: var(--color-text-secondary, #666);
   transition: all 0.3s ease;
-  background: rgba(255, 255, 255, 0.05);
+  background: var(--color-bg-light, #f8f9ff);
 }
 
 .drop-target--hover {
-  border-color: #667eea;
+  border-color: var(--color-primary, #667eea);
   transform: scale(1.1);
-  background: rgba(102, 126, 234, 0.15);
+  background: var(--color-bg-accent, #e8ecff);
   animation: target-pulse 1s ease-in-out infinite;
 }
 
 .drop-target--correct {
-  border-color: #4caf50;
+  border-color: var(--color-success, #4caf50);
   border-style: solid;
-  background: rgba(76, 175, 80, 0.2);
-  color: #4caf50;
+  background: rgba(76, 175, 80, 0.12);
+  color: var(--color-success, #4caf50);
 }
 
 .drop-target--wrong {
   border-color: #ff9800;
   border-style: solid;
-  background: rgba(255, 152, 0, 0.15);
+  background: rgba(255, 152, 0, 0.1);
+  color: #ff9800;
   animation: shake 0.4s ease;
 }
 
@@ -82,5 +83,15 @@ const displayValue = computed(() => props.value ?? null)
   0%, 100% { transform: translateX(0); }
   25% { transform: translateX(-4px); }
   75% { transform: translateX(4px); }
+}
+
+/* Mobile responsive */
+@media (max-width: 480px) {
+  .drop-target {
+    width: 80px;
+    height: 64px;
+    font-size: 26px;
+    border-radius: 10px;
+  }
 }
 </style>

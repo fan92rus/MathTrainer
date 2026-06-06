@@ -7,7 +7,7 @@
         <circle
           cx="50" cy="50" r="42"
           fill="none"
-          stroke="rgba(255,255,255,0.15)"
+          stroke="var(--color-progress-bg, #e0e0e0)"
           stroke-width="6"
         />
         <!-- Progress arc -->
@@ -82,6 +82,8 @@ const timerColor = computed(() => {
   justify-content: center;
   gap: 20px;
   padding: 8px 16px;
+  background: var(--color-bg-light, #f8f9ff);
+  border-radius: var(--radius-md, 15px);
 }
 
 /* Timer Ring */
@@ -103,16 +105,16 @@ const timerColor = computed(() => {
 .challenge-header__timer-text {
   font-size: 22px;
   font-weight: 700;
-  fill: #fff;
+  fill: var(--color-text, #333);
   font-family: var(--font-family, 'Rubik', sans-serif);
 }
 
 .challenge-header__timer-text--warning {
-  fill: #ffaa00;
+  fill: #ff9800;
 }
 
 .challenge-header__timer-text--critical {
-  fill: #ff4444;
+  fill: #f44336;
   animation: critical-pulse 0.8s ease-in-out infinite;
 }
 
@@ -126,17 +128,22 @@ const timerColor = computed(() => {
   display: flex;
   align-items: center;
   gap: 4px;
-  padding: 6px 12px;
+  padding: 6px 14px;
   border-radius: var(--radius-sm, 12px);
-  background: rgba(255, 255, 255, 0.1);
+  background: var(--color-bg-accent, #e8ecff);
   opacity: 0.5;
   transition: all 0.3s ease;
+  min-height: 44px;
 }
 
 .challenge-header__streak--active {
   opacity: 1;
-  background: rgba(255, 165, 0, 0.25);
-  box-shadow: 0 0 12px rgba(255, 165, 0, 0.3);
+  background: linear-gradient(135deg, #ff9800, #f57c00);
+  box-shadow: 0 2px 12px rgba(255, 152, 0, 0.3);
+}
+
+.challenge-header__streak--active .challenge-header__streak-count {
+  color: #fff;
 }
 
 .challenge-header__streak-flame {
@@ -147,11 +154,15 @@ const timerColor = computed(() => {
 .challenge-header__streak-count {
   font-size: 16px;
   font-weight: 700;
-  color: #fff;
+  color: var(--color-text, #333);
 }
 
 @media (max-width: 480px) {
-  .challenge-header__timer { width: 56px; height: 56px; }
+  .challenge-header { gap: 14px; padding: 6px 12px; }
+  .challenge-header__timer { width: 52px; height: 52px; }
   .challenge-header__timer-text { font-size: 18px; }
+  .challenge-header__streak { padding: 5px 10px; min-height: 38px; }
+  .challenge-header__streak-count { font-size: 14px; }
+  .challenge-header__streak-flame { font-size: 18px; }
 }
 </style>

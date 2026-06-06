@@ -84,13 +84,15 @@ function handleStart() {
 .prestart__title {
   font-size: 28px;
   font-weight: 700;
-  color: #fff;
-  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+  background: linear-gradient(135deg, var(--color-primary, #667eea), var(--color-primary-dark, #764ba2));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
 }
 
 .prestart__subtitle {
   font-size: 18px;
-  color: rgba(255, 255, 255, 0.85);
+  color: var(--color-text-secondary, #666);
   margin: 0;
 }
 
@@ -106,66 +108,72 @@ function handleStart() {
   justify-content: center;
   width: 80px;
   height: 80px;
-  border: 2px solid rgba(255, 255, 255, 0.3);
+  border: 3px solid var(--color-border-light, #e0e6ff);
   border-radius: var(--radius-md, 15px);
-  background: rgba(255, 255, 255, 0.1);
-  backdrop-filter: blur(8px);
+  background: var(--color-bg, #fff);
   cursor: pointer;
   transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+  box-shadow: 0 2px 8px rgba(102, 126, 234, 0.1);
 }
 
 .prestart__duration-card:hover {
-  background: rgba(255, 255, 255, 0.2);
+ background: var(--color-bg-light, #f8f9ff);
   transform: translateY(-2px);
-  border-color: rgba(255, 255, 255, 0.5);
+  border-color: var(--color-primary, #667eea);
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.15);
 }
 
 .prestart__duration-card--selected {
-  background: rgba(255, 255, 255, 0.3);
-  border-color: #ffd700;
-  box-shadow: 0 0 20px rgba(255, 215, 0, 0.4);
+  background: linear-gradient(135deg, var(--color-primary, #667eea), var(--color-primary-dark, #764ba2));
+  border-color: var(--color-primary, #667eea);
+  box-shadow: 0 4px 16px rgba(102, 126, 234, 0.3);
   transform: scale(1.08);
+}
+
+.prestart__duration-card--selected .prestart__duration-number,
+.prestart__duration-card--selected .prestart__duration-label {
+  color: #fff;
 }
 
 .prestart__duration-number {
   font-size: 32px;
   font-weight: 700;
-  color: #fff;
+  color: var(--color-text, #333);
   line-height: 1;
 }
 
 .prestart__duration-label {
   font-size: 13px;
-  color: rgba(255, 255, 255, 0.7);
+  color: var(--color-text-muted, #999);
   margin-top: 2px;
 }
 
 .prestart__best {
   font-size: 16px;
-  color: #ffd700;
+  color: var(--color-star-filled, #ffd700);
   font-weight: 600;
   margin: 0;
-  text-shadow: 0 1px 4px rgba(0, 0, 0, 0.3);
 }
 
 .prestart__start {
   margin-top: 8px;
-  padding: 14px 48px;
+  padding: 16px 48px;
   font-size: 20px;
   font-weight: 700;
   font-family: var(--font-family, 'Rubik', sans-serif);
-  color: #333;
-  background: linear-gradient(135deg, #ffd700, #ffaa00);
+  color: #fff;
+  background: linear-gradient(135deg, var(--color-primary, #667eea), var(--color-primary-dark, #764ba2));
   border: none;
   border-radius: var(--radius-md, 15px);
   cursor: pointer;
   transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
-  box-shadow: 0 4px 15px rgba(255, 170, 0, 0.4);
+  box-shadow: 0 4px 15px rgba(102, 126, 234, 0.35);
+  min-height: 56px;
 }
 
 .prestart__start:hover:not(:disabled) {
   transform: translateY(-2px) scale(1.03);
-  box-shadow: 0 6px 20px rgba(255, 170, 0, 0.5);
+  box-shadow: 0 6px 20px rgba(102, 126, 234, 0.45);
 }
 
 .prestart__start:active:not(:disabled) {
@@ -179,9 +187,17 @@ function handleStart() {
 }
 
 @media (max-width: 480px) {
+  .prestart { padding: 24px 16px; gap: 20px; }
   .prestart__title { font-size: 24px; }
-  .prestart__duration-card { width: 70px; height: 70px; }
+  .prestart__subtitle { font-size: 16px; }
+  .prestart__duration-card { width: 72px; height: 72px; }
   .prestart__duration-number { font-size: 28px; }
-  .prestart__start { padding: 12px 36px; font-size: 18px; }
+  .prestart__start { padding: 14px 36px; font-size: 18px; }
+}
+
+@media (max-width: 360px) {
+  .prestart__duration-card { width: 64px; height: 64px; }
+  .prestart__duration-number { font-size: 24px; }
+  .prestart__start { padding: 12px 28px; font-size: 16px; }
 }
 </style>

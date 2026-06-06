@@ -298,7 +298,7 @@ watch(currentQuestion, () => {
 .math-expression {
   font-size: clamp(24px, 5vw, 36px);
   font-weight: 700;
-  color: #fff;
+  color: var(--color-math);
   margin: 8px 0;
 }
 
@@ -327,18 +327,20 @@ watch(currentQuestion, () => {
   min-height: 56px;
   padding: 8px 16px;
   border-radius: 12px;
-  border: 2px solid rgba(255, 255, 255, 0.2);
-  background: rgba(255, 255, 255, 0.1);
-  color: #fff;
+  border: 2px solid var(--color-border-light);
+  background: var(--color-bg);
+  color: var(--color-text);
   font-size: 20px;
   font-weight: 700;
   cursor: pointer;
   transition: all 0.2s ease;
   font-family: 'Rubik', 'Nunito', sans-serif;
+  box-shadow: 0 2px 6px rgba(102, 126, 234, 0.08);
 }
 
 .answer-btn:hover {
-  background: rgba(255, 255, 255, 0.2);
+  background: var(--color-bg-accent);
+  border-color: var(--color-primary);
   transform: scale(1.05);
 }
 
@@ -347,13 +349,15 @@ watch(currentQuestion, () => {
 }
 
 .answer-btn--correct {
-  background: #43a047;
-  border-color: #66bb6a;
+  background: #e8f5e9;
+  border-color: #4caf50;
+  color: #2e7d32;
 }
 
 .answer-btn--wrong {
-  background: rgba(255, 152, 0, 0.4);
+  background: #fff3e0;
   border-color: #ff9800;
+  color: #e65100;
 }
 
 .game-container-footer {
@@ -392,6 +396,20 @@ watch(currentQuestion, () => {
     min-width: 48px;
     min-height: 48px;
     font-size: 18px;
+  }
+}
+
+@media (max-width: 480px) {
+  .answer-btn {
+    min-width: 44px;
+    min-height: 44px;
+    font-size: 16px;
+    padding: 6px 12px;
+  }
+
+  .math-expression {
+    font-size: clamp(22px, 6vw, 28px);
+    margin: 6px 0;
   }
 }
 </style>

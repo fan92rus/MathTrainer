@@ -94,6 +94,8 @@ onMounted(() => {
   gap: 24px;
   padding: 32px 24px;
   animation: results-enter 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+  background: var(--color-bg, #fff);
+  border-radius: var(--radius-lg, 20px);
 }
 
 @keyframes results-enter {
@@ -104,8 +106,10 @@ onMounted(() => {
 .results__praise {
   font-size: 32px;
   font-weight: 700;
-  color: #fff;
-  text-shadow: 0 2px 12px rgba(0, 0, 0, 0.3);
+  background: linear-gradient(135deg, var(--color-primary, #667eea), var(--color-primary-dark, #764ba2));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
   animation: praise-bounce 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) 0.1s both;
 }
 
@@ -128,13 +132,13 @@ onMounted(() => {
   flex-direction: column;
   align-items: center;
   gap: 4px;
-  padding: 12px 8px;
-  background: rgba(255, 255, 255, 0.1);
-  backdrop-filter: blur(8px);
+  padding: 14px 8px;
+  background: var(--color-bg-light, #f8f9ff);
   border-radius: var(--radius-sm, 12px);
-  border: 1px solid rgba(255, 255, 255, 0.15);
+  border: 1px solid var(--color-border-light, #e0e6ff);
   opacity: 0;
   animation: stat-enter 0.4s ease forwards;
+  box-shadow: 0 2px 6px rgba(102, 126, 234, 0.06);
 }
 
 @keyframes stat-enter {
@@ -150,29 +154,29 @@ onMounted(() => {
 .results__stat-value {
   font-size: 20px;
   font-weight: 700;
-  color: #fff;
+  color: var(--color-text, #333);
 }
 
 .results__stat-label {
   font-size: 12px;
-  color: rgba(255, 255, 255, 0.6);
+  color: var(--color-text-muted, #999);
+  font-weight: 500;
 }
 
 .results__record {
   font-size: 22px;
   font-weight: 700;
-  color: #ffd700;
-  padding: 8px 24px;
+  color: #fff;
+  padding: 10px 24px;
   border-radius: var(--radius-md, 15px);
-  background: rgba(255, 215, 0, 0.15);
-  border: 2px solid rgba(255, 215, 0, 0.4);
+  background: linear-gradient(135deg, #ffd700, #ffaa00);
   animation: record-glow 1.5s ease-in-out infinite alternate;
-  text-shadow: 0 1px 4px rgba(255, 215, 0, 0.5);
+  box-shadow: 0 4px 16px rgba(255, 170, 0, 0.35);
 }
 
 @keyframes record-glow {
-  0% { box-shadow: 0 0 10px rgba(255, 215, 0, 0.2); }
-  100% { box-shadow: 0 0 25px rgba(255, 215, 0, 0.5); }
+  0% { box-shadow: 0 4px 12px rgba(255, 215, 0, 0.25); }
+  100% { box-shadow: 0 6px 24px rgba(255, 215, 0, 0.5); }
 }
 
 .results__actions {
@@ -190,33 +194,51 @@ onMounted(() => {
   border-radius: var(--radius-md, 15px);
   cursor: pointer;
   transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+  min-height: 48px;
 }
 
 .results__btn--primary {
-  color: #333;
-  background: linear-gradient(135deg, #ffd700, #ffaa00);
-  box-shadow: 0 4px 15px rgba(255, 170, 0, 0.4);
+  color: #fff;
+  background: linear-gradient(135deg, var(--color-primary, #667eea), var(--color-primary-dark, #764ba2));
+  box-shadow: 0 4px 15px rgba(102, 126, 234, 0.35);
 }
 
 .results__btn--primary:hover {
   transform: translateY(-2px) scale(1.03);
-  box-shadow: 0 6px 20px rgba(255, 170, 0, 0.5);
+  box-shadow: 0 6px 20px rgba(102, 126, 234, 0.45);
 }
 
 .results__btn--secondary {
-  color: #fff;
-  background: rgba(255, 255, 255, 0.15);
-  border: 1px solid rgba(255, 255, 255, 0.3);
+  color: var(--color-text, #333);
+  background: var(--color-bg-light, #f8f9ff);
+  border: 2px solid var(--color-border-light, #e0e6ff);
 }
 
 .results__btn--secondary:hover {
-  background: rgba(255, 255, 255, 0.25);
+  background: var(--color-bg-accent, #e8ecff);
+  border-color: var(--color-primary, #667eea);
   transform: translateY(-2px);
 }
 
+.results__btn:active:not(:disabled) {
+  transform: scale(0.96);
+}
+
 @media (max-width: 480px) {
+  .results { padding: 24px 16px; gap: 20px; }
   .results__praise { font-size: 26px; }
+  .results__stat { padding: 12px 6px; }
   .results__stat-value { font-size: 18px; }
-  .results__btn { padding: 12px 20px; font-size: 15px; }
+  .results__stat-icon { font-size: 20px; }
+  .results__record { font-size: 18px; padding: 8px 20px; }
+  .results__btn { padding: 12px 22px; font-size: 15px; min-height: 44px; }
+  .results__actions { gap: 10px; }
+}
+
+@media (max-width: 360px) {
+  .results__stats { gap: 8px; }
+  .results__stat { padding: 10px 4px; }
+  .results__stat-value { font-size: 16px; }
+  .results__btn { padding: 10px 16px; font-size: 14px; }
 }
 </style>
