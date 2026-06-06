@@ -47,6 +47,8 @@ export function useBlocks(unitWidth: number = 36, blockHeight: number = 48) {
    * Возвращает новый блок или null если невозможно (сумма > 10).
    */
   function combineBlocks(idA: number, idB: number): Block | null {
+    if (idA === idB) return null // prevent self-combine
+
     const a = findBlock(idA)
     const b = findBlock(idB)
     if (!a || !b) return null

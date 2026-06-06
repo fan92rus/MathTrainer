@@ -54,7 +54,6 @@ const router = useRouter()
 
 const {
   blocks,
-  totalValue,
   createBlock,
   moveBlock,
   combineBlocks,
@@ -74,30 +73,36 @@ const successMessages = [
   'Молодец!',
 ]
 
-/** Generate a random target that can be expressed as sum of 2-3 numbers (each 1-10, sum ≤ 10) */
+/** Predefined problem templates: target + parts that MUST be combined to reach it */
+const PROBLEM_TEMPLATES: Array<{ target: number; parts: number[] }> = [
+  // 2-block problems
+  { target: 3, parts: [1, 2] },
+  { target: 4, parts: [1, 3] },
+  { target: 5, parts: [2, 3] },
+  { target: 6, parts: [2, 4] },
+  { target: 7, parts: [3, 4] },
+  { target: 8, parts: [3, 5] },
+  { target: 9, parts: [4, 5] },
+  { target: 10, parts: [3, 7] },
+  // 3-block problems — student must combine ALL into one
+  { target: 6, parts: [1, 2, 3] },
+  { target: 7, parts: [1, 2, 4] },
+  { target: 8, parts: [1, 3, 4] },
+  { target: 9, parts: [2, 3, 4] },
+  { target: 10, parts: [1, 3, 6] },
+  { target: 10, parts: [2, 3, 5] },
+  { target: 10, parts: [1, 4, 5] },
+]
+
+/** Generate a problem: set target, create blocks with values that sum to target */
 function generateProblem() {
   resetBlocks()
 
-  // Pick 2-3 parts that sum to target
-  const numParts = Math.random() > 0.5 ? 2 : 3
-  let remaining = 0
-  const parts: number[] = []
+  const template = PROBLEM_TEMPLATES[Math.floor(Math.random() * PROBLEM_TEMPLATES.length)]!
+  targetValue.value = template.target
 
-  if (numParts === 2) {
-    // Two parts: a + b = target
-    const a = Math.floor(Math.random() * 9) + 1 // 1-9
-    const b = Math.min(10 - a, Math.floor(Math.random() * 9) + 1)
-    parts.push(a, b)
-  } else {
-    // Three parts
-    const a = Math.floor(Math.random() * 5) + 1
-    const b = Math.floor(Math.random() * Math.min(5, 10 - a)) + 1
-    const c = Math.min(10 - a - b, Math.floor(Math.random() * 4) + 1)
-    parts.push(a, b, c)
-  }
-
-  remaining = parts.reduce((s, v) => s + v, 0)
-  targetValue.value = remaining
+  // Shuffle parts for variety
+  const parts = [...template.parts].sort(() => Math.random() - 0.5)
 
   // Create blocks with spread-out positions
   const playgroundWidth = 320
@@ -120,19 +125,20 @@ function onBlocksCombined(idA: number, idB: number) {
   const combined = combineBlocks(idA, idB)
 
   if (!combined) {
-    // Can't combine (sum > 10) — just release
+    // Can't combine (sum > 10) — just release, don't celebrate
     return
   }
 
-  // Check if target reached
-  if (totalValue.value === targetValue.value) {
+  // Celebrate ONLY when exactly 1 block remains AND its value matches target
+  if (blocks.value.length === 1 && blocks.value[0]!.value === targetValue.value) {
     showCelebration.value = true
     solvedCount.value++
     successMessage.value = successMessages[Math.floor(Math.random() * successMessages.length)] ?? 'Блоки склеились!'
-  } else if (totalValue.value > targetValue.value) {
-    // Overshot — reset blocks for this problem
+  } else if (blocks.value.length === 1 && blocks.value[0]!.value !== targetValue.value) {
+    // Single block but wrong value — start over
     generateProblem()
   }
+  // If more than 1 block remains, keep playing
 }
 
 function onBlockReleased(_id: number) {
