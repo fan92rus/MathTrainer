@@ -43,6 +43,15 @@
           <ProgressBar :progress-percent="progressPercent" />
           <StarRating :score="score" />
         </div>
+
+        <!-- Tower (Pattern 7 — side on desktop, below on mobile) -->
+        <Tower
+          class="counting-tower"
+          :floors="towerFloors"
+          :target-height="towerTargetHeight"
+          theme="castle"
+          :completed="towerCompleted"
+        />
       </div>
 
       <GameOver
@@ -66,6 +75,7 @@
   import { useGameLogic } from '../composables/useGameLogic';
   import { useAchievements, useSessionTimeTracker } from '../composables/useAchievements';
   import { useCoins } from '../composables/useCoins';
+  import { useTower } from '../composables/useTower';
   import { generateCountingProblem } from '../utils/math';
   import ScoreDisplay from '../components/common/ScoreDisplay.vue';
   import ProgressBar from '../components/common/ProgressBar.vue';
@@ -75,6 +85,7 @@
   import AchievementManager from '../components/AchievementManager.vue';
   import CoinAnimation from '../components/common/CoinAnimation.vue';
   import CurrencyDisplay from '../components/player/CurrencyDisplay.vue';
+  import Tower from '../components/tower/Tower.vue';
 
   export default {
     name: 'CountingView',
@@ -86,7 +97,8 @@
       GameOver,
       AchievementManager,
       CoinAnimation,
-      CurrencyDisplay
+      CurrencyDisplay,
+      Tower
     },
     setup() {
       const router = useRouter();
@@ -97,6 +109,24 @@
       const { startSession, addProblem, getSessionData } = useSessionTimeTracker();
       const { showCoinAnimation, coinsEarned, awardCoins } = useCoins();
       const totalQuestions = 10;
+
+      // Tower integration (Pattern 7 — "Строим башню")
+      // targetHeight based on grade per PRD §7.2
+      const grade = settingsStore.selectedGrade;
+      const towerTargetHeight = !grade || grade <= 1 ? 10 : grade === 2 ? 12 : 15;
+      const towerMilestones = [Math.floor(towerTargetHeight / 2), towerTargetHeight];
+
+      const {
+        floors: towerFloors,
+        completed: towerCompleted,
+        addFloor,
+        showWaitingFloor,
+        resetTower
+      } = useTower({
+        theme: 'castle',
+        targetHeight: towerTargetHeight,
+        milestones: towerMilestones
+      });
 
       // Инициализируем игру
       const {
@@ -151,14 +181,25 @@
               streak: currentStreak,
               ...getSessionData()
             });
+
+            // Добавляем этаж в башню
+            const expr = currentProblem.value?.expression || '';
+            const answer = currentProblem.value?.options[currentProblem.value.correctIndex];
+            addFloor(expr, answer);
           }
         });
+
+        // При неправильном ответе — башня ждёт
+        if (!isCorrect) {
+          showWaitingFloor();
+        }
       };
 
       // Перезапуск игры
       const restartGame = () => {
         initializeGame();
         currentStreak = 0; // Сбрасываем серию
+        resetTower(); // Сбрасываем башню
         startSession(); // Начинаем новую сессию
         generateAllProblems(() => {
           return generateCountingProblem(
@@ -204,11 +245,53 @@
         restartGame,
         goToMain,
         showCoinAnimation,
-        coinsEarned
+        coinsEarned,
+        // Tower
+        towerFloors,
+        towerCompleted,
+        towerTargetHeight
       };
     }
   };
 </script>
 
 <style scoped>
+.game-container {
+  display: flex;
+  flex-direction: column;
+}
+
+.game-container-inner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+/* Desktop: tower sits to the right of the game area */
+@media (min-width: 769px) {
+  .game-container-inner {
+    flex-direction: row;
+    align-items: flex-start;
+    gap: 24px;
+  }
+
+  .game-container-inner > .header,
+  .game-container-inner > :not(.counting-tower) {
+    flex: 1;
+    max-width: 500px;
+  }
+
+  .counting-tower {
+    flex-shrink: 0;
+    align-self: stretch;
+  }
+}
+
+/* Mobile: tower below the footer */
+@media (max-width: 768px) {
+  .counting-tower {
+    margin-top: 16px;
+    align-self: center;
+  }
+}
 </style>

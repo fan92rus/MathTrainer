@@ -14,6 +14,7 @@ import ColumnSubtractionDiagnosticView from '@/views/ColumnSubtractionDiagnostic
 import EquationsWholePartView from '@/views/EquationsWholePartView.vue';
 import EquationsWholePartLearningView from '@/views/EquationsWholePartLearningView.vue';
 import EquationsWholePartDiagnosticView from '@/views/EquationsWholePartDiagnosticView.vue';
+import ChallengeCountingView from '@/views/ChallengeCountingView.vue';
 import AchievementsView from '@/views/AchievementsView.vue';
 import DailyTasksView from '@/views/DailyTasksView.vue';
 import { useSettingsStore } from '@/store/settings';
@@ -101,6 +102,12 @@ const routes: Array<RouteRecordRaw> = [
     path: '/achievements',
     name: 'achievements',
     component: AchievementsView
+  },
+  {
+    path: '/counting/challenge',
+    name: 'counting-challenge',
+    component: ChallengeCountingView,
+    meta: { exerciseType: 'counting' }
   },
   {
     path: '/daily-tasks',
