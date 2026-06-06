@@ -33,7 +33,30 @@
 
           <div class="math-expression">{{ currentProblem?.expression }} = ?</div>
 
+          <!-- Mode toggle -->
+          <div class="mode-toggle">
+            <button
+              class="mode-toggle__btn"
+              :class="{ 'mode-toggle__btn--active': answerMode === 'tap' }"
+              @click="answerMode = 'tap'"
+            >👆 Нажми</button>
+            <button
+              class="mode-toggle__btn"
+              :class="{ 'mode-toggle__btn--active': answerMode === 'drag' }"
+              @click="answerMode = 'drag'"
+            >🧱 Перетащи</button>
+          </div>
+
           <AnswerOptions
+            v-if="answerMode === 'tap'"
+            :options="currentProblem?.options || []"
+            :correct-index="currentProblem?.correctIndex || 0"
+            :answered="answered"
+            :selected-index="selectedIndex"
+            @answer-selected="handleAnswerSelected"
+          />
+          <DragDropAnswer
+            v-else
             :options="currentProblem?.options || []"
             :correct-index="currentProblem?.correctIndex || 0"
             :answered="answered"
@@ -70,7 +93,7 @@
 </template>
 
 <script>
-  import { onMounted, computed, watch } from 'vue';
+  import { onMounted, computed, watch, ref } from 'vue';
   import { useRouter } from 'vue-router';
   import { useScoresStore } from '../store/scores';
   import { useSettingsStore } from '../store/settings';
@@ -84,6 +107,7 @@
   import ProgressBar from '../components/common/ProgressBar.vue';
   import StarRating from '../components/common/StarRating.vue';
   import AnswerOptions from '../components/common/AnswerOptions.vue';
+  import DragDropAnswer from '../components/dragdrop/DragDropAnswer.vue';
   import GameOver from '../components/common/GameOver.vue';
   import AchievementManager from '../components/AchievementManager.vue';
   import CoinAnimation from '../components/common/CoinAnimation.vue';
@@ -113,6 +137,9 @@
       const { showCoinAnimation, coinsEarned, awardCoins } = useCoins();
       const totalQuestions = 10;
 
+      // Mode toggle: 'tap' (AnswerOptions) or 'drag' (DragDropAnswer)
+      const answerMode = ref<'tap' | 'drag'>('tap');
+
       // Tower integration (Pattern 7 — "Строим башню")
       // targetHeight based on grade per PRD §7.2
       const grade = settingsStore.selectedGrade;
@@ -130,6 +157,11 @@
         targetHeight: towerTargetHeight,
         milestones: towerMilestones
       });
+
+      // Toggle answer mode between tap and drag
+      function toggleAnswerMode() {
+        answerMode.value = answerMode.value === 'tap' ? 'drag' : 'tap';
+      }
 
       // Инициализируем игру
       const {
@@ -252,7 +284,10 @@
         // Tower
         towerFloors,
         towerCompleted,
-        towerTargetHeight
+        towerTargetHeight,
+        // Mode
+        answerMode,
+        toggleAnswerMode
       };
     }
   };
@@ -278,6 +313,34 @@
   align-items: center;
   width: 100%;
   max-width: 500px;
+}
+
+/* Mode toggle */
+.mode-toggle {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.mode-toggle__btn {
+  padding: 6px 14px;
+  border-radius: 20px;
+  border: 2px solid rgba(255, 255, 255, 0.2);
+  background: rgba(255, 255, 255, 0.05);
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 13px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.mode-toggle__btn:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.mode-toggle__btn--active {
+  background: rgba(102, 126, 234, 0.3);
+  border-color: #667eea;
+  color: #fff;
 }
 
 /* Desktop: tower sits to the right of the game area */

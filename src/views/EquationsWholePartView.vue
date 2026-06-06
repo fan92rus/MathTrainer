@@ -20,6 +20,15 @@
           :total-score="10"
         />
 
+        <!-- Balance Beam (Pattern 4) -->
+        <div v-if="currentProblem" class="balance-wrapper">
+          <BalanceBeam
+            :left-value="currentProblem.whole"
+            :right-value="balanceRightValue"
+            :target-value="currentProblem.whole"
+          />
+        </div>
+
         <!-- Дисплей уравнения -->
         <EquationDisplay
           v-if="currentProblem"
@@ -60,6 +69,7 @@ import { useScoresStore } from '@/store/scores';
 import { useCoins } from '@/composables/useCoins';
 import { generateEquationWholePartProblem } from '@/utils/math/equationsWholePart';
 import EquationDisplay from '@/components/equationsWholePart/EquationDisplay.vue';
+import BalanceBeam from '@/components/balance/BalanceBeam.vue';
 import ScoreDisplay from '@/components/common/ScoreDisplay.vue';
 import ProgressBar from '@/components/common/ProgressBar.vue';
 import StarRating from '@/components/common/StarRating.vue';
@@ -73,6 +83,7 @@ export default {
   name: 'EquationsWholePartView',
   components: {
     EquationDisplay,
+    BalanceBeam,
     ScoreDisplay,
     ProgressBar,
     StarRating,
@@ -83,6 +94,13 @@ export default {
     const router = useRouter();
     const scoresStore = useScoresStore();
     const { awardCoins } = useCoins();
+
+    // Balance beam: right side shows known part + null (unknown part)
+    const balanceRightValue = computed(() => {
+      if (!currentProblem.value || answered.value) return null;
+      // Show known part on the right side, unknown stays null
+      return currentProblem.value.knownPart ?? null;
+    });
 
     // Управление состоянием тренировки
     const problems = ref<EquationWholePartProblem[]>([]);
@@ -196,7 +214,9 @@ export default {
       levelIndicator,
       handleComplete,
       restart,
-      goBack
+      goBack,
+      // Balance beam
+      balanceRightValue,
     };
   }
 };
@@ -209,5 +229,11 @@ export default {
   font-size: clamp(18px, 4vw, 24px);
   font-weight: 600;
   color: #333;
+}
+
+.balance-wrapper {
+  display: flex;
+  justify-content: center;
+  margin: 8px 0;
 }
 </style>

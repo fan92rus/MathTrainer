@@ -15,6 +15,9 @@ import EquationsWholePartView from '@/views/EquationsWholePartView.vue';
 import EquationsWholePartLearningView from '@/views/EquationsWholePartLearningView.vue';
 import EquationsWholePartDiagnosticView from '@/views/EquationsWholePartDiagnosticView.vue';
 import ChallengeCountingView from '@/views/ChallengeCountingView.vue';
+import NumberLineCountingView from '@/views/NumberLineCountingView.vue';
+import WaveCountingView from '@/views/WaveCountingView.vue';
+import BlocksPlaygroundView from '@/views/BlocksPlaygroundView.vue';
 import AchievementsView from '@/views/AchievementsView.vue';
 import DailyTasksView from '@/views/DailyTasksView.vue';
 import { useSettingsStore } from '@/store/settings';
@@ -108,6 +111,23 @@ const routes: Array<RouteRecordRaw> = [
     name: 'counting-challenge',
     component: ChallengeCountingView,
     meta: { exerciseType: 'counting' }
+  },
+  {
+    path: '/counting/number-line',
+    name: 'counting-number-line',
+    component: NumberLineCountingView,
+    meta: { exerciseType: 'counting' }
+  },
+  {
+    path: '/counting/wave',
+    name: 'counting-wave',
+    component: WaveCountingView,
+    meta: { exerciseType: 'counting' }
+  },
+  {
+    path: '/blocks-playground',
+    name: 'blocks-playground',
+    component: BlocksPlaygroundView
   },
   {
     path: '/daily-tasks',
