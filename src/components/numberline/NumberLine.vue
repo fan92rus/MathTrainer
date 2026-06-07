@@ -1,14 +1,14 @@
 <template>
-  <div class="number-line">
+  <div class="number-line" ref="containerRef">
     <svg
-      :viewBox="`0 0 ${svgWidth} ${svgHeight}`"
+      :viewBox="`0 0 ${svgViewWidth} ${svgViewHeight}`"
       class="number-line__svg"
-      :style="{ width: svgWidth + 'px', height: svgHeight + 'px' }"
+      preserveAspectRatio="xMidYMid meet"
     >
       <!-- Main axis line -->
       <line
-        x1="20" :y1="axisY"
-        :x2="svgWidth - 20" :y2="axisY"
+        x1="padding" :y1="axisY"
+        :x2="svgViewWidth - padding" :y2="axisY"
         stroke="#d0d5e0"
         stroke-width="2"
       />
@@ -17,18 +17,18 @@
       <g v-for="(num, i) in tickNumbers" :key="'tick-' + i">
         <!-- Tick line -->
         <line
-          :x1="tickX(i)" :y1="axisY - 8"
-          :x2="tickX(i)" :y2="axisY + 8"
+          :x1="tickX(i)" :y1="axisY - tickH"
+          :x2="tickX(i)" :y2="axisY + tickH"
           :stroke="isTarget(num) ? '#f59e0b' : isHighlighted(num) ? '#667eea' : '#c0c8d8'"
           :stroke-width="isTarget(num) ? 3 : 1.5"
         />
         <!-- Number label -->
         <text
           :x="tickX(i)"
-          :y="axisY + 26"
+          :y="axisY + tickH + labelOffset"
           text-anchor="middle"
           :fill="isTarget(num) ? '#f59e0b' : isHighlighted(num) ? '#667eea' : '#999'"
-          :font-size="fontSize"
+          :font-size="computedFontSize"
           :font-weight="isTarget(num) ? 700 : 400"
           class="number-line__tick-label"
           :class="{ 'number-line__tick-label--tappable': isWaitingForTap }"
@@ -78,14 +78,14 @@
         :class="{ 'number-line__marker--flying': jumpPhase === 'flying' }"
       >
         <!-- Frog body -->
-        <ellipse cx="0" cy="-4" rx="14" ry="12" fill="#4caf50" />
+        <ellipse cx="0" cy="-4" :rx="frogRX" :ry="frogRY" fill="#4caf50" />
         <!-- Eyes -->
-        <circle cx="-6" cy="-12" r="5" fill="#fff" />
-        <circle cx="6" cy="-12" r="5" fill="#fff" />
-        <circle cx="-5" cy="-13" r="2.5" fill="#333" />
-        <circle cx="7" cy="-13" r="2.5" fill="#333" />
+        <circle :cx="-frogRX * 0.42" :cy="-frogRY - 2" :r="frogRX * 0.35" fill="#fff" />
+        <circle :cx="frogRX * 0.42" :cy="-frogRY - 2" :r="frogRX * 0.35" fill="#fff" />
+        <circle :cx="-frogRX * 0.35" :cy="-frogRY - 2.7" :r="frogRX * 0.18" fill="#333" />
+        <circle :cx="frogRX * 0.49" :cy="-frogRY - 2.7" :r="frogRX * 0.18" fill="#333" />
         <!-- Mouth -->
-        <path d="M -4 -2 Q 0 2 4 -2" fill="none" stroke="#2e7d32" stroke-width="1.5" />
+        <path :d="`M ${-frogRX * 0.3} -2 Q 0 ${frogRY * 0.4} ${frogRX * 0.3} -2`" fill="none" stroke="#2e7d32" stroke-width="1.5" />
       </g>
     </svg>
 
@@ -97,7 +97,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, ref, onMounted, onUnmounted } from 'vue'
 import type { NumberLineRange } from '@/types/numberLine'
 
 const props = withDefaults(defineProps<{
@@ -119,23 +119,76 @@ const emit = defineEmits<{
   tickClick: [value: number]
 }>()
 
+const containerRef = ref<HTMLElement | null>(null)
+const containerWidth = ref(400)
 
-const axisY = 60
-const fontSize = 14
+const axisY = 55
+const padding = 24
+const tickH = 8
 
-/** SVG width based on number of ticks */
-const svgWidth = computed(() => {
-  const count = props.tickNumbers.length
-  return Math.max(300, count * 40 + 40)
+/** Measure container width for responsive sizing */
+function updateWidth() {
+  if (containerRef.value) {
+    containerWidth.value = containerRef.value.clientWidth || 400
+  }
+}
+
+let resizeObserver: ResizeObserver | null = null
+
+onMounted(() => {
+  updateWidth()
+  if (containerRef.value) {
+    resizeObserver = new ResizeObserver(() => updateWidth())
+    resizeObserver.observe(containerRef.value as unknown as Element)
+  }
 })
 
-const svgHeight = 100
+onUnmounted(() => {
+  resizeObserver?.disconnect()
+})
 
-/** X position for a tick by index */
+/** SVG viewBox width: fixed internal coordinate space */
+const svgViewWidth = 400
+const svgViewHeight = 100
+
+/** Adaptive font size based on tick count */
+const computedFontSize = computed(() => {
+  const count = props.tickNumbers.length
+  if (count <= 6) return 14
+  if (count <= 11) return 13
+  if (count <= 16) return 11
+  if (count <= 21) return 10
+  return 9
+})
+
+/** Label offset below tick */
+const labelOffset = computed(() => {
+  const count = props.tickNumbers.length
+  return count > 16 ? 16 : 18
+})
+
+/** Frog size adapts to tick density */
+const frogRX = computed(() => {
+  const count = props.tickNumbers.length
+  if (count <= 6) return 14
+  if (count <= 11) return 12
+  if (count <= 16) return 10
+  return 8
+})
+
+const frogRY = computed(() => {
+  const count = props.tickNumbers.length
+  if (count <= 6) return 12
+  if (count <= 11) return 10
+  if (count <= 16) return 8
+  return 7
+})
+
+/** X position for a tick by index (in viewBox coordinates) */
 function tickX(index: number): number {
   const count = props.tickNumbers.length
-  const usableWidth = svgWidth.value - 40 // 20px margins
-  return 20 + (index / Math.max(count - 1, 1)) * usableWidth
+  const usableWidth = svgViewWidth - padding * 2
+  return padding + (index / Math.max(count - 1, 1)) * usableWidth
 }
 
 /** X position for a number value */
@@ -150,7 +203,7 @@ function arcPath(from: number, to: number): string {
   const x1 = positionForNumber(from)
   const x2 = positionForNumber(to)
   const midX = (x1 + x2) / 2
-  const height = -30 // arc height above axis
+  const height = -28
   return `M ${x1} ${axisY} Q ${midX} ${axisY + height} ${x2} ${axisY}`
 }
 
@@ -176,17 +229,21 @@ function onTickClick(num: number) {
   flex-direction: column;
   align-items: center;
   width: 100%;
-  overflow-x: auto;
-  padding: 8px 0;
+  /* NO overflow-x — always fits in screen */
+  padding: 4px 0;
 }
 
 .number-line__svg {
-  flex-shrink: 0;
+  width: 100%;
+  height: auto;
+  display: block;
+  /* SVG scales to fit container via viewBox */
 }
 
 .number-line__tick-label {
   font-family: 'Nunito', 'Rubik', sans-serif;
   cursor: default;
+  user-select: none;
 }
 
 .number-line__tick-label--tappable {
@@ -223,12 +280,5 @@ function onTickClick(num: number) {
   color: var(--color-text-secondary);
   text-align: center;
   margin-top: 4px;
-}
-
-/* Responsive */
-@media (max-width: 480px) {
-  .number-line {
-    -webkit-overflow-scrolling: touch;
-  }
 }
 </style>

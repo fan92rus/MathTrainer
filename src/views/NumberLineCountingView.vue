@@ -34,18 +34,16 @@
           <!-- Expression -->
           <div class="math-expression">{{ currentProblem?.expression }} = ?</div>
 
-          <!-- Number Line -->
-          <div class="number-line-wrapper">
-            <NumberLine
-              :range="numberLineRange"
-              :marker-position="markerPosition"
-              :jump-phase="jumpPhase"
-              :jump-arcs="jumpArcs"
-              :target-position="targetPosition"
-              :is-waiting-for-tap="isWaitingForTap"
-              :tick-numbers="tickNumbers"
-            />
-          </div>
+          <!-- Number Line — always fits screen -->
+          <NumberLine
+            :range="numberLineRange"
+            :marker-position="markerPosition"
+            :jump-phase="jumpPhase"
+            :jump-arcs="jumpArcs"
+            :target-position="targetPosition"
+            :is-waiting-for-tap="isWaitingForTap"
+            :tick-numbers="tickNumbers"
+          />
 
           <!-- Answer options (tap to select, frog jumps to answer) -->
           <div class="answer-row" :class="{ 'answer-row--disabled': isAnimating }">
@@ -300,13 +298,6 @@ watch(currentQuestion, () => {
   font-weight: 700;
   color: var(--color-math);
   margin: 8px 0;
-}
-
-.number-line-wrapper {
-  width: 100%;
-  overflow-x: auto;
-  -webkit-overflow-scrolling: touch;
-  padding: 4px 0;
 }
 
 .answer-row {
