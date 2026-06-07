@@ -7,7 +7,7 @@
       'is-current': isCurrent && !node.locked,
       'has-progress': node.starCount > 0 && node.starCount < 3 && !node.locked,
       'compact-node': compact
-    }]""
+    }]"
     @click="!node.locked && $emit('click', node)"
   >
     <!-- Иконка -->
