@@ -89,6 +89,27 @@ describe('CountingView', () => {
     expect(wrapper.findAll('.drag-btn').length).toBe(4)
   })
 
+  it('клик по кнопке 🧱 Перетащи переключает режим', async () => {
+    const btns = wrapper.findAll('.mode-toggle__btn')
+    // Find the Перетащи button
+    const dragBtn = btns.filter(w => w.text().includes('Перетащи'))[0]
+    await dragBtn.trigger('click')
+    await wrapper.vm.$nextTick()
+    expect(wrapper.vm.answerMode).toBe('drag')
+    expect(wrapper.find('.mock-dragdrop').exists()).toBe(true)
+  })
+
+  it('клик по кнопке 👆 Нажми возвращает в tap режим', async () => {
+    wrapper.vm.answerMode = 'drag'
+    await wrapper.vm.$nextTick()
+    const btns = wrapper.findAll('.mode-toggle__btn')
+    const tapBtn = btns.filter(w => w.text().includes('Нажми'))[0]
+    await tapBtn.trigger('click')
+    await wrapper.vm.$nextTick()
+    expect(wrapper.vm.answerMode).toBe('tap')
+    expect(wrapper.find('.mock-answers').exists()).toBe(true)
+  })
+
   it('GameOver показывается после 10 вопросов', async () => {
     wrapper.vm.currentQuestion = 10
     wrapper.vm.gameOver = true

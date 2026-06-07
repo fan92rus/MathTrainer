@@ -33,6 +33,7 @@ vi.mock('vue-router', () => ({
   useRoute: () => ({ params: {} }),
 }))
 
+import { useScoresStore } from '@/store/scores'
 import EquationsView from '../EquationsView.vue'
 
 describe('EquationsView', () => {
@@ -113,5 +114,32 @@ describe('EquationsView', () => {
   it('progressPercent = 100 при question 5/5 (totalQuestions=5)', () => {
     wrapper.vm.currentQuestion = 5
     expect(wrapper.vm.progressPercent).toBe(100)
+  })
+
+  it('nextLevelInfo показывается когда есть следующий уровень', async () => {
+    const store = useScoresStore()
+    store.equationsScore = 30 // Will give nextLevelInfo
+    await wrapper.vm.$nextTick()
+    expect(wrapper.vm.nextLevelInfo).toBeTruthy()
+    expect(wrapper.find('.level-progress').exists()).toBe(true)
+  })
+
+  it('manual-mode кнопка видна при totalScore >= 50', async () => {
+    const store = useScoresStore()
+    store.equationsScore = 50
+    await wrapper.vm.$nextTick()
+    expect(wrapper.find('.manual-mode-button').exists()).toBe(true)
+  })
+
+  it('manual-mode кнопка НЕ видна при totalScore < 50', () => {
+    expect(wrapper.find('.manual-mode-button').exists()).toBe(false)
+  })
+
+  it('goToManualMode вызывает router.push', async () => {
+    const store = useScoresStore()
+    store.equationsScore = 50
+    await wrapper.vm.$nextTick()
+    await wrapper.find('.manual-mode-button').trigger('click')
+    expect(mockPush).toHaveBeenCalledWith('/manual-equations')
   })
 })

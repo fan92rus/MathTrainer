@@ -137,6 +137,29 @@ describe('ManualEquationsView', () => {
       await wrapper.vm.$nextTick()
       expect(wrapper.find('.feedback-container').exists()).toBe(true)
     })
+
+    it('правильный ответ показывает feedback с классом correct', async () => {
+      const correctAnswer = wrapper.vm.currentProblem?.correctAnswer
+      if (correctAnswer == null) return
+
+      const input = wrapper.find('.answer-input')
+      await input.setValue(String(correctAnswer))
+      await wrapper.find('.check-button').trigger('click')
+      await wrapper.vm.$nextTick()
+      expect(wrapper.find('.correct').exists()).toBe(true)
+    })
+
+    it('неправильный ответ показывает feedback с классом incorrect', async () => {
+      const correctAnswer = wrapper.vm.currentProblem?.correctAnswer
+      if (correctAnswer == null) return
+
+      const wrongAnswer = correctAnswer + 100
+      const input = wrapper.find('.answer-input')
+      await input.setValue(String(wrongAnswer))
+      await wrapper.find('.check-button').trigger('click')
+      await wrapper.vm.$nextTick()
+      expect(wrapper.find('.incorrect').exists()).toBe(true)
+    })
   })
 
   // ─── GameOver ─────────────────────────────────────────────────
