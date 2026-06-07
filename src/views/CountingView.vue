@@ -24,6 +24,8 @@
             <h1 class="title">Реши пример</h1>
           </div>
 
+          <CountingModeSwitcher />
+
           <ScoreDisplay
             :current-score="score"
             :total-score="totalScore"
@@ -119,6 +121,7 @@
   import CoinAnimation from '../components/common/CoinAnimation.vue';
   import CurrencyDisplay from '../components/player/CurrencyDisplay.vue';
   import Tower from '../components/tower/Tower.vue';
+  import CountingModeSwitcher from '../components/common/CountingModeSwitcher.vue';
 
   export default {
     name: 'CountingView',
@@ -132,7 +135,8 @@
       AchievementManager,
       CoinAnimation,
       CurrencyDisplay,
-      Tower
+      Tower,
+      CountingModeSwitcher
     },
     setup() {
       const router = useRouter();

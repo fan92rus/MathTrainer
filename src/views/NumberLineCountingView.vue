@@ -24,6 +24,8 @@
             <h1 class="title">📏 Прыжки по прямой</h1>
           </div>
 
+          <CountingModeSwitcher />
+
           <ScoreDisplay
             :current-score="score"
             :total-score="totalScore"
@@ -99,6 +101,7 @@ import { useDailyTasks } from '@/composables/useDailyTasks'
 import { useGameLogic } from '@/composables/useGameLogic'
 import { useAchievements, useSessionTimeTracker } from '@/composables/useAchievements'
 import { useCoins } from '@/composables/useCoins'
+import CountingModeSwitcher from '@/components/common/CountingModeSwitcher.vue'
 import { useTower } from '@/composables/useTower'
 import { useNumberLineHop } from '@/composables/useNumberLineHop'
 import { generateCountingProblem } from '@/utils/math'
