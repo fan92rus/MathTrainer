@@ -73,18 +73,18 @@ watch(() => props.currentStreak, (val, old) => {
   flex-direction: column;
   align-items: center;
   gap: 4px;
-  padding: 8px 16px;
-  border-radius: 16px;
-  background: linear-gradient(135deg, #fff8e1, #fff3cd);
-  border: 2px solid #ffd54f;
+  padding: 8px 20px;
+  border-radius: 20px;
+  background: linear-gradient(135deg, #fff8e7, #ffedd5);
+  border: 2px solid #fed7aa;
   transition: all 0.3s ease;
   min-width: 140px;
 }
 
 .streak-bar--milestone {
-  background: linear-gradient(135deg, #ffe082, #ffb300);
-  border-color: #ff8f00;
-  box-shadow: 0 0 20px rgba(255, 179, 0, 0.4);
+  background: linear-gradient(135deg, #fef3c7, #fde68a);
+  border-color: #f59e0b;
+  box-shadow: 0 0 24px rgba(245, 158, 11, 0.35);
   animation: pulse-glow 0.6s ease-in-out 3;
 }
 

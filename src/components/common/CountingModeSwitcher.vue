@@ -43,7 +43,7 @@ function goTo(path: string) {
   justify-content: center;
   flex-wrap: wrap;
   padding: 6px 8px;
-  background: var(--color-bg-light, #f0f2ff);
+  background: linear-gradient(135deg, #f8f9ff, #f0f2ff);
   border-radius: 14px;
   margin: 4px 0 8px;
 }

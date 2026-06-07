@@ -311,14 +311,15 @@
 }
 
 .mode-toggle__btn {
-  padding: 6px 14px;
+  padding: 6px 16px;
   border-radius: 20px;
-  border: 2px solid var(--color-border-light);
-  background: var(--color-bg-light);
-  color: var(--color-text-secondary);
+  border: 2px solid #e0e6ff;
+  background: #ffffff;
+  color: #666;
   font-size: 13px;
   cursor: pointer;
   transition: all 0.2s ease;
+  box-shadow: 0 2px 4px rgba(102, 126, 234, 0.06);
 }
 
 .mode-toggle__btn:hover {
