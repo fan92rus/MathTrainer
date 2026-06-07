@@ -24,23 +24,6 @@
     </div>
 
     <!-- Tap fallback for DCD children and accessibility — inline row after drawer -->
-    <div class="drag-answer__tap-inline">
-      <span class="drag-answer__tap-inline-label">или</span>
-      <button
-        v-for="(option, index) in options"
-        :key="'tap-' + index"
-        class="drag-answer__tap-inline-btn"
-        :class="{
-          'drag-answer__tap-btn--correct': answered && index === correctIndex,
-          'drag-answer__tap-btn--incorrect': answered && index === selectedIndex && index !== correctIndex,
-          'drag-answer__tap-btn--disabled': answered,
-        }"
-        :disabled="answered"
-        @click="emit('answerSelected', index)"
-      >
-        {{ option }}
-      </button>
-    </div>
   </div>
 </template>
 
@@ -170,7 +153,7 @@ function handlePointerUp(e: PointerEvent) {
 
 /* Drop target centered above drawer */
 .drag-answer__target-wrapper {
-  margin-bottom: 4px;
+  margin: 0;
 }
 
 /* Drawer: horizontal row of draggable blocks */
@@ -186,68 +169,6 @@ function handlePointerUp(e: PointerEvent) {
   min-width: 280px;
 }
 
-/* Tap fallback inline row after drawer */
-.drag-answer__tap-inline {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  justify-content: center;
-  flex-wrap: wrap;
-  margin-top: 4px;
-}
-
-.drag-answer__tap-inline-label {
-  font-size: 11px;
-  color: var(--color-text-muted, #999);
-  white-space: nowrap;
-}
-
-.drag-answer__tap-inline-btn {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 40px;
-  height: 34px;
-  border-radius: 8px;
-  font-size: 15px;
-  font-weight: 700;
-  font-family: inherit;
-  border: 1.5px solid var(--color-border-light, #e0e6ff);
-  background: var(--color-bg, #ffffff);
-  color: var(--color-text, #333);
-  cursor: pointer;
-  transition: all 0.15s ease;
-  padding: 0;
-}
-
-.drag-answer__tap-inline-btn:hover:not(:disabled) {
-  background: var(--color-bg-accent, #e8ecff);
-  border-color: var(--color-primary, #667eea);
-  transform: translateY(-1px);
-}
-
-.drag-answer__tap-inline-btn:active:not(:disabled) {
-  transform: translateY(0);
-}
-
-.drag-answer__tap-inline-btn--correct {
-  background: rgba(76, 175, 80, 0.15);
-  border-color: var(--color-success, #4caf50);
-  color: var(--color-success, #4caf50);
-}
-
-.drag-answer__tap-inline-btn--incorrect {
-  background: rgba(255, 152, 0, 0.12);
-  border-color: #ff9800;
-  color: #ff9800;
-}
-
-.drag-answer__tap-inline-btn--disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-  pointer-events: none;
-}
-
 /* Responsive */
 @media (max-width: 480px) {
   .drag-answer {
@@ -261,25 +182,9 @@ function handlePointerUp(e: PointerEvent) {
     width: 100%;
     border-radius: 12px;
   }
-
-  .drag-answer__tap-inline-btn {
-    width: 36px;
-    height: 30px;
-    font-size: 13px;
-    border-radius: 6px;
-  }
-
-  .drag-answer__tap-inline {
-    gap: 4px;
-    margin-top: 2px;
-  }
 }
 
 @media (max-width: 768px) {
-  .drag-answer__target-wrapper {
-    margin-bottom: 0;
-  }
-
   .drag-answer__drawer {
     padding: 6px 10px;
   }
