@@ -36,6 +36,11 @@
           <!-- Expression -->
           <div class="math-expression">{{ currentProblem?.expression }} = ?</div>
 
+          <SessionStreakBar
+            :current-streak="streakTracker.currentStreak.value"
+            @milestone="onStreakMilestone"
+          />
+
           <!-- Number Line — always fits screen -->
           <NumberLine
             :range="numberLineRange"
@@ -92,6 +97,9 @@ import { useDailyTasks } from '@/composables/useDailyTasks'
 import { useGameLogic } from '@/composables/useGameLogic'
 import { useAchievements, useSessionTimeTracker } from '@/composables/useAchievements'
 import { useCoins } from '@/composables/useCoins'
+import { useChallengeStreak } from '@/composables/useChallengeStreak'
+import { usePlayerStore } from '@/store/player'
+import SessionStreakBar from '@/components/common/SessionStreakBar.vue'
 import CountingModeSwitcher from '@/components/common/CountingModeSwitcher.vue'
 import { useNumberLineHop } from '@/composables/useNumberLineHop'
 import { generateCountingProblem } from '@/utils/math'
@@ -155,7 +163,8 @@ const {
 
 const totalScore = scoresStore.countingScore
 
-let currentStreak = 0
+const playerStore = usePlayerStore()
+const streakTracker = useChallengeStreak()
 const isAnimating = ref(false)
 
 // When a new problem appears, position the frog at the first operand
@@ -180,11 +189,11 @@ async function handleAnswerSelected(index: number) {
   isAnimating.value = true
 
   if (isCorrect) {
-    currentStreak++
+    streakTracker.recordCorrect()
     // Frog jumps from start to correct answer
     await animateJump(startFrom, correctValue, 500)
   } else {
-    currentStreak = 0
+    streakTracker.recordIncorrect()
     // Frog jumps to wrong answer, pauses, then jumps back to start
     const startNum = currentProblem.value.num1
     await animateJump(startFrom, selectedValue, 400)
@@ -203,16 +212,21 @@ async function handleAnswerSelected(index: number) {
       checkAchievements(scoresStore, {
         type: 'counting',
         correct: true,
-        streak: currentStreak,
+        streak: streakTracker.currentStreak.value,
         ...getSessionData(),
       })
     }
   })
 }
 
+function onStreakMilestone(milestone: number) {
+  const bonus = milestone >= 10 ? 10 : milestone >= 7 ? 7 : milestone >= 5 ? 5 : 3
+  playerStore.addCoins(bonus)
+}
+
 function restartGame() {
   initializeGame()
-  currentStreak = 0
+  streakTracker.reset()
   resetNumberLine()
   startSession()
   generateAllProblems(() => {

@@ -31,6 +31,11 @@
           {{ currentProblem?.expression }}
         </div>
 
+        <SessionStreakBar
+          :current-streak="streakTracker.currentStreak.value"
+          @milestone="onStreakMilestone"
+        />
+
         <AnswerOptions
           :options="currentProblem?.options || []"
           :correct-index="currentProblem?.correctIndex || 0"
@@ -63,6 +68,8 @@
   import { useScoresStore } from '../store/scores';
   import { useGameLogic } from '../composables/useGameLogic';
   import { useCoins } from '../composables/useCoins';
+  import { useChallengeStreak } from '../composables/useChallengeStreak';
+  import { usePlayerStore } from '../store/player';
   import { useDailyTasks } from '@/composables/useDailyTasks';
   import { generateFirstGradeDecompositionProblem } from '../utils/math';
   import ScoreDisplay from '../components/common/ScoreDisplay.vue';
@@ -72,6 +79,7 @@
   import GameOver from '../components/common/GameOver.vue';
   import CoinAnimation from '../components/common/CoinAnimation.vue';
   import CurrencyDisplay from '../components/player/CurrencyDisplay.vue';
+  import SessionStreakBar from '../components/common/SessionStreakBar.vue';
 
   export default {
     name: 'FirstGradeDecompositionView',
@@ -82,13 +90,16 @@
       AnswerOptions,
       GameOver,
       CoinAnimation,
-      CurrencyDisplay
+      CurrencyDisplay,
+      SessionStreakBar
     },
     setup() {
       const router = useRouter();
       const scoresStore = useScoresStore();
       const { showCoinAnimation, coinsEarned, awardCoins } = useCoins();
       const { ensureTasks } = useDailyTasks();
+      const playerStore = usePlayerStore();
+      const streakTracker = useChallengeStreak();
       const totalQuestions = 10;
 
       // Инициализируем игру
@@ -116,6 +127,12 @@
       const handleAnswerSelected = (index) => {
         const isCorrect = index === (currentProblem.value?.correctIndex || 0);
 
+        if (isCorrect) {
+          streakTracker.recordCorrect();
+        } else {
+          streakTracker.recordIncorrect();
+        }
+
         selectAnswer(index, currentProblem.value?.correctIndex || 0, (points) => {
           // При правильном ответе обновляем общий счет с учетом количества ошибок
           scoresStore.updateFirstGradeDecompositionScore(points);
@@ -129,8 +146,14 @@
       };
 
       // Перезапуск игры
+      function onStreakMilestone(milestone) {
+        const bonus = milestone >= 10 ? 10 : milestone >= 7 ? 7 : milestone >= 5 ? 5 : 3;
+        playerStore.addCoins(bonus);
+      }
+
       const restartGame = () => {
         initializeGame();
+        streakTracker.reset();
         generateAllProblems(() => generateFirstGradeDecompositionProblem());
       };
 
@@ -163,7 +186,9 @@
         restartGame,
         goToMain,
         showCoinAnimation,
-        coinsEarned
+        coinsEarned,
+        streakTracker,
+        onStreakMilestone
       };
     }
   };

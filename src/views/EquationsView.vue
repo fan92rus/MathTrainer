@@ -43,6 +43,11 @@
 
         <div class="math-expression">{{ currentProblem?.expression }}, чему равен x?</div>
 
+        <SessionStreakBar
+          :current-streak="streakTracker.currentStreak.value"
+          @milestone="onStreakMilestone"
+        />
+
         <!-- Кнопка перехода к ручному режиму -->
         <div v-if="totalScore >= 50" class="manual-mode-container">
           <button class="manual-mode-button" @click="goToManualMode">
@@ -85,6 +90,8 @@
   import { useScoresStore } from '../store/scores';
   import { useGameLogic } from '../composables/useGameLogic';
   import { useCoins } from '../composables/useCoins';
+  import { useChallengeStreak } from '../composables/useChallengeStreak';
+  import { usePlayerStore } from '../store/player';
   import { useDailyTasks } from '@/composables/useDailyTasks';
   import {
     generateEquationProblem,
@@ -98,6 +105,7 @@
   import GameOver from '../components/common/GameOver.vue';
   import CoinAnimation from '../components/common/CoinAnimation.vue';
   import CurrencyDisplay from '../components/player/CurrencyDisplay.vue';
+  import SessionStreakBar from '../components/common/SessionStreakBar.vue';
 
   export default {
     name: 'EquationsView',
@@ -108,13 +116,16 @@
       AnswerOptions,
       GameOver,
       CoinAnimation,
-      CurrencyDisplay
+      CurrencyDisplay,
+      SessionStreakBar
     },
     setup() {
       const router = useRouter();
       const scoresStore = useScoresStore();
       const { showCoinAnimation, coinsEarned, awardCoins } = useCoins();
       const { ensureTasks } = useDailyTasks();
+      const playerStore = usePlayerStore();
+      const streakTracker = useChallengeStreak();
       const totalQuestions = 5;
 
       // Инициализируем игру
@@ -162,6 +173,12 @@
       const handleAnswerSelected = (index) => {
         const isCorrect = index === (currentProblem.value?.correctIndex || 0);
 
+        if (isCorrect) {
+          streakTracker.recordCorrect();
+        } else {
+          streakTracker.recordIncorrect();
+        }
+
         selectAnswer(index, currentProblem.value?.correctIndex || 0, (points) => {
           // При правильном ответе обновляем общий счет
           // Используем базовые очки с учетом сложности уровня
@@ -178,8 +195,14 @@
       };
 
       // Перезапуск игры
+      function onStreakMilestone(milestone) {
+        const bonus = milestone >= 10 ? 10 : milestone >= 7 ? 7 : milestone >= 5 ? 5 : 3;
+        playerStore.addCoins(bonus);
+      }
+
       const restartGame = () => {
         initializeGame();
+        streakTracker.reset();
         generateAllProblems((previousX) => generateEquationProblem(totalScore.value, previousX));
       };
 
@@ -221,7 +244,9 @@
         goToMain,
         goToManualMode,
         showCoinAnimation,
-        coinsEarned
+        coinsEarned,
+        streakTracker,
+        onStreakMilestone
       };
     }
   };

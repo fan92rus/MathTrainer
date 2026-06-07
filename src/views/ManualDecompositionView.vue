@@ -430,6 +430,11 @@
           </div>
         </div>
 
+        <SessionStreakBar
+          :current-streak="streakTracker.currentStreak.value"
+          @milestone="onStreakMilestone"
+        />
+
         <ProgressBar :progress-percent="progressPercent" />
 
         <StarRating :score="score" />
@@ -455,6 +460,8 @@
   import { useSettingsStore } from '../store/settings';
   import { useGameLogic } from '../composables/useGameLogic';
   import { useMobileKeyboard } from '../composables/useMobileKeyboard';
+  import { useChallengeStreak } from '../composables/useChallengeStreak';
+  import { usePlayerStore } from '../store/player';
   import {
     generateDecompositionProblem
   } from '../utils/math/index';
@@ -463,6 +470,7 @@
   import ProgressBar from '../components/common/ProgressBar.vue';
   import StarRating from '../components/common/StarRating.vue';
   import GameOver from '../components/common/GameOver.vue';
+  import SessionStreakBar from '../components/common/SessionStreakBar.vue';
 
   export default {
     name: 'ManualDecompositionView',
@@ -470,12 +478,15 @@
       ScoreDisplay,
       ProgressBar,
       StarRating,
-      GameOver
+      GameOver,
+      SessionStreakBar
     },
     setup() {
       const router = useRouter();
       const scoresStore = useScoresStore();
       const settingsStore = useSettingsStore();
+      const playerStore = usePlayerStore();
+      const streakTracker = useChallengeStreak();
       const totalQuestions = 5;
 
       // Рефы для полей ввода
@@ -866,6 +877,12 @@
         isCorrect.value = result === correctAnswer.value;
         answered.value = true;
 
+        if (isCorrect.value) {
+          streakTracker.recordCorrect();
+        } else {
+          streakTracker.recordIncorrect();
+        }
+
         // Начисляем очки
 
         selectAnswer(0, 0, (earnedPoints) => {
@@ -978,8 +995,14 @@
       };
 
       // Перезапуск игры
+      function onStreakMilestone(milestone: number) {
+        const bonus = milestone >= 10 ? 10 : milestone >= 7 ? 7 : milestone >= 5 ? 5 : 3;
+        playerStore.addCoins(bonus);
+      }
+
       const restartGame = () => {
         initializeGame();
+        streakTracker.reset();
         setManualMode(true);
 
         // Генерируем задачи с использованием максимального числа из настроек и уровня на основе очков
@@ -1101,7 +1124,9 @@
         nextStep,
         nextQuestion,
         restartGame,
-        goToMain
+        goToMain,
+        streakTracker,
+        onStreakMilestone
       };
     }
   };
