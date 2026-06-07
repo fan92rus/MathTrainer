@@ -7,29 +7,30 @@
     >
       <!-- Main axis line -->
       <line
-        x1="padding" :y1="axisY"
-        :x2="svgViewWidth - padding" :y2="axisY"
+        x1="24" :y1="axisY"
+        :x2="svgViewWidth - 24" :y2="axisY"
         stroke="#d0d5e0"
         stroke-width="2"
       />
 
-      <!-- Tick marks and labels -->
+      <!-- Tick marks -->
       <g v-for="(num, i) in tickNumbers" :key="'tick-' + i">
-        <!-- Tick line -->
+        <!-- Minor tick (shorter, thinner) for unlabeled numbers -->
         <line
-          :x1="tickX(i)" :y1="axisY - tickH"
-          :x2="tickX(i)" :y2="axisY + tickH"
+          :x1="tickXByNum(num)" :y1="axisY - (shouldShowLabel(num) ? tickH : minorTickH)"
+          :x2="tickXByNum(num)" :y2="axisY + (shouldShowLabel(num) ? tickH : minorTickH)"
           :stroke="isTarget(num) ? '#f59e0b' : isHighlighted(num) ? '#667eea' : '#c0c8d8'"
-          :stroke-width="isTarget(num) ? 3 : 1.5"
+          :stroke-width="isTarget(num) ? 3 : shouldShowLabel(num) ? 1.5 : 1"
         />
-        <!-- Number label -->
+        <!-- Label only for selected numbers -->
         <text
-          :x="tickX(i)"
+          v-if="shouldShowLabel(num)"
+          :x="tickXByNum(num)"
           :y="axisY + tickH + labelOffset"
           text-anchor="middle"
-          :fill="isTarget(num) ? '#f59e0b' : isHighlighted(num) ? '#667eea' : '#999'"
+          :fill="isTarget(num) ? '#f59e0b' : isHighlighted(num) ? '#667eea' : '#666'"
           :font-size="computedFontSize"
-          :font-weight="isTarget(num) ? 700 : 400"
+          :font-weight="isTarget(num) || isImportant(num) ? 700 : 400"
           class="number-line__tick-label"
           :class="{ 'number-line__tick-label--tappable': isWaitingForTap }"
           @click="onTickClick(num)"
@@ -48,9 +49,8 @@
           stroke-dasharray="6,4"
           opacity="0.6"
         />
-        <!-- Arrow at the end -->
         <circle
-          :cx="positionForNumber(arc.to)"
+          :cx="tickXByNum(arc.to)"
           :cy="axisY"
           r="3"
           fill="#667eea"
@@ -61,7 +61,7 @@
       <!-- Target indicator (pulsing ring) -->
       <circle
         v-if="targetPosition !== null && isWaitingForTap"
-        :cx="positionForNumber(targetPosition)"
+        :cx="tickXByNum(targetPosition)"
         :cy="axisY"
         r="14"
         fill="none"
@@ -71,25 +71,21 @@
         class="number-line__target-pulse"
       />
 
-      <!-- Marker (frog/character) -->
+      <!-- Marker (frog) -->
       <g
         :transform="`translate(${positionForNumber(markerPosition)}, ${axisY})`"
         class="number-line__marker"
         :class="{ 'number-line__marker--flying': jumpPhase === 'flying' }"
       >
-        <!-- Frog body -->
         <ellipse cx="0" cy="-4" :rx="frogRX" :ry="frogRY" fill="#4caf50" />
-        <!-- Eyes -->
         <circle :cx="-frogRX * 0.42" :cy="-frogRY - 2" :r="frogRX * 0.35" fill="#fff" />
         <circle :cx="frogRX * 0.42" :cy="-frogRY - 2" :r="frogRX * 0.35" fill="#fff" />
         <circle :cx="-frogRX * 0.35" :cy="-frogRY - 2.7" :r="frogRX * 0.18" fill="#333" />
         <circle :cx="frogRX * 0.49" :cy="-frogRY - 2.7" :r="frogRX * 0.18" fill="#333" />
-        <!-- Mouth -->
         <path :d="`M ${-frogRX * 0.3} -2 Q 0 ${frogRY * 0.4} ${frogRX * 0.3} -2`" fill="none" stroke="#2e7d32" stroke-width="1.5" />
       </g>
     </svg>
 
-    <!-- Expression overlay -->
     <div v-if="expression" class="number-line__expression">
       {{ expression }}
     </div>
@@ -125,8 +121,16 @@ const containerWidth = ref(400)
 const axisY = 55
 const padding = 24
 const tickH = 8
+const minorTickH = 5
+const svgViewWidth = 500
+const svgViewHeight = 100
 
-/** Measure container width for responsive sizing */
+/** Minimum distance between labels in viewBox coords.
+ *  usableWidth = 500 - 48 = 452. For span 0-100 with step 10, gap = 45.2.
+ *  30px minimum ensures "100" (~22px at font 10) doesn't overlap.
+ */
+const MIN_LABEL_GAP = 34
+
 function updateWidth() {
   if (containerRef.value) {
     containerWidth.value = containerRef.value.clientWidth || 400
@@ -147,64 +151,143 @@ onUnmounted(() => {
   resizeObserver?.disconnect()
 })
 
-/** SVG viewBox width: fixed internal coordinate space */
-const svgViewWidth = 400
-const svgViewHeight = 100
+/** X position for a number value in viewBox coords */
+function tickXByNum(num: number): number {
+  const count = props.tickNumbers.length
+  const index = props.tickNumbers.indexOf(num)
+  if (index < 0) return padding
+  const usableWidth = svgViewWidth - padding * 2
+  return padding + (index / Math.max(count - 1, 1)) * usableWidth
+}
 
-/** Adaptive font size based on tick count */
+/** Alias for composable compatibility */
+function positionForNumber(num: number): number {
+  return tickXByNum(num)
+}
+
+/**
+ * Determine which numbers deserve a visible label.
+ *
+ * Strategy:
+ *   - If ≤ 12 numbers total: show all
+ *   - Otherwise: show "round" numbers (step depends on span) + important numbers
+ *     (target, marker, arc endpoints), but skip any that would be within
+ *     MIN_LABEL_GAP of an already-shown label.
+ *   - Important numbers ALWAYS show even if they overlap (they're critical).
+ */
+const labeledNumbers = computed(() => {
+  const nums = props.tickNumbers
+  if (nums.length === 0) return new Set<number>()
+
+  // Few numbers — show all
+  if (nums.length <= 12) return new Set(nums)
+
+  const span = nums[nums.length - 1]! - nums[0]!
+  const roundStep = span > 40 ? 10 : span > 12 ? 5 : 1
+
+  // Important numbers: always visible
+  const important = new Set<number>()
+  important.add(nums[0]!)
+  important.add(nums[nums.length - 1]!)
+  if (props.targetPosition !== null) important.add(props.targetPosition)
+  // Marker (rounded to nearest tick)
+  const markerRounded = Math.round(props.markerPosition)
+  if (nums.includes(markerRounded)) important.add(markerRounded)
+  // Arc endpoints
+  for (const arc of props.jumpArcs) {
+    if (nums.includes(arc.from)) important.add(arc.from)
+    if (nums.includes(arc.to)) important.add(arc.to)
+  }
+
+  // "Round" numbers (multiples of roundStep)
+  const round = new Set<number>()
+  for (const n of nums) {
+    if (n % roundStep === 0) round.add(n)
+  }
+
+  // Build final set with collision detection
+  const result = new Set<number>()
+  const placed: number[] = [] // x positions in viewBox coords
+
+  // First: place round numbers (sorted)
+  for (const n of nums) {
+    if (!round.has(n)) continue
+    const x = tickXByNum(n)
+    if (!placed.some(px => Math.abs(px - x) < MIN_LABEL_GAP)) {
+      placed.push(x)
+      result.add(n)
+    }
+  }
+
+  // Second: place important numbers
+  // If an important number is close to an already-placed round number,
+  // remove the round number in favor of the important one
+  for (const n of nums) {
+    if (!important.has(n)) continue
+    result.add(n)
+    const x = tickXByNum(n)
+    // Check if any placed round number is too close — evict it
+    const tooCloseIdx = placed.findIndex(px => Math.abs(px - x) < MIN_LABEL_GAP)
+    if (tooCloseIdx >= 0) {
+      // Find the round number at this position and remove it
+      const closeX = placed[tooCloseIdx]!
+      for (const rn of result) {
+        if (!important.has(rn) && Math.abs(tickXByNum(rn) - closeX) < 1) {
+          result.delete(rn)
+          break
+        }
+      }
+      placed.splice(tooCloseIdx, 1)
+    }
+    if (!placed.some(px => Math.abs(px - x) < 1)) {
+      placed.push(x)
+    }
+  }
+
+  return result
+})
+
+function shouldShowLabel(num: number): boolean {
+  return labeledNumbers.value.has(num)
+}
+
+function isImportant(num: number): boolean {
+  if (props.targetPosition === num) return true
+  if (Math.round(props.markerPosition) === num) return true
+  return props.jumpArcs.some(a => a.from === num || a.to === num)
+}
+
 const computedFontSize = computed(() => {
   const count = props.tickNumbers.length
   if (count <= 6) return 14
-  if (count <= 11) return 13
-  if (count <= 16) return 11
-  if (count <= 21) return 10
-  return 9
+  if (count <= 12) return 13
+  if (count <= 20) return 11
+  return 10
 })
 
-/** Label offset below tick */
 const labelOffset = computed(() => {
-  const count = props.tickNumbers.length
-  return count > 16 ? 16 : 18
+  return props.tickNumbers.length > 20 ? 16 : 18
 })
 
-/** Frog size adapts to tick density */
 const frogRX = computed(() => {
   const count = props.tickNumbers.length
   if (count <= 6) return 14
-  if (count <= 11) return 12
-  if (count <= 16) return 10
-  return 8
+  if (count <= 12) return 12
+  return 9
 })
 
 const frogRY = computed(() => {
   const count = props.tickNumbers.length
   if (count <= 6) return 12
-  if (count <= 11) return 10
-  if (count <= 16) return 8
-  return 7
+  if (count <= 12) return 10
+  return 8
 })
 
-/** X position for a tick by index (in viewBox coordinates) */
-function tickX(index: number): number {
-  const count = props.tickNumbers.length
-  const usableWidth = svgViewWidth - padding * 2
-  return padding + (index / Math.max(count - 1, 1)) * usableWidth
-}
-
-/** X position for a number value */
-function positionForNumber(num: number): number {
-  const index = props.tickNumbers.indexOf(num)
-  if (index < 0) return tickX(0)
-  return tickX(index)
-}
-
-/** SVG arc path between two numbers */
 function arcPath(from: number, to: number): string {
-  const x1 = positionForNumber(from)
-  const x2 = positionForNumber(to)
+  const x1 = tickXByNum(from)
+  const x2 = tickXByNum(to)
   const midX = (x1 + x2) / 2
-  const height = -28
-  return `M ${x1} ${axisY} Q ${midX} ${axisY + height} ${x2} ${axisY}`
+  return `M ${x1} ${axisY} Q ${midX} ${axisY - 28} ${x2} ${axisY}`
 }
 
 function isTarget(num: number): boolean {
@@ -229,7 +312,6 @@ function onTickClick(num: number) {
   flex-direction: column;
   align-items: center;
   width: 100%;
-  /* NO overflow-x — always fits in screen */
   padding: 4px 0;
 }
 
@@ -237,7 +319,6 @@ function onTickClick(num: number) {
   width: 100%;
   height: auto;
   display: block;
-  /* SVG scales to fit container via viewBox */
 }
 
 .number-line__tick-label {
@@ -254,7 +335,6 @@ function onTickClick(num: number) {
   fill: #f59e0b !important;
 }
 
-/* Marker animation */
 .number-line__marker {
   transition: transform 0.1s linear;
 }
@@ -263,7 +343,6 @@ function onTickClick(num: number) {
   filter: drop-shadow(0 4px 6px rgba(76, 175, 80, 0.4));
 }
 
-/* Target pulse */
 .number-line__target-pulse {
   animation: target-pulse 1.2s ease-in-out infinite;
 }
@@ -273,7 +352,6 @@ function onTickClick(num: number) {
   50% { r: 18; opacity: 0.7; }
 }
 
-/* Expression */
 .number-line__expression {
   font-size: 16px;
   font-weight: 600;
