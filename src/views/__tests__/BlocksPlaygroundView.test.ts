@@ -147,6 +147,16 @@ describe('BlocksPlaygroundView', () => {
     expect(() => wrapper.vm.onBlockMoved(1, 100, 200)).not.toThrow()
   })
 
+  it('onBlocksCombined with null combineBlocks does nothing (early return)', () => {
+    // When combineBlocks returns null (self-combine or blocks not found),
+    // onBlocksCombined returns early without changing state
+    const prevLen = wrapper.vm.blocks.length
+    // Pass invalid IDs that won't exist in blocks array
+    wrapper.vm.onBlocksCombined(-1, -2)
+    expect(wrapper.vm.blocks.length).toBe(prevLen)
+    expect(wrapper.vm.showCelebration).toBe(false)
+  })
+
   it('onBlockReleased не бросает ошибки', () => {
     expect(() => wrapper.vm.onBlockReleased(1)).not.toThrow()
   })
