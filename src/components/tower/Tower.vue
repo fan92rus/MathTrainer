@@ -14,6 +14,7 @@
           :key="floor.id"
           :floor="floor"
           :theme="theme"
+          :total-height="targetHeight"
         />
       </TransitionGroup>
     </div>
