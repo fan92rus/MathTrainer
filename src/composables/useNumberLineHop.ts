@@ -1,25 +1,31 @@
 import { ref, computed, onUnmounted } from 'vue'
-import type { NumberLineRange, NumberLineOperation, JumpPhase } from '@/types/numberLine'
+import type { NumberLineRange, NumberLineOperation, JumpPhase, JumpAnimation } from '@/types/numberLine'
 
 /**
  * Composable для Number Line Hop (Pattern 2).
  *
- * Управляет:
- * - позицией маркера на числовой прямой
- * - анимацией прыжков (подготовка → полёт → приземление)
- * - мульти-прыжками для умножения
- * - определением правильного ответа через тап по числу
+ * Управляет только СОСТОЯНИЕМ — позиция маркера, фаза прыжка, дуги.
+ * Анимационную интерполяцию (rAF) делает Canvas-компонент.
+ *
+ * animateJump использует setTimeout для переключения фаз и resolve Promise.
  */
 export function useNumberLineHop(range: NumberLineRange) {
   const markerPosition = ref(range.min)
+  const jumpAnimation = ref<JumpAnimation | null>(null)
   const jumpPhase = ref<JumpPhase>('idle')
   const jumpArcs = ref<{ from: number; to: number; id: number }[]>([])
   const targetPosition = ref<number | null>(null)
   const isWaitingForTap = ref(false)
 
   let arcIdCounter = 0
+  let pendingTimers: ReturnType<typeof setTimeout>[] = []
 
-  /** Доступные числа для тапа */
+  function clearPending() {
+    for (const t of pendingTimers) clearTimeout(t)
+    pendingTimers = []
+  }
+
+  /** Доступные числа на прямой */
   const tickNumbers = computed(() => {
     const nums: number[] = []
     for (let i = range.min; i <= range.max; i += range.step) {
@@ -28,58 +34,59 @@ export function useNumberLineHop(range: NumberLineRange) {
     return nums
   })
 
-  /** Ширина одного деления в px (вычисляется в компоненте) */
-  const tickWidth = computed(() => {
-    const count = tickNumbers.value.length
-    // ~28px минимум, до ~60px максимум
-    return Math.max(28, Math.min(60, 600 / count))
-  })
-
-  /** Позиция числа на оси X (px) */
-  function positionForNumber(num: number): number {
-    return (num - range.min) / range.step * tickWidth.value
-  }
-
   /**
-   * Анимация одного прыжка маркера.
-   * Возвращает Promise, который резолвится после завершения.
+   * Анимация одного прыжка.
+   * Фазы: preparing (150ms) → flying (durationMs) → landing (200ms bounce).
+   * Canvas интерполирует визуальную позицию по jumpAnimation state.
    */
-  function animateJump(from: number, to: number, durationMs: number = 600): Promise<void> {
-    return new Promise((resolve) => {
-      jumpPhase.value = 'preparing'
+  function animateJump(from: number, to: number, durationMs: number = 500): Promise<void> {
+    clearPending()
+    markerPosition.value = from
+    jumpPhase.value = 'preparing'
+    jumpAnimation.value = {
+      from,
+      to,
+      startTime: performance.now(),
+      duration: durationMs,
+      phase: 'preparing',
+    }
 
-      // Phase 1: подготовка (200ms)
-      setTimeout(() => {
-        jumpPhase.value = 'flying'
-        markerPosition.value = from
-
-        // Phase 2: полёт — плавный переход
-        const startTime = performance.now()
-        function step(now: number) {
-          const elapsed = now - startTime
-          const progress = Math.min(elapsed / durationMs, 1)
-          // ease-out cubic
-          const eased = 1 - Math.pow(1 - progress, 3)
-          markerPosition.value = from + (to - from) * eased
-
-          if (progress < 1) {
-            requestAnimationFrame(step)
-          } else {
-            jumpPhase.value = 'landing'
-            markerPosition.value = to
-
-            // Записываем дугу
-            jumpArcs.value.push({ from, to, id: ++arcIdCounter })
-
-            // Phase 3: приземление (150ms)
-            setTimeout(() => {
-              jumpPhase.value = 'done'
-              resolve()
-            }, 150)
-          }
+    return new Promise<void>((resolve) => {
+      // Phase 1→2: preparing → flying (150ms)
+      const t1 = setTimeout(() => {
+        jumpAnimation.value = {
+          from,
+          to,
+          startTime: performance.now(),
+          duration: durationMs,
+          phase: 'flying',
         }
-        requestAnimationFrame(step)
-      }, 200)
+        jumpPhase.value = 'flying'
+      }, 150)
+      pendingTimers.push(t1)
+
+      // Phase 2→3: flying → landing (150 + duration ms)
+      const t2 = setTimeout(() => {
+        jumpAnimation.value = {
+          from,
+          to,
+          startTime: performance.now(),
+          duration: 200,
+          phase: 'landing',
+        }
+        jumpPhase.value = 'landing'
+        markerPosition.value = to
+        jumpArcs.value.push({ from, to, id: ++arcIdCounter })
+      }, 150 + durationMs)
+      pendingTimers.push(t2)
+
+      // Phase 3→done: landing → done (150 + duration + 200 ms)
+      const t3 = setTimeout(() => {
+        jumpAnimation.value = null
+        jumpPhase.value = 'done'
+        resolve()
+      }, 150 + durationMs + 200)
+      pendingTimers.push(t3)
     })
   }
 
@@ -105,10 +112,7 @@ export function useNumberLineHop(range: NumberLineRange) {
     }
   }
 
-  /**
-   * Установить режим ожидания тапа от пользователя.
-   * Пользователь должен тапнуть на число = правильный ответ.
-   */
+  /** Установить режим ожидания тапа */
   function waitForTap(operation: NumberLineOperation) {
     markerPosition.value = operation.start
     targetPosition.value = operation.answer
@@ -116,23 +120,18 @@ export function useNumberLineHop(range: NumberLineRange) {
     jumpArcs.value = []
   }
 
-  /**
-   * Обработать тап по числу.
-   * Возвращает true если ответ правильный.
-   */
+  /** Обработать тап по числу */
   async function handleTap(num: number): Promise<boolean> {
     if (!isWaitingForTap.value || targetPosition.value === null) return false
 
     isWaitingForTap.value = false
     const isCorrect = num === targetPosition.value
 
-    // Анимируем прыжок к выбранному числу
     await animateJump(markerPosition.value, num, 400)
 
     if (isCorrect) {
       jumpPhase.value = 'done'
     } else {
-      // Пауза, затем прыжок к правильному ответу
       await new Promise(r => setTimeout(r, 800))
       await animateJump(num, targetPosition.value, 400)
     }
@@ -142,7 +141,9 @@ export function useNumberLineHop(range: NumberLineRange) {
 
   /** Сбросить состояние */
   function reset() {
+    clearPending()
     markerPosition.value = range.min
+    jumpAnimation.value = null
     jumpPhase.value = 'idle'
     jumpArcs.value = []
     targetPosition.value = null
@@ -153,13 +154,13 @@ export function useNumberLineHop(range: NumberLineRange) {
 
   return {
     markerPosition,
+    jumpAnimation,
     jumpPhase,
     jumpArcs,
     targetPosition,
     isWaitingForTap,
     tickNumbers,
-    tickWidth,
-    positionForNumber,
+    animateJump,
     visualizeOperation,
     waitForTap,
     handleTap,

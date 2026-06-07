@@ -32,26 +32,6 @@ describe('useNumberLineHop', () => {
     expect(tickNumbers.value).toEqual([0, 2, 4, 6, 8, 10, 12, 14, 16, 18, 20])
   })
 
-  it('should compute tick width within bounds', () => {
-    const { tickWidth } = useNumberLineHop(defaultRange)
-    // 13 ticks, 600/13 ≈ 46px
-    expect(tickWidth.value).toBeGreaterThanOrEqual(28)
-    expect(tickWidth.value).toBeLessThanOrEqual(60)
-  })
-
-  it('should compute position for number relative to range', () => {
-    const { positionForNumber } = useNumberLineHop(defaultRange)
-    const pos0 = positionForNumber(0)
-    const pos5 = positionForNumber(5)
-    const pos10 = positionForNumber(10)
-    // Position 0 should be 0 (at start)
-    expect(pos0).toBe(0)
-    // Position 5 should be 5 * tickWidth
-    expect(pos5).toBeCloseTo(5 * positionForNumber(1))
-    // Position 10 should be double position 5
-    expect(pos10).toBeCloseTo(pos5 * 2)
-  })
-
   it('should set waitForTap state correctly', () => {
     const { markerPosition, targetPosition, isWaitingForTap, jumpArcs, waitForTap } =
       useNumberLineHop(defaultRange)

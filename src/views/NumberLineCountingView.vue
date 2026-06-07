@@ -38,11 +38,11 @@
           <NumberLine
             :range="numberLineRange"
             :marker-position="markerPosition"
+            :jump-animation="jumpAnimation"
             :jump-phase="jumpPhase"
             :jump-arcs="jumpArcs"
             :target-position="targetPosition"
             :is-waiting-for-tap="isWaitingForTap"
-            :tick-numbers="tickNumbers"
           />
 
           <!-- Answer options (tap to select, frog jumps to answer) -->
@@ -133,12 +133,12 @@ const numberLineRange = computed<NumberLineRange>(() => ({
 
 const {
   markerPosition,
+  jumpAnimation,
   jumpPhase,
   jumpArcs,
   targetPosition,
   isWaitingForTap,
-  tickNumbers,
-  handleTap,
+  animateJump,
   reset: resetNumberLine,
 } = useNumberLineHop(numberLineRange.value)
 
@@ -181,17 +181,14 @@ const totalScore = scoresStore.countingScore
 let currentStreak = 0
 const isAnimating = ref(false)
 
-// When a new question appears, position the frog at the first number
-watch(currentQuestion, () => {
-  if (!currentProblem.value) return
-  const num1 = currentProblem.value.num1
-  markerPosition.value = num1
+// When a new problem appears, position the frog at the first operand
+watch(currentProblem, (problem) => {
+  if (!problem) return
+  markerPosition.value = problem.num1
   jumpArcs.value = []
   jumpPhase.value = 'idle'
-  isWaitingForTap.value = false
-  targetPosition.value = null
   isAnimating.value = false
-})
+}, { immediate: true })
 
 async function handleAnswerSelected(index: number) {
   if (answered.value || isAnimating.value) return
@@ -200,21 +197,21 @@ async function handleAnswerSelected(index: number) {
   const correctIndex = currentProblem.value.correctIndex
   const isCorrect = index === correctIndex
   const selectedValue = Number(currentProblem.value.options[index])
+  const correctValue = currentProblem.value.correctAnswer
+  const startFrom = markerPosition.value
 
   isAnimating.value = true
 
   if (isCorrect) {
     currentStreak++
-    // Animate frog jumping to the correct answer
-    await handleTap(selectedValue)
+    // Frog jumps from start to correct answer
+    await animateJump(startFrom, correctValue, 500)
   } else {
     currentStreak = 0
-    // Frog jumps to wrong number, then to correct
-    const correctValue = currentProblem.value.correctAnswer
-    await handleTap(selectedValue)
-    if (markerPosition.value !== correctValue) {
-      await handleTap(correctValue)
-    }
+    // Frog jumps to wrong number (orange shake handled by CSS), then to correct
+    await animateJump(startFrom, selectedValue, 400)
+    await new Promise(r => setTimeout(r, 600))
+    await animateJump(selectedValue, correctValue, 400)
   }
 
   isAnimating.value = false

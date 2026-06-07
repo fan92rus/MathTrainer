@@ -13,6 +13,18 @@ export interface NumberLineRange {
 /** Состояние анимации прыжка */
 export type JumpPhase = 'idle' | 'preparing' | 'flying' | 'landing' | 'done'
 
+/** Текущая анимация прыжка — интерполируется Canvas-компонентом */
+export interface JumpAnimation {
+  from: number
+  to: number
+  /** performance.now() на момент начала текущей фазы */
+  startTime: number
+  /** Длительность фазы полёта (ms) */
+  duration: number
+  /** Текущая фаза */
+  phase: 'preparing' | 'flying' | 'landing'
+}
+
 /** Один прыжок маркера */
 export interface Jump {
   from: number

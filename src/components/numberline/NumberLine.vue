@@ -1,386 +1,394 @@
 <template>
   <div class="number-line" ref="containerRef">
-    <svg
-      :viewBox="`0 0 ${svgViewWidth} ${svgViewHeight}`"
-      class="number-line__svg"
-      preserveAspectRatio="xMidYMid meet"
-    >
-      <!-- Main axis line -->
-      <line
-        x1="24" :y1="axisY"
-        :x2="svgViewWidth - 24" :y2="axisY"
-        stroke="#d0d5e0"
-        stroke-width="2"
-      />
-
-      <!-- Tick marks (filtered for large ranges) -->
-      <g v-for="(num, i) in visibleTicks" :key="'tick-' + i">
-        <!-- Minor tick (shorter, thinner) for unlabeled numbers -->
-        <line
-          :x1="tickXByNum(num)" :y1="axisY - (shouldShowLabel(num) ? tickH : minorTickH)"
-          :x2="tickXByNum(num)" :y2="axisY + (shouldShowLabel(num) ? tickH : minorTickH)"
-          :stroke="isTarget(num) ? '#f59e0b' : isHighlighted(num) ? '#667eea' : '#c0c8d8'"
-          :stroke-width="isTarget(num) ? 3 : shouldShowLabel(num) ? 1.5 : 1"
-        />
-        <!-- Label only for selected numbers -->
-        <text
-          v-if="shouldShowLabel(num)"
-          :x="tickXByNum(num)"
-          :y="axisY + tickH + labelOffset"
-          text-anchor="middle"
-          :fill="isTarget(num) ? '#f59e0b' : isHighlighted(num) ? '#667eea' : '#666'"
-          :font-size="computedFontSize"
-          :font-weight="isTarget(num) || isImportant(num) ? 700 : 400"
-          class="number-line__tick-label"
-          :class="{ 'number-line__tick-label--tappable': isWaitingForTap }"
-          @click="onTickClick(num)"
-        >
-          {{ num }}
-        </text>
-      </g>
-
-      <!-- Jump arcs -->
-      <g v-for="arc in jumpArcs" :key="'arc-' + arc.id">
-        <path
-          :d="arcPath(arc.from, arc.to)"
-          fill="none"
-          stroke="#667eea"
-          stroke-width="2"
-          stroke-dasharray="6,4"
-          opacity="0.6"
-        />
-        <circle
-          :cx="tickXByNum(arc.to)"
-          :cy="axisY"
-          r="3"
-          fill="#667eea"
-          opacity="0.6"
-        />
-      </g>
-
-      <!-- Target indicator (pulsing ring) -->
-      <circle
-        v-if="targetPosition !== null && isWaitingForTap"
-        :cx="tickXByNum(targetPosition)"
-        :cy="axisY"
-        r="14"
-        fill="none"
-        stroke="#ffd700"
-        stroke-width="2"
-        opacity="0.6"
-        class="number-line__target-pulse"
-      />
-
-      <!-- Marker (frog) -->
-      <g
-        :transform="`translate(${positionForNumber(markerPosition)}, ${axisY})`"
-        class="number-line__marker"
-        :class="{ 'number-line__marker--flying': jumpPhase === 'flying' }"
-      >
-        <ellipse cx="0" cy="-4" :rx="frogRX" :ry="frogRY" fill="#4caf50" />
-        <circle :cx="-frogRX * 0.42" :cy="-frogRY - 2" :r="frogRX * 0.35" fill="#fff" />
-        <circle :cx="frogRX * 0.42" :cy="-frogRY - 2" :r="frogRX * 0.35" fill="#fff" />
-        <circle :cx="-frogRX * 0.35" :cy="-frogRY - 2.7" :r="frogRX * 0.18" fill="#333" />
-        <circle :cx="frogRX * 0.49" :cy="-frogRY - 2.7" :r="frogRX * 0.18" fill="#333" />
-        <path :d="`M ${-frogRX * 0.3} -2 Q 0 ${frogRY * 0.4} ${frogRX * 0.3} -2`" fill="none" stroke="#2e7d32" stroke-width="1.5" />
-      </g>
-    </svg>
-
-    <div v-if="expression" class="number-line__expression">
-      {{ expression }}
-    </div>
+    <canvas ref="canvasRef" class="number-line__canvas" />
   </div>
 </template>
 
 <script setup lang="ts">
-import { computed, ref, onMounted, onUnmounted } from 'vue'
-import type { NumberLineRange } from '@/types/numberLine'
+import { ref, onMounted, onUnmounted } from 'vue'
+import type { NumberLineRange, JumpPhase, JumpAnimation } from '@/types/numberLine'
 
-const props = withDefaults(defineProps<{
+const props = defineProps<{
   range: NumberLineRange
   markerPosition: number
-  jumpPhase: string
+  jumpAnimation: JumpAnimation | null
+  jumpPhase: JumpPhase
   jumpArcs: { from: number; to: number; id: number }[]
   targetPosition: number | null
   isWaitingForTap: boolean
-  tickNumbers: number[]
-  expression?: string
-  highlightRange?: { from: number; to: number } | null
-}>(), {
-  expression: '',
-  highlightRange: null,
-})
-
-const emit = defineEmits<{
-  tickClick: [value: number]
 }>()
 
-const containerRef = ref<HTMLElement | null>(null)
-const containerWidth = ref(400)
+const containerRef = ref<HTMLDivElement>()
+const canvasRef = ref<HTMLCanvasElement>()
 
-const axisY = 55
-const padding = 24
-const tickH = 8
-const minorTickH = 5
-const svgViewWidth = 500
-const svgViewHeight = 100
-
-/** Minimum distance between labels in viewBox coords.
- *  usableWidth = 500 - 48 = 452. For span 0-100 with step 10, gap = 45.2.
- *  30px minimum ensures "100" (~22px at font 10) doesn't overlap.
- */
+// ── Constants ──────────────────────────────────────────
+const CANVAS_H = 120
+const PAD_X = 24
+const AXIS_Y_RATIO = 0.68
 const MIN_LABEL_GAP = 34
+const ARC_H_MAX = 40
 
-/** Visible tick marks — filtered for large ranges to avoid visual clutter.
- *  ≤ 20 numbers: show all
- *  > 20: show multiples of 5 + important numbers
- */
-const visibleTicks = computed(() => {
-  const nums = props.tickNumbers
-  if (nums.length <= 20) return nums
-
-  const span = nums[nums.length - 1]! - nums[0]!
-  const tickStep = span > 40 ? 5 : span > 20 ? 2 : 1
-
-  // Important numbers that must always have a tick
-  const important = new Set<number>()
-  if (props.targetPosition !== null) important.add(props.targetPosition)
-  const markerRounded = Math.round(props.markerPosition)
-  if (nums.includes(markerRounded)) important.add(markerRounded)
-  for (const arc of props.jumpArcs) {
-    if (nums.includes(arc.from)) important.add(arc.from)
-    if (nums.includes(arc.to)) important.add(arc.to)
-  }
-
-  return nums.filter(n => n % tickStep === 0 || important.has(n))
-})
-
-function updateWidth() {
-  if (containerRef.value) {
-    containerWidth.value = containerRef.value.clientWidth || 400
-  }
-}
-
+// ── Internal state ─────────────────────────────────────
+let rafId = 0
 let resizeObserver: ResizeObserver | null = null
+let dpr = 1
+/** Container width in CSS pixels */
+let cssW = 0
 
+// ── Lifecycle ──────────────────────────────────────────
 onMounted(() => {
-  updateWidth()
+  resizeCanvas()
+  startLoop()
+
   if (containerRef.value) {
-    resizeObserver = new ResizeObserver(() => updateWidth())
+    resizeObserver = new ResizeObserver(() => resizeCanvas())
     resizeObserver.observe(containerRef.value as unknown as Element)
   }
 })
 
 onUnmounted(() => {
+  stopLoop()
   resizeObserver?.disconnect()
 })
 
-/** X position for a number value in viewBox coords */
-function tickXByNum(num: number): number {
-  const count = props.tickNumbers.length
-  const index = props.tickNumbers.indexOf(num)
-  if (index < 0) return padding
-  const usableWidth = svgViewWidth - padding * 2
-  return padding + (index / Math.max(count - 1, 1)) * usableWidth
+function resizeCanvas() {
+  const canvas = canvasRef.value
+  const container = containerRef.value
+  if (!canvas || !container) return
+
+  const rect = container.getBoundingClientRect() as DOMRect
+  dpr = window.devicePixelRatio || 1
+  cssW = rect.width
+  canvas.width = cssW * dpr
+  canvas.height = CANVAS_H * dpr
+  canvas.style.width = cssW + 'px'
+  canvas.style.height = CANVAS_H + 'px'
 }
 
-/** Alias for composable compatibility */
-function positionForNumber(num: number): number {
-  return tickXByNum(num)
+// ── Render loop ────────────────────────────────────────
+function startLoop() {
+  function frame() { draw(); rafId = requestAnimationFrame(frame) }
+  rafId = requestAnimationFrame(frame)
 }
 
-/**
- * Determine which numbers deserve a visible label.
- *
- * Strategy:
- *   - If ≤ 12 numbers total: show all
- *   - Otherwise: show "round" numbers (step depends on span) + important numbers
- *     (target, marker, arc endpoints), but skip any that would be within
- *     MIN_LABEL_GAP of an already-shown label.
- *   - Important numbers ALWAYS show even if they overlap (they're critical).
- */
-const labeledNumbers = computed(() => {
-  const nums = props.tickNumbers
-  if (nums.length === 0) return new Set<number>()
+function stopLoop() {
+  if (rafId) cancelAnimationFrame(rafId)
+}
 
-  // Few numbers — show all
-  if (nums.length <= 12) return new Set(nums)
+// ── Data helpers ───────────────────────────────────────
+function buildTicks(): number[] {
+  const { min, max, step } = props.range
+  const nums: number[] = []
+  for (let i = min; i <= max; i += step) nums.push(i)
+  return nums
+}
 
-  const span = nums[nums.length - 1]! - nums[0]!
-  const roundStep = span > 40 ? 10 : span > 12 ? 5 : 1
+function computeVisible(
+  ticks: number[],
+  xOf: (n: number) => number,
+): { visibleTicks: Set<number>; labels: Set<number> } {
+  const count = ticks.length
+  if (count === 0) return { visibleTicks: new Set(), labels: new Set() }
 
-  // Important numbers: always visible
+  // Always show ≤ 12
+  if (count <= 12) return { visibleTicks: new Set(ticks), labels: new Set(ticks) }
+
+  const span = ticks[count - 1]! - ticks[0]!
+  const all = new Set(ticks)
+
+  // Important numbers
   const important = new Set<number>()
-  important.add(nums[0]!)
-  important.add(nums[nums.length - 1]!)
-  if (props.targetPosition !== null) important.add(props.targetPosition)
-  // Marker (rounded to nearest tick)
-  const markerRounded = Math.round(props.markerPosition)
-  if (nums.includes(markerRounded)) important.add(markerRounded)
-  // Arc endpoints
-  for (const arc of props.jumpArcs) {
-    if (nums.includes(arc.from)) important.add(arc.from)
-    if (nums.includes(arc.to)) important.add(arc.to)
+  important.add(ticks[0]!)
+  important.add(ticks[count - 1]!)
+  const mr = Math.round(props.markerPosition)
+  if (all.has(mr)) important.add(mr)
+  if (props.targetPosition !== null && all.has(props.targetPosition)) important.add(props.targetPosition)
+  for (const a of props.jumpArcs) {
+    if (all.has(a.from)) important.add(a.from)
+    if (all.has(a.to)) important.add(a.to)
   }
 
-  // "Round" numbers (multiples of roundStep)
-  const round = new Set<number>()
-  for (const n of nums) {
-    if (n % roundStep === 0) round.add(n)
-  }
+  // Tick filtering
+  const tickStep = span > 40 ? 10 : span > 20 ? 5 : 2
+  const visibleTicks = new Set(ticks.filter(n => n % tickStep === 0 || important.has(n)))
 
-  // Build final set with collision detection
-  const result = new Set<number>()
-  const placed: number[] = [] // x positions in viewBox coords
+  // Labels — round numbers with collision + important overlays
+  const roundStep = span > 40 ? 10 : span > 12 ? 5 : 1
+  const labels = new Set<number>()
+  const positions: { x: number; n: number }[] = []
 
-  // First: place round numbers (sorted)
-  for (const n of nums) {
-    if (!round.has(n)) continue
-    const x = tickXByNum(n)
-    if (!placed.some(px => Math.abs(px - x) < MIN_LABEL_GAP)) {
-      placed.push(x)
-      result.add(n)
+  // First pass: round numbers
+  for (const n of ticks) {
+    if (important.has(n)) continue
+    if (roundStep > 1 && n % roundStep !== 0) continue
+    const x = xOf(n)
+    if (positions.every(p => Math.abs(p.x - x) >= MIN_LABEL_GAP)) {
+      positions.push({ x, n })
+      labels.add(n)
     }
   }
 
-  // Second: place important numbers
-  // If an important number is close to an already-placed round number,
-  // remove the round number in favor of the important one
-  for (const n of nums) {
+  // Second pass: important numbers (evict if too close)
+  for (const n of ticks) {
     if (!important.has(n)) continue
-    result.add(n)
-    const x = tickXByNum(n)
-    // Check if any placed round number is too close — evict it
-    const tooCloseIdx = placed.findIndex(px => Math.abs(px - x) < MIN_LABEL_GAP)
-    if (tooCloseIdx >= 0) {
-      // Find the round number at this position and remove it
-      const closeX = placed[tooCloseIdx]!
-      for (const rn of result) {
-        if (!important.has(rn) && Math.abs(tickXByNum(rn) - closeX) < 1) {
-          result.delete(rn)
-          break
-        }
-      }
-      placed.splice(tooCloseIdx, 1)
+    const x = xOf(n)
+    const conflict = positions.find(p => Math.abs(p.x - x) < MIN_LABEL_GAP)
+    if (conflict) {
+      const idx = positions.indexOf(conflict)
+      positions.splice(idx, 1)
+      labels.delete(conflict.n)
     }
-    if (!placed.some(px => Math.abs(px - x) < 1)) {
-      placed.push(x)
+    positions.push({ x, n })
+    labels.add(n)
+  }
+
+  return { visibleTicks, labels }
+}
+
+/** Current frog position & state — interpolates jumpAnimation */
+function frogState() {
+  const anim = props.jumpAnimation
+  if (!anim) {
+    return { frogNum: props.markerPosition, frogY: 0, lookDir: 0, phase: 'idle' }
+  }
+
+  if (anim.phase === 'preparing') {
+    return { frogNum: anim.from, frogY: 3, lookDir: Math.sign(anim.to - anim.from) as 1 | -1 | 0, phase: 'preparing' }
+  }
+
+  if (anim.phase === 'flying') {
+    const t = Math.min((performance.now() - anim.startTime) / anim.duration, 1)
+    const eased = 1 - (1 - t) ** 3
+    const arcH = Math.min(ARC_H_MAX, 12 + Math.abs(anim.to - anim.from) * 0.35)
+    return {
+      frogNum: anim.from + (anim.to - anim.from) * eased,
+      frogY: -arcH * 4 * t * (1 - t),
+      lookDir: Math.sign(anim.to - anim.from) as 1 | -1 | 0,
+      phase: 'flying',
     }
   }
 
-  return result
-})
-
-function shouldShowLabel(num: number): boolean {
-  return labeledNumbers.value.has(num)
+  // landing — dampened bounce
+  const p = Math.min((performance.now() - anim.startTime) / 200, 1)
+  const bounce = 5 * Math.sin(p * Math.PI * 3) * (1 - p)
+  return { frogNum: anim.to, frogY: bounce, lookDir: 0, phase: 'landing' }
 }
 
-function isImportant(num: number): boolean {
-  if (props.targetPosition === num) return true
-  if (Math.round(props.markerPosition) === num) return true
-  return props.jumpArcs.some(a => a.from === num || a.to === num)
-}
+// ── Main draw ──────────────────────────────────────────
+function draw() {
+  const canvas = canvasRef.value
+  if (!canvas) return
+  const ctx = canvas.getContext('2d')
+  if (!ctx) return
 
-const computedFontSize = computed(() => {
-  const count = props.tickNumbers.length
-  if (count <= 6) return 14
-  if (count <= 12) return 13
-  if (count <= 20) return 11
-  return 10
-})
+  const W = canvas.width / dpr
+  const H = canvas.height / dpr
+  const axisY = H * AXIS_Y_RATIO
+  const usableW = Math.max(W - PAD_X * 2, 0)
+  if (usableW <= 0) return
 
-const labelOffset = computed(() => {
-  return props.tickNumbers.length > 20 ? 16 : 18
-})
+  const ticks = buildTicks()
+  const count = ticks.length
+  if (count < 2) return
 
-const frogRX = computed(() => {
-  const count = props.tickNumbers.length
-  if (count <= 6) return 14
-  if (count <= 12) return 12
-  return 9
-})
-
-const frogRY = computed(() => {
-  const count = props.tickNumbers.length
-  if (count <= 6) return 12
-  if (count <= 12) return 10
-  return 8
-})
-
-function arcPath(from: number, to: number): string {
-  const x1 = tickXByNum(from)
-  const x2 = tickXByNum(to)
-  const midX = (x1 + x2) / 2
-  return `M ${x1} ${axisY} Q ${midX} ${axisY - 28} ${x2} ${axisY}`
-}
-
-function isTarget(num: number): boolean {
-  return props.targetPosition === num
-}
-
-function isHighlighted(num: number): boolean {
-  if (!props.highlightRange) return false
-  return num >= props.highlightRange.from && num <= props.highlightRange.to
-}
-
-function onTickClick(num: number) {
-  if (props.isWaitingForTap) {
-    emit('tickClick', num)
+  // X position lookup: exact via Map, animated via linear fallback
+  const xMap = new Map<number, number>()
+  for (let i = 0; i < count; i++) {
+    xMap.set(ticks[i]!, PAD_X + (i / (count - 1)) * usableW)
   }
+  const rangeSpan = props.range.max - props.range.min || 1
+  const numToX = (n: number) => xMap.get(n) ?? PAD_X + ((n - props.range.min) / rangeSpan) * usableW
+
+  // ── Clear ──
+  ctx.clearRect(0, 0, canvas.width, canvas.height)
+  ctx.save()
+  ctx.scale(dpr, dpr)
+  ctx.textBaseline = 'top'
+  ctx.textAlign = 'center'
+  ctx.font = '500 11px "Nunito", "Rubik", sans-serif'
+
+  const { visibleTicks, labels } = computeVisible(ticks, numToX)
+
+  // 1. Axis line
+  ctx.strokeStyle = '#d0d5e0'
+  ctx.lineWidth = 2
+  ctx.lineCap = 'round'
+  ctx.beginPath()
+  ctx.moveTo(PAD_X, axisY)
+  ctx.lineTo(PAD_X + usableW, axisY)
+  ctx.stroke()
+
+  // 2. Tick marks
+  for (const n of visibleTicks) {
+    const x = numToX(n)
+    const hasLabel = labels.has(n)
+    ctx.strokeStyle = '#c0c8d8'
+    ctx.lineWidth = hasLabel ? 1.5 : 1
+    const h = hasLabel ? 8 : 5
+    ctx.beginPath()
+    ctx.moveTo(x, axisY - h)
+    ctx.lineTo(x, axisY + h)
+    ctx.stroke()
+  }
+
+  // 3. Jump arcs
+  if (props.jumpArcs.length > 0) {
+    ctx.strokeStyle = '#667eea'
+    ctx.lineWidth = 2
+    ctx.setLineDash([6, 4])
+    ctx.lineCap = 'round'
+    for (const arc of props.jumpArcs) {
+      const x1 = numToX(arc.from)
+      const x2 = numToX(arc.to)
+      const midX = (x1 + x2) / 2
+      const arcH = Math.min(30, 10 + Math.abs(arc.to - arc.from) * 0.3)
+      ctx.beginPath()
+      ctx.moveTo(x1, axisY)
+      ctx.quadraticCurveTo(midX, axisY - arcH, x2, axisY)
+      ctx.stroke()
+      // End dot
+      ctx.setLineDash([])
+      ctx.fillStyle = '#667eea'
+      ctx.beginPath()
+      ctx.arc(x2, axisY, 3, 0, Math.PI * 2)
+      ctx.fill()
+      ctx.setLineDash([6, 4])
+    }
+    ctx.setLineDash([])
+  }
+
+  // 4. Labels
+  for (const n of labels) {
+    const x = numToX(n)
+    const isHighlight = n === props.targetPosition
+    ctx.fillStyle = isHighlight ? '#f59e0b' : '#555'
+    ctx.font = `${isHighlight ? 700 : 500} ${count <= 12 ? 13 : 10}px "Nunito", "Rubik", sans-serif`
+    ctx.fillText(String(n), x, axisY + 14)
+  }
+
+  // 5. Target pulse
+  if (props.isWaitingForTap && props.targetPosition !== null) {
+    const pulse = performance.now() / 1000
+    const r = 14 + 3 * Math.sin(pulse * Math.PI * 2)
+    const alpha = 0.3 + 0.3 * Math.sin(pulse * Math.PI * 2)
+    ctx.strokeStyle = '#ffd700'
+    ctx.lineWidth = 2
+    ctx.globalAlpha = alpha
+    ctx.beginPath()
+    ctx.arc(numToX(props.targetPosition), axisY, r, 0, Math.PI * 2)
+    ctx.stroke()
+    ctx.globalAlpha = 1
+  }
+
+  // 6. Frog
+  const frog = frogState()
+  drawFrog(ctx, numToX(frog.frogNum), axisY + frog.frogY, frog.lookDir, frog.phase)
+
+  ctx.restore()
+}
+
+// ── Frog drawing ───────────────────────────────────────
+function drawFrog(
+  ctx: CanvasRenderingContext2D,
+  x: number, y: number,
+  lookDir: number,
+  phase: string,
+) {
+  ctx.save()
+  ctx.translate(x, y - 10) // sits on axis
+
+  // Squash & stretch
+  let sx = 1, sy = 1
+  if (phase === 'preparing') { sx = 1.2; sy = 0.78 }
+  else if (phase === 'flying') { sx = 0.85; sy = 1.18 }
+  ctx.scale(sx, sy)
+
+  // Shadow
+  ctx.fillStyle = 'rgba(0,0,0,0.07)'
+  ctx.beginPath()
+  ctx.ellipse(0, 10, 11, 3, 0, 0, Math.PI * 2)
+  ctx.fill()
+
+  // Back legs
+  ctx.fillStyle = '#43A047'
+  ctx.beginPath()
+  ctx.ellipse(-10, 5, 5, 3.5, -0.3, 0, Math.PI * 2)
+  ctx.fill()
+  ctx.beginPath()
+  ctx.ellipse(10, 5, 5, 3.5, 0.3, 0, Math.PI * 2)
+  ctx.fill()
+
+  // Body
+  ctx.fillStyle = '#4CAF50'
+  ctx.beginPath()
+  ctx.ellipse(0, 0, 13, 9, 0, 0, Math.PI * 2)
+  ctx.fill()
+
+  // Belly
+  ctx.fillStyle = '#A5D6A7'
+  ctx.beginPath()
+  ctx.ellipse(0, 3, 8, 5, 0, 0, Math.PI * 2)
+  ctx.fill()
+
+  // Eyes (white)
+  ctx.fillStyle = 'white'
+  ctx.beginPath()
+  ctx.arc(-5, -6, 5, 0, Math.PI * 2)
+  ctx.fill()
+  ctx.beginPath()
+  ctx.arc(5, -6, 5, 0, Math.PI * 2)
+  ctx.fill()
+
+  // Pupils — follow look direction
+  const px = lookDir * 1.8
+  ctx.fillStyle = '#1B5E20'
+  ctx.beginPath()
+  ctx.arc(-5 + px, -6, 2.5, 0, Math.PI * 2)
+  ctx.fill()
+  ctx.beginPath()
+  ctx.arc(5 + px, -6, 2.5, 0, Math.PI * 2)
+  ctx.fill()
+
+  // Eye shine
+  ctx.fillStyle = 'white'
+  ctx.beginPath()
+  ctx.arc(-5 + px + 1, -7, 1, 0, Math.PI * 2)
+  ctx.fill()
+  ctx.beginPath()
+  ctx.arc(5 + px + 1, -7, 1, 0, Math.PI * 2)
+  ctx.fill()
+
+  // Smile
+  ctx.strokeStyle = '#2E7D32'
+  ctx.lineWidth = 1.5
+  ctx.lineCap = 'round'
+  ctx.beginPath()
+  ctx.arc(0, -1, 5, 0.25, Math.PI - 0.25)
+  ctx.stroke()
+
+  // Blush
+  ctx.fillStyle = 'rgba(244, 143, 177, 0.35)'
+  ctx.beginPath()
+  ctx.ellipse(-10, -1, 3, 2, 0, 0, Math.PI * 2)
+  ctx.fill()
+  ctx.beginPath()
+  ctx.ellipse(10, -1, 3, 2, 0, 0, Math.PI * 2)
+  ctx.fill()
+
+  ctx.restore()
 }
 </script>
 
 <style scoped>
 .number-line {
+  width: 100%;
   display: flex;
-  flex-direction: column;
-  align-items: center;
-  width: 100%;
-  padding: 4px 0;
+  justify-content: center;
+  min-height: 120px;
 }
 
-.number-line__svg {
-  width: 100%;
-  height: auto;
+.number-line__canvas {
   display: block;
-}
-
-.number-line__tick-label {
-  font-family: 'Nunito', 'Rubik', sans-serif;
-  cursor: default;
-  user-select: none;
-}
-
-.number-line__tick-label--tappable {
-  cursor: pointer;
-}
-
-.number-line__tick-label--tappable:hover {
-  fill: #f59e0b !important;
-}
-
-.number-line__marker {
-  transition: transform 0.1s linear;
-}
-
-.number-line__marker--flying {
-  filter: drop-shadow(0 4px 6px rgba(76, 175, 80, 0.4));
-}
-
-.number-line__target-pulse {
-  animation: target-pulse 1.2s ease-in-out infinite;
-}
-
-@keyframes target-pulse {
-  0%, 100% { r: 14; opacity: 0.3; }
-  50% { r: 18; opacity: 0.7; }
-}
-
-.number-line__expression {
-  font-size: 16px;
-  font-weight: 600;
-  color: var(--color-text-secondary);
-  text-align: center;
-  margin-top: 4px;
+  max-width: 100%;
 }
 </style>
