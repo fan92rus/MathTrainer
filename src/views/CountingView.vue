@@ -10,7 +10,7 @@
     />
 
     <div class="game-container">
-      <div v-if="!gameOver" class="game-container-inner">
+      <div v-if="!gameOver" class="game-container-inner" :class="{ 'answer-mode-drag': answerMode === 'drag' }">
         <!-- Main game content -->
         <div class="game-main">
           <div class="header">
@@ -70,14 +70,20 @@
           </div>
         </div>
 
-        <!-- Tower (Pattern 7 — side on desktop, below on mobile) -->
-        <Tower
-          class="counting-tower"
-          :floors="towerFloors"
-          :target-height="towerTargetHeight"
-          theme="castle"
-          :completed="towerCompleted"
-        />
+        <!-- Tower — side on desktop, below on mobile -->
+        <!-- collapsed in drag mode on mobile to save space -->
+        <div
+          class="counting-tower-wrapper"
+          :class="{ 'counting-tower-wrapper--collapsed': answerMode === 'drag' }"
+        >
+          <Tower
+            class="counting-tower"
+            :floors="towerFloors"
+            :target-height="towerTargetHeight"
+            theme="castle"
+            :completed="towerCompleted"
+          />
+        </div>
       </div>
 
       <GameOver
@@ -374,6 +380,29 @@
 @media (max-width: 768px) {
   .counting-tower {
     align-self: center;
+  }
+}
+
+/* Collapse tower in drag mode — only show header bar */
+.counting-tower-wrapper--collapsed .counting-tower {
+  min-width: auto;
+  max-width: 100%;
+  padding: 4px 8px;
+  border-width: 1px;
+}
+.counting-tower-wrapper--collapsed :deep(.tower-stack) {
+  display: none;
+}
+.counting-tower-wrapper--collapsed :deep(.tower__complete) {
+  display: none;
+}
+
+/* Drag mode: compact expression, more room for drag interaction */
+@media (max-width: 480px) {
+  .answer-mode-drag .math-expression {
+    font-size: 22px;
+    padding: 8px 0;
+    margin: 4px 0;
   }
 }
 </style>
