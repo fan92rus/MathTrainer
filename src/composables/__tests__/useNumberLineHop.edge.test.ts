@@ -16,43 +16,43 @@ describe('useNumberLineHop - edge cases', () => {
 
       markerPosition.value = 5
 
-      // First jump: from start (5) to start (5) — bounce in place
-      const jump1 = animateJump(5, 5, 300)
-      vi.advanceTimersByTime(700) // 150+300+200=650ms + buffer
+      // First jump: from start (5) to wrong value (14)
+      const jump1 = animateJump(5, 14, 400)
+      vi.advanceTimersByTime(800) // 150+400+200=750ms + buffer
       await jump1
-      expect(markerPosition.value).toBe(5)
+      expect(markerPosition.value).toBe(14)
 
-      // Second jump: from start (5) to correct (2)
-      const jump2 = animateJump(5, 2, 500)
-      vi.advanceTimersByTime(900) // 150+500+200=850ms + buffer
+      // Second jump: from wrong (14) back to start (5)
+      const jump2 = animateJump(14, 5, 400)
+      vi.advanceTimersByTime(800) // 150+400+200=750ms + buffer
       await jump2
-      expect(markerPosition.value).toBe(2)
+      expect(markerPosition.value).toBe(5)
     })
 
-    it('should maintain isAnimating-like state between jumps', async () => {
+    it('should maintain clean state between jumps', async () => {
       const { markerPosition, jumpAnimation, jumpPhase, animateJump } = useNumberLineHop({ min: 0, max: 20, step: 1 })
 
       markerPosition.value = 5
 
-      // Simulate wrong-answer: first jump to start
-      const jump1 = animateJump(5, 5, 300)
-      vi.advanceTimersByTime(700)
+      // Simulate wrong-answer: first jump to wrong answer
+      const jump1 = animateJump(5, 14, 400)
+      vi.advanceTimersByTime(800)
       await jump1
 
       // After first jump, animation should be done
       expect(jumpAnimation.value).toBeNull()
       expect(jumpPhase.value).toBe('done')
-      expect(markerPosition.value).toBe(5)
+      expect(markerPosition.value).toBe(14)
 
       // Simulate the 600ms pause
       vi.advanceTimersByTime(600)
 
-      // Second jump to correct
-      const jump2 = animateJump(5, 2, 500)
-      vi.advanceTimersByTime(900)
+      // Second jump: back to start
+      const jump2 = animateJump(14, 5, 400)
+      vi.advanceTimersByTime(800)
       await jump2
 
-      expect(markerPosition.value).toBe(2)
+      expect(markerPosition.value).toBe(5)
       expect(jumpAnimation.value).toBeNull()
     })
 
@@ -61,25 +61,25 @@ describe('useNumberLineHop - edge cases', () => {
 
       markerPosition.value = 5
 
-      // First jump: arc pushed at ~450ms (150+300)
-      const jump1 = animateJump(5, 5, 300)
-      vi.advanceTimersByTime(700)
+      // First jump: arc pushed at ~550ms (150+400)
+      const jump1 = animateJump(5, 14, 400)
+      vi.advanceTimersByTime(800)
       await jump1
       expect(jumpArcs.value.length).toBe(1)
 
       // 600ms pause
       vi.advanceTimersByTime(600)
 
-      // First arc timer: pushed at ~450ms, cleared at ~450+600=1050ms
-      // Current time is 1300ms, so first arc may already be cleared
+      // First arc timer: pushed at ~550ms, cleared at ~550+600=1150ms
+      // Current time is 1400ms, so first arc may already be cleared
 
       // Second jump
-      const jump2 = animateJump(5, 2, 500)
-      vi.advanceTimersByTime(900)
+      const jump2 = animateJump(14, 5, 400)
+      vi.advanceTimersByTime(800)
       await jump2
 
-      // Second arc was pushed at ~1300+650=1950ms
-      // At time 2200ms (1300+900), second arc exists, first may be gone
+      // Second arc was pushed at ~1400+550=1950ms
+      // At time 2200ms (1400+800), second arc exists, first may be gone
       expect(jumpArcs.value.length).toBeGreaterThanOrEqual(1)
 
       // Advance past 600ms from second arc push

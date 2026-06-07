@@ -197,6 +197,7 @@ async function handleAnswerSelected(index: number) {
 
   const correctIndex = currentProblem.value.correctIndex
   const isCorrect = index === correctIndex
+  const selectedValue = Number(currentProblem.value.options[index])
   const correctValue = currentProblem.value.correctAnswer
   const startFrom = markerPosition.value
 
@@ -208,11 +209,11 @@ async function handleAnswerSelected(index: number) {
     await animateJump(startFrom, correctValue, 500)
   } else {
     currentStreak = 0
-    // Frog jumps back to starting number (or bounces in place), pauses, then jumps to correct
+    // Frog jumps to wrong answer, pauses, then jumps back to start
     const startNum = currentProblem.value.num1
-    await animateJump(startFrom, startNum, 300)
+    await animateJump(startFrom, selectedValue, 400)
     await new Promise(r => setTimeout(r, 600))
-    await animateJump(startNum, correctValue, 500)
+    await animateJump(selectedValue, startNum, 400)
   }
 
   isAnimating.value = false
