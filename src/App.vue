@@ -2,6 +2,8 @@
   <div class="app-container">
     <router-view />
     <GradeSelection v-if="showGradeSelection" @grade-selected="handleGradeSelected" />
+    <LevelUpCelebration />
+    <DailyBonusPopup />
   </div>
 </template>
 
@@ -9,11 +11,15 @@
   import { computed, onMounted } from 'vue';
   import { useSettingsStore } from './store/settings';
   import GradeSelection from './components/common/GradeSelection.vue';
+  import LevelUpCelebration from './components/common/LevelUpCelebration.vue';
+  import DailyBonusPopup from './components/common/DailyBonusPopup.vue';
 
   export default {
     name: 'App',
     components: {
-      GradeSelection
+      GradeSelection,
+      LevelUpCelebration,
+      DailyBonusPopup
     },
     setup() {
       const settingsStore = useSettingsStore();

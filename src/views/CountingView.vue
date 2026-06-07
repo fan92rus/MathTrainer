@@ -35,6 +35,11 @@
 
           <div class="math-expression">{{ currentProblem?.expression }} = ?</div>
 
+          <SessionStreakBar
+            :current-streak="streakTracker.currentStreak.value"
+            @milestone="onStreakMilestone"
+          />
+
           <!-- Mode toggle -->
           <div class="mode-toggle">
             <button
@@ -89,11 +94,13 @@
   import { onMounted, computed, watch, reactive } from 'vue';
   import { useRouter } from 'vue-router';
   import { useScoresStore } from '../store/scores';
+  import { usePlayerStore } from '../store/player';
   import { useSettingsStore } from '../store/settings';
   import { useDailyTasks } from '../composables/useDailyTasks';
   import { useGameLogic } from '../composables/useGameLogic';
   import { useAchievements, useSessionTimeTracker } from '../composables/useAchievements';
   import { useCoins } from '../composables/useCoins';
+  import { useChallengeStreak } from '../composables/useChallengeStreak';
   import { generateCountingProblem } from '../utils/math';
   import ScoreDisplay from '../components/common/ScoreDisplay.vue';
   import ProgressBar from '../components/common/ProgressBar.vue';
@@ -105,6 +112,7 @@
   import CoinAnimation from '../components/common/CoinAnimation.vue';
   import CurrencyDisplay from '../components/player/CurrencyDisplay.vue';
   import CountingModeSwitcher from '../components/common/CountingModeSwitcher.vue';
+  import SessionStreakBar from '../components/common/SessionStreakBar.vue';
 
   export default {
     name: 'CountingView',
@@ -118,7 +126,8 @@
       AchievementManager,
       CoinAnimation,
       CurrencyDisplay,
-      CountingModeSwitcher
+      CountingModeSwitcher,
+      SessionStreakBar
     },
     setup() {
       const router = useRouter();
@@ -169,16 +178,17 @@
       const maxNumber = computed(() => settingsStore.maxCountingNumber);
 
       // Отслеживание текущей серии правильных ответов
-      let currentStreak = 0;
+      const playerStore = usePlayerStore();
+      const streakTracker = useChallengeStreak();
 
       // Обработчик выбора ответа
       const handleAnswerSelected = (index) => {
         const isCorrect = index === (currentProblem.value?.correctIndex || 0);
 
         if (isCorrect) {
-          currentStreak++;
+          streakTracker.recordCorrect();
         } else {
-          currentStreak = 0;
+          streakTracker.recordIncorrect();
         }
 
         selectAnswer(index, currentProblem.value?.correctIndex || 0, (points) => {
@@ -194,7 +204,7 @@
             checkAchievements(scoresStore, {
               type: 'counting',
               correct: true,
-              streak: currentStreak,
+              streak: streakTracker.currentStreak.value,
               ...getSessionData()
             });
           }
@@ -205,10 +215,16 @@
         }
       };
 
+      // Награда за мильный камень стрика
+      function onStreakMilestone(milestone) {
+        const bonus = milestone >= 10 ? 10 : milestone >= 7 ? 7 : milestone >= 5 ? 5 : 3;
+        playerStore.addCoins(bonus);
+      }
+
       // Перезапуск игры
       const restartGame = () => {
         initializeGame();
-        currentStreak = 0; // Сбрасываем серию
+        streakTracker.reset(); // Сбрасываем серию
         startSession(); // Начинаем новую сессию
         generateAllProblems(() => {
           return generateCountingProblem(
@@ -255,6 +271,8 @@
         goToMain,
         showCoinAnimation,
         coinsEarned,
+        onStreakMilestone,
+        streakTracker,
         // Mode
         answerMode,
         toggleAnswerMode
