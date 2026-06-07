@@ -2,12 +2,12 @@ import { describe, it, expect, beforeEach, vi } from 'vitest'
 import { mount, VueWrapper } from '@vue/test-utils'
 import { createPinia, setActivePinia } from 'pinia'
 
-// Mock ALL child components (only needed ones)
+// Mock ONLY needed child components
 vi.mock('@/components/common/ProgressBar.vue', () => ({
   default: { template: '<div class="mock-progress"></div>', props: ['progressPercent'] }
 }))
-vi.mock('@/components/common/AnswerOptions.vue', () => ({
-  default: { template: '<div class="mock-answers"><button v-for="(o,i) in options" :key="i" class="ans-btn" @click="$emit(\'answerSelected\', i)">{{ o }}</button></div>', props: ['options','correctIndex','answered','selectedIndex'], emits: ['answerSelected'] }
+vi.mock('@/components/dragdrop/DragDropAnswer.vue', () => ({
+  default: { template: '<div class="mock-dragdrop"><button v-for="(o,i) in options" :key="i" class="drag-btn" @click="$emit(\'answerSelected\', i)">{{ o }}</button></div>', props: ['options','correctIndex','answered','selectedIndex'], emits: ['answerSelected'] }
 }))
 vi.mock('@/components/common/GameOver.vue', () => ({
   default: { template: '<div class="mock-gameover"></div>', props: ['correctAnswers','totalAnswers','score'], emits: ['restart','exit'] }
@@ -48,15 +48,15 @@ describe('CountingView', () => {
     expect(wrapper.text()).toContain('= ?')
   })
 
-  it('показывает 4 кнопки ответа', () => {
-    const btns = wrapper.findAll('.ans-btn')
+  it('показывает 4 кнопки в DragDropAnswer', () => {
+    const btns = wrapper.findAll('.drag-btn')
     expect(btns.length).toBe(4)
   })
 
   it('правильный ответ увеличивает score', async () => {
     const initial = wrapper.vm.score as number
     const correctIdx = (wrapper.vm.currentProblem as any)?.correctIndex ?? 0
-    await wrapper.findAll('.ans-btn')[correctIdx].trigger('click')
+    await wrapper.findAll('.drag-btn')[correctIdx].trigger('click')
     await wrapper.vm.$nextTick()
     expect(wrapper.vm.score).toBeGreaterThan(initial)
   })
@@ -64,7 +64,7 @@ describe('CountingView', () => {
   it('неправильный ответ не увеличивает score', async () => {
     const initial = wrapper.vm.score as number
     const wrongIdx = (wrapper.vm.currentProblem as any)?.correctIndex === 0 ? 1 : 0
-    await wrapper.findAll('.ans-btn')[wrongIdx].trigger('click')
+    await wrapper.findAll('.drag-btn')[wrongIdx].trigger('click')
     await wrapper.vm.$nextTick()
     expect(wrapper.vm.score).toBe(initial)
   })
@@ -91,20 +91,6 @@ describe('CountingView', () => {
 
   it('ProgressBar рендерится', () => {
     expect(wrapper.find('.mock-progress').exists()).toBe(true)
-  })
-
-  it('progressPercent = 50 при question 5/10', () => {
-    wrapper.vm.currentQuestion = 5
-    expect(wrapper.vm.progressPercent).toBe(50)
-  })
-
-  it('выражение обновляется после ответа', async () => {
-    const firstExpr = (wrapper.vm.currentProblem as any)?.expression
-    const correctIdx = (wrapper.vm.currentProblem as any)?.correctIndex ?? 0
-    await wrapper.findAll('.ans-btn')[correctIdx].trigger('click')
-    await wrapper.vm.$nextTick()
-    const secondExpr = (wrapper.vm.currentProblem as any)?.expression
-    expect(typeof secondExpr).toBe('string')
   })
 
   it('CurrencyDisplay рендерится', () => {

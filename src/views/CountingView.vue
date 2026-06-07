@@ -32,7 +32,7 @@
             />
           </div>
 
-          <AnswerOptions
+          <DragDropAnswer
             :options="currentProblem?.options || []"
             :correct-index="currentProblem?.correctIndex || 0"
             :answered="answered"
@@ -70,9 +70,8 @@
   import { useCoins } from '../composables/useCoins';
   import { useChallengeStreak } from '../composables/useChallengeStreak';
   import { generateCountingProblem } from '../utils/math';
-  import ScoreDisplay from '../components/common/ScoreDisplay.vue';
+  import DragDropAnswer from '../components/dragdrop/DragDropAnswer.vue';
   import ProgressBar from '../components/common/ProgressBar.vue';
-  import AnswerOptions from '../components/common/AnswerOptions.vue';
   import GameOver from '../components/common/GameOver.vue';
   import AchievementManager from '../components/AchievementManager.vue';
   import CoinAnimation from '../components/common/CoinAnimation.vue';
@@ -82,9 +81,8 @@
   export default {
     name: 'CountingView',
     components: {
-      ScoreDisplay,
+      DragDropAnswer,
       ProgressBar,
-      AnswerOptions,
       GameOver,
       AchievementManager,
       CoinAnimation,
