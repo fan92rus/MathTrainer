@@ -10,6 +10,123 @@ describe('useNumberLineHop - edge cases', () => {
     vi.useRealTimers()
   })
 
+  describe('wrong-answer sequence (two jumps with pause)', () => {
+    it('should complete two jumps in sequence', async () => {
+      const { markerPosition, jumpPhase, animateJump } = useNumberLineHop({ min: 0, max: 20, step: 1 })
+
+      markerPosition.value = 5
+
+      // First jump: from start (5) to start (5) — bounce in place
+      const jump1 = animateJump(5, 5, 300)
+      vi.advanceTimersByTime(700) // 150+300+200=650ms + buffer
+      await jump1
+      expect(markerPosition.value).toBe(5)
+
+      // Second jump: from start (5) to correct (2)
+      const jump2 = animateJump(5, 2, 500)
+      vi.advanceTimersByTime(900) // 150+500+200=850ms + buffer
+      await jump2
+      expect(markerPosition.value).toBe(2)
+    })
+
+    it('should maintain isAnimating-like state between jumps', async () => {
+      const { markerPosition, jumpAnimation, jumpPhase, animateJump } = useNumberLineHop({ min: 0, max: 20, step: 1 })
+
+      markerPosition.value = 5
+
+      // Simulate wrong-answer: first jump to start
+      const jump1 = animateJump(5, 5, 300)
+      vi.advanceTimersByTime(700)
+      await jump1
+
+      // After first jump, animation should be done
+      expect(jumpAnimation.value).toBeNull()
+      expect(jumpPhase.value).toBe('done')
+      expect(markerPosition.value).toBe(5)
+
+      // Simulate the 600ms pause
+      vi.advanceTimersByTime(600)
+
+      // Second jump to correct
+      const jump2 = animateJump(5, 2, 500)
+      vi.advanceTimersByTime(900)
+      await jump2
+
+      expect(markerPosition.value).toBe(2)
+      expect(jumpAnimation.value).toBeNull()
+    })
+
+    it('should produce arcs for each jump and auto-clear them', async () => {
+      const { jumpArcs, markerPosition, animateJump } = useNumberLineHop({ min: 0, max: 20, step: 1 })
+
+      markerPosition.value = 5
+
+      // First jump: arc pushed at ~450ms (150+300)
+      const jump1 = animateJump(5, 5, 300)
+      vi.advanceTimersByTime(700)
+      await jump1
+      expect(jumpArcs.value.length).toBe(1)
+
+      // 600ms pause
+      vi.advanceTimersByTime(600)
+
+      // First arc timer: pushed at ~450ms, cleared at ~450+600=1050ms
+      // Current time is 1300ms, so first arc may already be cleared
+
+      // Second jump
+      const jump2 = animateJump(5, 2, 500)
+      vi.advanceTimersByTime(900)
+      await jump2
+
+      // Second arc was pushed at ~1300+650=1950ms
+      // At time 2200ms (1300+900), second arc exists, first may be gone
+      expect(jumpArcs.value.length).toBeGreaterThanOrEqual(1)
+
+      // Advance past 600ms from second arc push
+      vi.advanceTimersByTime(700)
+      expect(jumpArcs.value.length).toBe(0)
+    })
+  })
+
+  describe('bounce-in-place (same position)', () => {
+    it('should start animation even when from === to', async () => {
+      const { jumpAnimation, jumpPhase, animateJump } = useNumberLineHop({ min: 0, max: 10, step: 1 })
+
+      const promise = animateJump(3, 3, 300)
+
+      expect(jumpAnimation.value).not.toBeNull()
+      expect(jumpAnimation.value!.from).toBe(3)
+      expect(jumpAnimation.value!.to).toBe(3)
+      expect(jumpPhase.value).toBe('preparing')
+
+      vi.advanceTimersByTime(700)
+      await promise
+    })
+
+    it('should produce an arc for same-position jump', async () => {
+      const { jumpArcs, animateJump } = useNumberLineHop({ min: 0, max: 10, step: 1 })
+
+      const promise = animateJump(3, 3, 300)
+      vi.advanceTimersByTime(700)
+      await promise
+
+      expect(jumpArcs.value.length).toBe(1)
+      expect(jumpArcs.value[0].from).toBe(3)
+      expect(jumpArcs.value[0].to).toBe(3)
+    })
+
+    it('should not change marker position when from === to', async () => {
+      const { markerPosition, animateJump } = useNumberLineHop({ min: 0, max: 10, step: 1 })
+
+      markerPosition.value = 7
+      const promise = animateJump(7, 7, 300)
+      vi.advanceTimersByTime(700)
+      await promise
+
+      expect(markerPosition.value).toBe(7)
+    })
+  })
+
   describe('range edge cases', () => {
     it('should handle range [0, 10] with step 1', () => {
       const hop = useNumberLineHop({ min: 0, max: 10, step: 1 })

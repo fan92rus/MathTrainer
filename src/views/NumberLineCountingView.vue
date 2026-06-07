@@ -126,7 +126,8 @@ const totalQuestions = 10
 const maxNumber = computed(() => settingsStore.maxCountingNumber)
 const numberLineRange = computed<NumberLineRange>(() => ({
   min: 0,
-  max: Math.max(maxNumber.value, 10),
+  // Round up to nearest 10 so children see a clean, familiar range
+  max: Math.ceil(Math.max(maxNumber.value, 10) / 10) * 10,
   step: 1,
   labelAll: true,
 }))
@@ -207,12 +208,10 @@ async function handleAnswerSelected(index: number) {
     await animateJump(startFrom, correctValue, 500)
   } else {
     currentStreak = 0
-    // Frog jumps back to starting number, then to correct answer
+    // Frog jumps back to starting number (or bounces in place), pauses, then jumps to correct
     const startNum = currentProblem.value.num1
-    if (startFrom !== startNum) {
-      await animateJump(startFrom, startNum, 300)
-    }
-    await new Promise(r => setTimeout(r, 400))
+    await animateJump(startFrom, startNum, 300)
+    await new Promise(r => setTimeout(r, 600))
     await animateJump(startNum, correctValue, 500)
   }
 

@@ -121,6 +121,52 @@ describe('useNumberLineHop', () => {
     expect(jumpArcs.value.length).toBeGreaterThanOrEqual(1)
   })
 
+  it('should auto-clear jump arcs after 600ms', async () => {
+    const { jumpArcs, waitForTap, handleTap } = useNumberLineHop(defaultRange)
+
+    waitForTap({
+      start: 0,
+      type: 'add',
+      step: 5,
+      answer: 5,
+      expression: '0 + 5',
+    })
+
+    const promise = handleTap(5)
+    // Advance past jump animation (150+500+200=850ms)
+    vi.advanceTimersByTime(900)
+    await promise
+
+    // Arc should exist right after landing
+    expect(jumpArcs.value.length).toBe(1)
+
+    // Advance another 650ms (past the 600ms auto-clear)
+    vi.advanceTimersByTime(650)
+
+    // Arc should be cleared
+    expect(jumpArcs.value.length).toBe(0)
+  })
+
+  it('should handle same-position animateJump (bounce-in-place)', async () => {
+    const { jumpAnimation, jumpPhase, animateJump } = useNumberLineHop(defaultRange)
+
+    const promise = animateJump(5, 5, 300)
+
+    // Should start preparing
+    expect(jumpAnimation.value).not.toBeNull()
+    expect(jumpAnimation.value!.from).toBe(5)
+    expect(jumpAnimation.value!.to).toBe(5)
+    expect(jumpPhase.value).toBe('preparing')
+
+    // Advance through full animation
+    vi.advanceTimersByTime(700)
+    await promise
+
+    // Should complete without error
+    expect(jumpPhase.value).toBe('done')
+    expect(jumpAnimation.value).toBeNull()
+  })
+
   it('should reset all state', () => {
     const { markerPosition, jumpArcs, targetPosition, isWaitingForTap, waitForTap, reset } =
       useNumberLineHop(defaultRange)
