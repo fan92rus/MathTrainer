@@ -93,7 +93,7 @@
 </template>
 
 <script>
-  import { onMounted, computed, watch, ref } from 'vue';
+  import { onMounted, computed, watch, reactive } from 'vue';
   import { useRouter } from 'vue-router';
   import { useScoresStore } from '../store/scores';
   import { useSettingsStore } from '../store/settings';
@@ -121,6 +121,7 @@
       ProgressBar,
       StarRating,
       AnswerOptions,
+      DragDropAnswer,
       GameOver,
       AchievementManager,
       CoinAnimation,
@@ -138,7 +139,13 @@
       const totalQuestions = 10;
 
       // Mode toggle: 'tap' (AnswerOptions) or 'drag' (DragDropAnswer)
-      const answerMode = ref<'tap' | 'drag'>('tap');
+      // Mode toggle: use reactive object instead of ref to avoid
+      // Options API + ref unwrapping issues on initial render
+      const modeState = reactive({ current: 'tap' })
+      const answerMode = computed({
+        get: () => modeState.current,
+        set: (v) => { modeState.current = v }
+      })
 
       // Tower integration (Pattern 7 — "Строим башню")
       // targetHeight based on grade per PRD §7.2
@@ -160,7 +167,7 @@
 
       // Toggle answer mode between tap and drag
       function toggleAnswerMode() {
-        answerMode.value = answerMode.value === 'tap' ? 'drag' : 'tap';
+        modeState.current = modeState.current === 'tap' ? 'drag' : 'tap';
       }
 
       // Инициализируем игру
