@@ -45,7 +45,8 @@
           </div>
           <div
             v-if="availableExercises.decomposition.available"
-            class="game-card game-card--decomposition""
+            class="game-card game-card--decomposition"
+            @click="goToDecomposition"
           >
             <div class="game-content">
               <div class="game-icon">➕</div>
