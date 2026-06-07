@@ -12,7 +12,7 @@
     <div class="game-container">
       <div v-if="!gameOver" class="game-container-inner">
         <!-- Main game content -->
-        <div class="game-main" :class="{ 'answer-mode-drag': answerMode === 'drag' }">
+        <div class="game-main">
           <div class="header">
             <div style="display: flex; justify-content: space-between; align-items: center">
               <button class="back-button" @click="goToMain">← Назад</button>
@@ -24,46 +24,15 @@
             <h1 class="title">Реши пример</h1>
           </div>
 
-          <CountingModeSwitcher />
-
-          <ScoreDisplay
-            :current-score="score"
-            :total-score="totalScore"
-            :current-question="currentQuestion"
-            :total-questions="totalQuestions"
-          />
-
-          <div class="math-expression">{{ currentProblem?.expression }} = ?</div>
-
-          <SessionStreakBar
-            :current-streak="streakTracker.currentStreak.value"
-            @milestone="onStreakMilestone"
-          />
-
-          <!-- Mode toggle -->
-          <div class="mode-toggle">
-            <button
-              class="mode-toggle__btn"
-              :class="{ 'mode-toggle__btn--active': answerMode === 'tap' }"
-              @click="answerMode = 'tap'"
-            >👆 Нажми</button>
-            <button
-              class="mode-toggle__btn"
-              :class="{ 'mode-toggle__btn--active': answerMode === 'drag' }"
-              @click="answerMode = 'drag'"
-            >🧱 Перетащи</button>
+          <div class="math-row">
+            <div class="math-expression">{{ currentProblem?.expression }} = ?</div>
+            <SessionStreakBar
+              :current-streak="streakTracker.currentStreak.value"
+              @milestone="onStreakMilestone"
+            />
           </div>
 
           <AnswerOptions
-            v-if="answerMode === 'tap'"
-            :options="currentProblem?.options || []"
-            :correct-index="currentProblem?.correctIndex || 0"
-            :answered="answered"
-            :selected-index="selectedIndex"
-            @answer-selected="handleAnswerSelected"
-          />
-          <DragDropAnswer
-            v-else
             :options="currentProblem?.options || []"
             :correct-index="currentProblem?.correctIndex || 0"
             :answered="answered"
@@ -73,7 +42,6 @@
 
           <div class="game-container-footer">
             <ProgressBar :progress-percent="progressPercent" />
-            <StarRating :score="score" />
           </div>
         </div>
       </div>
@@ -91,7 +59,7 @@
 </template>
 
 <script>
-  import { onMounted, computed, watch, reactive } from 'vue';
+  import { onMounted, computed, watch } from 'vue';
   import { useRouter } from 'vue-router';
   import { useScoresStore } from '../store/scores';
   import { usePlayerStore } from '../store/player';
@@ -104,14 +72,11 @@
   import { generateCountingProblem } from '../utils/math';
   import ScoreDisplay from '../components/common/ScoreDisplay.vue';
   import ProgressBar from '../components/common/ProgressBar.vue';
-  import StarRating from '../components/common/StarRating.vue';
   import AnswerOptions from '../components/common/AnswerOptions.vue';
-  import DragDropAnswer from '../components/dragdrop/DragDropAnswer.vue';
   import GameOver from '../components/common/GameOver.vue';
   import AchievementManager from '../components/AchievementManager.vue';
   import CoinAnimation from '../components/common/CoinAnimation.vue';
   import CurrencyDisplay from '../components/player/CurrencyDisplay.vue';
-  import CountingModeSwitcher from '../components/common/CountingModeSwitcher.vue';
   import SessionStreakBar from '../components/common/SessionStreakBar.vue';
 
   export default {
@@ -119,14 +84,11 @@
     components: {
       ScoreDisplay,
       ProgressBar,
-      StarRating,
       AnswerOptions,
-      DragDropAnswer,
       GameOver,
       AchievementManager,
       CoinAnimation,
       CurrencyDisplay,
-      CountingModeSwitcher,
       SessionStreakBar
     },
     setup() {
@@ -138,20 +100,6 @@
       const { startSession, addProblem, getSessionData } = useSessionTimeTracker();
       const { showCoinAnimation, coinsEarned, awardCoins } = useCoins();
       const totalQuestions = 10;
-
-      // Mode toggle: 'tap' (AnswerOptions) or 'drag' (DragDropAnswer)
-      // Mode toggle: use reactive object instead of ref to avoid
-      // Options API + ref unwrapping issues on initial render
-      const modeState = reactive({ current: 'tap' })
-      const answerMode = computed({
-        get: () => modeState.current,
-        set: (v) => { modeState.current = v }
-      })
-
-      // Toggle answer mode between tap and drag
-      function toggleAnswerMode() {
-        modeState.current = modeState.current === 'tap' ? 'drag' : 'tap';
-      }
 
       // Инициализируем игру
       const {
@@ -273,9 +221,6 @@
         coinsEarned,
         onStreakMilestone,
         streakTracker,
-        // Mode
-        answerMode,
-        toggleAnswerMode
       };
     }
   };
@@ -303,41 +248,13 @@
   max-width: 500px;
 }
 
-/* Mode toggle */
-.mode-toggle {
+/* Math row: expression + streak chip side by side */
+.math-row {
   display: flex;
-  gap: 8px;
-  margin-bottom: 8px;
-}
-
-.mode-toggle__btn {
-  padding: 6px 16px;
-  border-radius: 20px;
-  border: 2px solid #e0e6ff;
-  background: #ffffff;
-  color: #666;
-  font-size: 13px;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  box-shadow: 0 2px 4px rgba(102, 126, 234, 0.06);
-}
-
-.mode-toggle__btn:hover {
-  background: var(--color-bg-accent);
-}
-
-.mode-toggle__btn--active {
-  background: var(--color-primary);
-  border-color: var(--color-primary);
-  color: white;
-}
-
-/* Drag mode: compact expression, more room for drag interaction */
-@media (max-width: 480px) {
-  .answer-mode-drag .math-expression {
-    font-size: 22px;
-    padding: 8px 0;
-    margin: 4px 0;
-  }
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  width: 100%;
 }
 </style>

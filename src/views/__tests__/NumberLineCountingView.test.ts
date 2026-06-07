@@ -2,14 +2,8 @@ import { describe, it, expect, beforeEach, vi } from 'vitest'
 import { mount, VueWrapper } from '@vue/test-utils'
 import { createPinia, setActivePinia } from 'pinia'
 
-vi.mock('@/components/common/ScoreDisplay.vue', () => ({
-  default: { template: '<div class="mock-score">{{ currentScore }}/{{ totalScore }}</div>', props: ['currentScore','totalScore','currentQuestion','totalQuestions'] }
-}))
 vi.mock('@/components/common/ProgressBar.vue', () => ({
   default: { template: '<div class="mock-progress"></div>', props: ['progressPercent'] }
-}))
-vi.mock('@/components/common/StarRating.vue', () => ({
-  default: { template: '<div class="mock-stars">{{ score }}</div>', props: ['score'] }
 }))
 vi.mock('@/components/common/GameOver.vue', () => ({
   default: { template: '<div class="mock-gameover"></div>', props: ['correctAnswers','totalAnswers','score'], emits: ['restart','exit'] }
@@ -22,9 +16,6 @@ vi.mock('@/components/common/CoinAnimation.vue', () => ({
 }))
 vi.mock('@/components/player/CurrencyDisplay.vue', () => ({
   default: { template: '<div class="mock-currency">🪙</div>' }
-}))
-vi.mock('@/components/common/CountingModeSwitcher.vue', () => ({
-  default: { template: '<div class="mock-mode-switcher">modes</div>' }
 }))
 vi.mock('@/components/numberline/NumberLine.vue', () => ({
   default: { template: '<div class="mock-numberline"><canvas></canvas></div>', props: ['range','markerPosition','jumpAnimation','jumpPhase','jumpArcs'] }
@@ -96,16 +87,8 @@ describe('NumberLineCountingView', () => {
     expect(mockPush).toHaveBeenCalledWith('/')
   })
 
-  it('ScoreDisplay рендерится', () => {
-    expect(wrapper.find('.mock-score').exists()).toBe(true)
-  })
-
   it('ProgressBar рендерится', () => {
     expect(wrapper.find('.mock-progress').exists()).toBe(true)
-  })
-
-  it('StarRating рендерится', () => {
-    expect(wrapper.find('.mock-stars').exists()).toBe(true)
   })
 
   it('CurrencyDisplay рендерится', () => {

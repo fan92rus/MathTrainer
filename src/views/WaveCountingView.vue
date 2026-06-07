@@ -26,8 +26,6 @@
       </div>
     </div>
 
-    <CountingModeSwitcher />
-
     <!-- Conveyor belt area -->
     <div class="wave-view__belt">
       <div v-if="currentCard" class="wave-view__card-area">
@@ -75,7 +73,6 @@ import { useWaveRunner } from '@/composables/useWaveRunner'
 import { generateCountingProblem } from '@/utils/math/counting'
 import WaveCard from '@/components/wave/WaveCard.vue'
 import CurrencyDisplay from '@/components/player/CurrencyDisplay.vue'
-import CountingModeSwitcher from '@/components/common/CountingModeSwitcher.vue'
 
 const router = useRouter()
 const settingsStore = useSettingsStore()

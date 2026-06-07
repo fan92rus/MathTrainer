@@ -1,6 +1,5 @@
 <template>
   <div class="challenge-view">
-    <CountingModeSwitcher />
 
     <!-- Phase: Pre-start -->
     <ChallengePreStart
@@ -58,7 +57,6 @@ import ChallengeProgressBar from '@/components/challenge/ChallengeProgressBar.vu
 import ChallengeResults from '@/components/challenge/ChallengeResults.vue'
 import AnswerOptions from '@/components/common/AnswerOptions.vue'
 import { useRouter } from 'vue-router'
-import CountingModeSwitcher from '@/components/common/CountingModeSwitcher.vue'
 
 const router = useRouter()
 

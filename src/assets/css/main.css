@@ -566,8 +566,8 @@ body {
 /* Адаптация для телефонов */
 @media (max-width: 768px) {
   .game-container {
-    padding: 15px;
-    border-radius: var(--radius-md);
+    padding: 16px;
+    border-radius: 22px;
     max-height: 98vh;
   }
 
@@ -627,9 +627,9 @@ body {
   }
 
   .option-card {
-    min-height: 50px;
-    padding: 6px 8px;
-    font-size: clamp(14px, 4vw, 16px);
+    min-height: 55px;
+    padding: 6px 12px;
+    font-size: clamp(14px, 4vw, 18px);
   }
 
   .math-expression {

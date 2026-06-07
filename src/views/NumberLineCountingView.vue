@@ -21,17 +21,7 @@
                 <CurrencyDisplay />
               </div>
             </div>
-            <h1 class="title">📏 Прыжки по прямой</h1>
           </div>
-
-          <CountingModeSwitcher />
-
-          <ScoreDisplay
-            :current-score="score"
-            :total-score="totalScore"
-            :current-question="currentQuestion"
-            :total-questions="totalQuestions"
-          />
 
           <!-- Expression -->
           <div class="math-expression">{{ currentProblem?.expression }} = ?</div>
@@ -71,7 +61,6 @@
 
           <div class="game-container-footer">
             <ProgressBar :progress-percent="progressPercent" />
-            <StarRating :score="score" />
           </div>
         </div>
       </div>
@@ -100,13 +89,10 @@ import { useCoins } from '@/composables/useCoins'
 import { useChallengeStreak } from '@/composables/useChallengeStreak'
 import { usePlayerStore } from '@/store/player'
 import SessionStreakBar from '@/components/common/SessionStreakBar.vue'
-import CountingModeSwitcher from '@/components/common/CountingModeSwitcher.vue'
 import { useNumberLineHop } from '@/composables/useNumberLineHop'
 import { generateCountingProblem } from '@/utils/math'
 import type { NumberLineRange } from '@/types/numberLine'
-import ScoreDisplay from '@/components/common/ScoreDisplay.vue'
 import ProgressBar from '@/components/common/ProgressBar.vue'
-import StarRating from '@/components/common/StarRating.vue'
 import GameOver from '@/components/common/GameOver.vue'
 import AchievementManager from '@/components/AchievementManager.vue'
 import CoinAnimation from '@/components/common/CoinAnimation.vue'
