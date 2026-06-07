@@ -10,9 +10,9 @@
     />
 
     <div class="game-container">
-      <div v-if="!gameOver" class="game-container-inner" :class="{ 'answer-mode-drag': answerMode === 'drag' }">
+      <div v-if="!gameOver" class="game-container-inner">
         <!-- Main game content -->
-        <div class="game-main">
+        <div class="game-main" :class="{ 'answer-mode-drag': answerMode === 'drag' }">
           <div class="header">
             <div style="display: flex; justify-content: space-between; align-items: center">
               <button class="back-button" @click="goToMain">← Назад</button>
@@ -71,21 +71,6 @@
             <StarRating :score="score" />
           </div>
         </div>
-
-        <!-- Tower — side on desktop, below on mobile -->
-        <!-- collapsed in drag mode on mobile to save space -->
-        <div
-          class="counting-tower-wrapper"
-          :class="{ 'counting-tower-wrapper--collapsed': answerMode === 'drag' }"
-        >
-          <Tower
-            class="counting-tower"
-            :floors="towerFloors"
-            :target-height="towerTargetHeight"
-            theme="castle"
-            :completed="towerCompleted"
-          />
-        </div>
       </div>
 
       <GameOver
@@ -109,7 +94,6 @@
   import { useGameLogic } from '../composables/useGameLogic';
   import { useAchievements, useSessionTimeTracker } from '../composables/useAchievements';
   import { useCoins } from '../composables/useCoins';
-  import { useTower } from '../composables/useTower';
   import { generateCountingProblem } from '../utils/math';
   import ScoreDisplay from '../components/common/ScoreDisplay.vue';
   import ProgressBar from '../components/common/ProgressBar.vue';
@@ -120,7 +104,6 @@
   import AchievementManager from '../components/AchievementManager.vue';
   import CoinAnimation from '../components/common/CoinAnimation.vue';
   import CurrencyDisplay from '../components/player/CurrencyDisplay.vue';
-  import Tower from '../components/tower/Tower.vue';
   import CountingModeSwitcher from '../components/common/CountingModeSwitcher.vue';
 
   export default {
@@ -135,7 +118,6 @@
       AchievementManager,
       CoinAnimation,
       CurrencyDisplay,
-      Tower,
       CountingModeSwitcher
     },
     setup() {
@@ -156,24 +138,6 @@
         get: () => modeState.current,
         set: (v) => { modeState.current = v }
       })
-
-      // Tower integration (Pattern 7 — "Строим башню")
-      // targetHeight based on grade per PRD §7.2
-      const grade = settingsStore.selectedGrade;
-      const towerTargetHeight = !grade || grade <= 1 ? 10 : grade === 2 ? 12 : 15;
-      const towerMilestones = [Math.floor(towerTargetHeight / 2), towerTargetHeight];
-
-      const {
-        floors: towerFloors,
-        completed: towerCompleted,
-        addFloor,
-        showWaitingFloor,
-        resetTower
-      } = useTower({
-        theme: 'castle',
-        targetHeight: towerTargetHeight,
-        milestones: towerMilestones
-      });
 
       // Toggle answer mode between tap and drag
       function toggleAnswerMode() {
@@ -233,17 +197,11 @@
               streak: currentStreak,
               ...getSessionData()
             });
-
-            // Добавляем этаж в башню
-            const expr = currentProblem.value?.expression || '';
-            const answer = currentProblem.value?.options[currentProblem.value.correctIndex];
-            addFloor(expr, answer);
           }
         });
 
-        // При неправильном ответе — башня ждёт
+        // При неправильном ответе — ничего не делаем
         if (!isCorrect) {
-          showWaitingFloor();
         }
       };
 
@@ -251,7 +209,6 @@
       const restartGame = () => {
         initializeGame();
         currentStreak = 0; // Сбрасываем серию
-        resetTower(); // Сбрасываем башню
         startSession(); // Начинаем новую сессию
         generateAllProblems(() => {
           return generateCountingProblem(
@@ -298,10 +255,6 @@
         goToMain,
         showCoinAnimation,
         coinsEarned,
-        // Tower
-        towerFloors,
-        towerCompleted,
-        towerTargetHeight,
         // Mode
         answerMode,
         toggleAnswerMode
@@ -358,47 +311,6 @@
   background: var(--color-primary);
   border-color: var(--color-primary);
   color: white;
-}
-
-/* Desktop: tower sits to the right of the game area */
-@media (min-width: 769px) {
-  .game-container-inner {
-    flex-direction: row;
-    align-items: flex-start;
-    justify-content: center;
-    gap: 24px;
-  }
-
-  .game-main {
-    flex: 0 1 auto;
-  }
-
-  .counting-tower {
-    flex-shrink: 0;
-    align-self: stretch;
-    max-height: 70vh;
-  }
-}
-
-/* Mobile: tower below the footer */
-@media (max-width: 768px) {
-  .counting-tower {
-    align-self: center;
-  }
-}
-
-/* Collapse tower in drag mode — only show header bar */
-.counting-tower-wrapper--collapsed .counting-tower {
-  min-width: auto;
-  max-width: 100%;
-  padding: 4px 8px;
-  border-width: 1px;
-}
-.counting-tower-wrapper--collapsed :deep(.tower-stack) {
-  display: none;
-}
-.counting-tower-wrapper--collapsed :deep(.tower__complete) {
-  display: none;
 }
 
 /* Drag mode: compact expression, more room for drag interaction */

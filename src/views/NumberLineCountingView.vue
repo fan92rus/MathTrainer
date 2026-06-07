@@ -69,15 +69,6 @@
             <StarRating :score="score" />
           </div>
         </div>
-
-        <!-- Tower on desktop -->
-        <Tower
-          class="counting-tower"
-          :floors="towerFloors"
-          :target-height="towerTargetHeight"
-          theme="castle"
-          :completed="towerCompleted"
-        />
       </div>
 
       <GameOver
@@ -102,7 +93,6 @@ import { useGameLogic } from '@/composables/useGameLogic'
 import { useAchievements, useSessionTimeTracker } from '@/composables/useAchievements'
 import { useCoins } from '@/composables/useCoins'
 import CountingModeSwitcher from '@/components/common/CountingModeSwitcher.vue'
-import { useTower } from '@/composables/useTower'
 import { useNumberLineHop } from '@/composables/useNumberLineHop'
 import { generateCountingProblem } from '@/utils/math'
 import type { NumberLineRange } from '@/types/numberLine'
@@ -113,7 +103,6 @@ import GameOver from '@/components/common/GameOver.vue'
 import AchievementManager from '@/components/AchievementManager.vue'
 import CoinAnimation from '@/components/common/CoinAnimation.vue'
 import CurrencyDisplay from '@/components/player/CurrencyDisplay.vue'
-import Tower from '@/components/tower/Tower.vue'
 import NumberLine from '@/components/numberline/NumberLine.vue'
 
 const router = useRouter()
@@ -145,22 +134,6 @@ const {
   animateJump,
   reset: resetNumberLine,
 } = useNumberLineHop(numberLineRange.value)
-
-// Tower integration
-const grade = settingsStore.selectedGrade
-const towerTargetHeight = !grade || grade <= 1 ? 10 : grade === 2 ? 12 : 15
-const towerMilestones = [Math.floor(towerTargetHeight / 2), towerTargetHeight]
-const {
-  floors: towerFloors,
-  completed: towerCompleted,
-  addFloor,
-  showWaitingFloor,
-  resetTower,
-} = useTower({
-  theme: 'castle',
-  targetHeight: towerTargetHeight,
-  milestones: towerMilestones,
-})
 
 // Game logic
 const {
@@ -233,21 +206,13 @@ async function handleAnswerSelected(index: number) {
         streak: currentStreak,
         ...getSessionData(),
       })
-      const expr = currentProblem.value?.expression || ''
-      const answer = Number(currentProblem.value?.options[currentProblem.value.correctIndex]) || 0
-      addFloor(expr, answer)
     }
   })
-
-  if (!isCorrect) {
-    showWaitingFloor()
-  }
 }
 
 function restartGame() {
   initializeGame()
   currentStreak = 0
-  resetTower()
   resetNumberLine()
   startSession()
   generateAllProblems(() => {
@@ -361,30 +326,7 @@ watch(currentQuestion, () => {
 }
 
 /* Desktop: tower to the right */
-@media (min-width: 769px) {
-  .game-container-inner {
-    flex-direction: row;
-    align-items: flex-start;
-    justify-content: center;
-    gap: 24px;
-  }
-
-  .game-main {
-    flex: 0 1 auto;
-  }
-
-  .counting-tower {
-    flex-shrink: 0;
-    align-self: stretch;
-    max-height: 70vh;
-  }
-}
-
 @media (max-width: 768px) {
-  .counting-tower {
-    align-self: center;
-  }
-
   .answer-btn {
     min-width: 48px;
     min-height: 48px;

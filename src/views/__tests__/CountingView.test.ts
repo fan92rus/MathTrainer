@@ -27,11 +27,11 @@ vi.mock('@/components/common/CoinAnimation.vue', () => ({
 vi.mock('@/components/player/CurrencyDisplay.vue', () => ({
   default: { template: '<div class="mock-currency">🪙</div>' }
 }))
-vi.mock('@/components/tower/Tower.vue', () => ({
-  default: { template: '<div class="mock-tower">{{ floors?.length }}/{{ targetHeight }}</div>', props: ['floors','targetHeight','theme','completed'] }
-}))
 vi.mock('@/components/dragdrop/DragDropAnswer.vue', () => ({
   default: { template: '<div class="mock-dragdrop"><button v-for="(o,i) in options" :key="i" class="drag-btn" @click="$emit(\'answerSelected\', i)">{{ o }}</button></div>', props: ['options','correctIndex','answered','selectedIndex'], emits: ['answerSelected'] }
+}))
+vi.mock('@/components/common/CountingModeSwitcher.vue', () => ({
+  default: { template: '<div class="mock-mode-switcher">mode buttons</div>' }
 }))
 
 // Mock router
@@ -122,7 +122,7 @@ describe('CountingView', () => {
     expect(mockPush).toHaveBeenCalledWith('/')
   })
 
-  it('рестарт сбрасывает score и tower', async () => {
+  it('рестарт сбрасывает score', async () => {
     wrapper.vm.score = 80
     wrapper.vm.currentQuestion = 9
     await wrapper.vm.restartGame()
@@ -140,10 +140,6 @@ describe('CountingView', () => {
 
   it('StarRating рендерится', () => {
     expect(wrapper.find('.mock-stars').exists()).toBe(true)
-  })
-
-  it('Tower рендерится', () => {
-    expect(wrapper.find('.mock-tower').exists()).toBe(true)
   })
 
   it('progressPercent = 50 при question 5/10', () => {

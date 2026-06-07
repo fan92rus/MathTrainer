@@ -23,8 +23,8 @@ vi.mock('@/components/common/CoinAnimation.vue', () => ({
 vi.mock('@/components/player/CurrencyDisplay.vue', () => ({
   default: { template: '<div class="mock-currency">🪙</div>' }
 }))
-vi.mock('@/components/tower/Tower.vue', () => ({
-  default: { template: '<div class="mock-tower">{{ floors?.length }}/{{ targetHeight }}</div>', props: ['floors','targetHeight','theme','completed'] }
+vi.mock('@/components/common/CountingModeSwitcher.vue', () => ({
+  default: { template: '<div class="mock-mode-switcher">modes</div>' }
 }))
 vi.mock('@/components/numberline/NumberLine.vue', () => ({
   default: { template: '<div class="mock-numberline"><canvas></canvas></div>', props: ['range','markerPosition','jumpAnimation','jumpPhase','jumpArcs'] }
@@ -57,10 +57,6 @@ describe('NumberLineCountingView', () => {
 
   it('NumberLine компонент присутствует', () => {
     expect(wrapper.find('.mock-numberline').exists()).toBe(true)
-  })
-
-  it('Tower рендерится', () => {
-    expect(wrapper.find('.mock-tower').exists()).toBe(true)
   })
 
   it('показывает 4 кнопки ответа в answer-row', () => {
