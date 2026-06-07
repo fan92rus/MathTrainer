@@ -152,4 +152,159 @@ describe('AchievementsView', () => {
 
     expect(hasHiddenNotUnlocked).toBe(false)
   })
+
+  it('показывает пустое состояние при отсутствии достижений', async () => {
+    const store = useAchievementsStore()
+    // Очищаем все достижения
+    store.achievements = []
+    store.unlockedCount = 0
+    store.totalCount = 0
+    store.updateUnlockedCount()
+
+    const wrapper = mount(AchievementsView)
+    await wrapper.vm.$nextTick()
+
+    expect(wrapper.find('.no-achievements').exists()).toBe(true)
+    expect(wrapper.text()).toContain('Пока нет достижений')
+  })
+
+  it('сортирует достижения: разблокированные первыми', () => {
+    const wrapper = mount(AchievementsView)
+    const achievements = wrapper.vm.allAchievements as any[]
+
+    // Если есть разблокированные, они должны быть перед неразблокированными
+    const firstUnlockedIdx = achievements.findIndex(a => a.unlocked)
+    const firstLockedIdx = achievements.findIndex(a => !a.unlocked)
+
+    if (firstUnlockedIdx !== -1 && firstLockedIdx !== -1) {
+      expect(firstUnlockedIdx).toBeLessThan(firstLockedIdx)
+    }
+  })
+
+  it('показывает totalCount и unlockedCount', () => {
+    const wrapper = mount(AchievementsView)
+    const store = useAchievementsStore()
+
+    expect(wrapper.vm.unlockedCount).toBe(store.unlockedCount)
+    expect(wrapper.vm.totalCount).toBe(store.totalCount)
+  })
+
+  it('getConditionDescription для correct_streak', () => {
+    const wrapper = mount(AchievementsView)
+    const store = useAchievementsStore()
+    const streak = store.allAchievements.find(a => a.condition.type === 'correct_streak')
+    if (streak) {
+      const desc = wrapper.vm.getConditionDescription(streak)
+      expect(desc).toContain('Решить')
+      expect(desc).toContain('подряд')
+    }
+  })
+
+  it('getConditionDescription для exercise_points', () => {
+    const wrapper = mount(AchievementsView)
+    const store = useAchievementsStore()
+    const exercise = store.allAchievements.find(a => a.condition.type === 'exercise_points')
+    if (exercise) {
+      const desc = wrapper.vm.getConditionDescription(exercise)
+      expect(desc).toContain('Набрать')
+      expect(desc).toContain('очков в')
+    }
+  })
+
+  it('getConditionDescription default для неизвестного типа', () => {
+    const wrapper = mount(AchievementsView)
+    const unknown = { condition: { type: 'unknown_type' } } as any
+    const desc = wrapper.vm.getConditionDescription(unknown)
+    expect(desc).toBe('Секретное условие')
+  })
+
+  it('показывает прогресс-бар для неразблокированного достижения с прогрессом', async () => {
+    const wrapper = mount(AchievementsView)
+    const store = useAchievementsStore()
+
+    const withProgress = store.allAchievements.find(a => !a.unlocked && a.progress !== undefined && a.progress > 0)
+    if (withProgress) {
+      wrapper.vm.showAchievementDetails(withProgress)
+      await wrapper.vm.$nextTick()
+
+      expect(wrapper.find('.achievement-progress-modal').exists()).toBe(true)
+      expect(wrapper.text()).toContain('Прогресс:')
+    }
+  })
+
+  it('не показывает раздел «Получено» для неразблокированного достижения', async () => {
+    const wrapper = mount(AchievementsView)
+    const store = useAchievementsStore()
+
+    const locked = store.allAchievements.find(a => !a.unlocked)
+    if (locked) {
+      wrapper.vm.showAchievementDetails(locked)
+      await wrapper.vm.$nextTick()
+
+      expect(wrapper.find('.achievement-unlocked').exists()).toBe(false)
+    }
+  })
+
+  it('показывает иконку 🔒 для неразблокированного достижения', async () => {
+    const wrapper = mount(AchievementsView)
+    const store = useAchievementsStore()
+
+    const locked = store.allAchievements.find(a => !a.unlocked)
+    if (locked) {
+      wrapper.vm.showAchievementDetails(locked)
+      await wrapper.vm.$nextTick()
+
+      expect(wrapper.find('.achievement-icon-large').text()).toContain('🔒')
+    }
+  })
+
+  it('показывает награду для разблокированного достижения', async () => {
+    const wrapper = mount(AchievementsView)
+    const store = useAchievementsStore()
+
+    const unlocked = store.allAchievements.find(a => a.unlocked)
+    if (unlocked) {
+      wrapper.vm.showAchievementDetails({ ...unlocked, unlocked: true, unlockedAt: new Date() })
+      await wrapper.vm.$nextTick()
+
+      expect(wrapper.find('.achievement-unlocked').exists()).toBe(true)
+      expect(wrapper.text()).toContain('Награда:')
+      expect(wrapper.text()).toContain('⭐')
+    }
+  })
+
+  it('закрывает модальное окно через closeModal', async () => {
+    const wrapper = mount(AchievementsView)
+    const store = useAchievementsStore()
+
+    wrapper.vm.showAchievementDetails(store.allAchievements[0])
+    await wrapper.vm.$nextTick()
+    expect(wrapper.vm.selectedAchievement).not.toBeNull()
+
+    wrapper.vm.closeModal()
+    await wrapper.vm.$nextTick()
+    expect(wrapper.vm.selectedAchievement).toBeNull()
+  })
+
+  it('кнопка закрытия (×) закрывает модалку', async () => {
+    const wrapper = mount(AchievementsView)
+    const store = useAchievementsStore()
+
+    wrapper.vm.showAchievementDetails(store.allAchievements[0])
+    await wrapper.vm.$nextTick()
+
+    await wrapper.find('.close-button').trigger('click')
+    expect(wrapper.vm.selectedAchievement).toBeNull()
+  })
+
+  it('клик на modal-content не закрывает модалку (stopPropagation)', async () => {
+    const wrapper = mount(AchievementsView)
+    const store = useAchievementsStore()
+
+    wrapper.vm.showAchievementDetails(store.allAchievements[0])
+    await wrapper.vm.$nextTick()
+
+    await wrapper.find('.modal-content').trigger('click')
+    expect(wrapper.vm.selectedAchievement).not.toBeNull()
+  })
 })

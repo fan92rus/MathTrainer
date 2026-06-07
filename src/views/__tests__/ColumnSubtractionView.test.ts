@@ -109,4 +109,129 @@ describe('ColumnSubtractionView', () => {
     expect(wrapper.vm.game.score.value).toBe(0)
     expect(wrapper.vm.game.currentQuestion.value).toBe(0)
   })
+
+  // ─── goBack с confirm=false ────────────────────────────────────
+  describe('goBack', () => {
+    it('goBack с confirm=false НЕ вызывает router.push', async () => {
+      wrapper.vm.game.currentQuestion.value = 3
+      wrapper.vm.game.totalAnswers.value = 2
+      global.confirm = vi.fn(() => false) as any
+      await wrapper.find('.back-button').trigger('click')
+      expect(mockPush).not.toHaveBeenCalled()
+    })
+
+    it('goBack без прогресса вызывает router.push сразу', async () => {
+      wrapper.vm.game.currentQuestion.value = 0
+      wrapper.vm.game.totalAnswers.value = 0
+      await wrapper.find('.back-button').trigger('click')
+      expect(mockPush).toHaveBeenCalledWith('/')
+    })
+  })
+
+  // ─── handleInteractiveError ──────────────────────────────────
+  describe('handleInteractiveError', () => {
+    it('handleInteractiveError обновляет errorsPerQuestion', async () => {
+      wrapper.vm.handleInteractiveError('step1', 3)
+      await wrapper.vm.$nextTick()
+      expect(wrapper.vm.game.errorsPerQuestion.value[wrapper.vm.game.currentQuestion.value]).toBe(3)
+    })
+  })
+
+  // ─── Loading state ────────────────────────────────────────────
+  describe('Загрузка примеров', () => {
+    it('"Загрузка примеров..." отображается когда currentColumnProblem = null', async () => {
+      // Force currentColumnProblem to be null by clearing all problems
+      wrapper.vm.game.problems.value = []
+      wrapper.vm.game.currentQuestion.value = 0
+      await wrapper.vm.$nextTick()
+      // currentColumnProblem should be null since no problems exist
+      expect(wrapper.vm.currentColumnProblem).toBeNull()
+      if (!wrapper.vm.game.answered.value && !wrapper.vm.currentColumnProblem) {
+        expect(wrapper.find('.no-problems-message').exists()).toBe(true)
+        expect(wrapper.text()).toContain('Загрузка примеров...')
+      }
+    })
+  })
+
+  // ─── correct-message ─────────────────────────────────────────
+  describe('correct-message', () => {
+    it('correct-message показывается при answered = true', async () => {
+      const problem = wrapper.vm.currentColumnProblem as any
+      if (problem?.correctAnswer) {
+        await wrapper.vm.handleInteractiveComplete(problem.correctAnswer)
+        await wrapper.vm.$nextTick()
+        expect(wrapper.vm.game.answered.value).toBe(true)
+        expect(wrapper.find('.correct-message').exists()).toBe(true)
+        expect(wrapper.text()).toContain('Правильно! ✓')
+      }
+    })
+
+    it('correct-message НЕ показывается до ответа', () => {
+      expect(wrapper.vm.game.answered.value).toBe(false)
+      expect(wrapper.find('.correct-message').exists()).toBe(false)
+    })
+  })
+
+  // ─── goHome ───────────────────────────────────────────────────
+  describe('goHome', () => {
+    it('goHome вызывает router.push("/")', async () => {
+      await wrapper.vm.goHome()
+      expect(mockPush).toHaveBeenCalledWith('/')
+    })
+  })
+
+  // ─── handleInteractiveComplete wrong answer ──────────────────
+  describe('Неправильный ответ', () => {
+    it('handleInteractiveComplete с неверным результатом НЕ обновляет счёт', async () => {
+      const problem = wrapper.vm.currentColumnProblem as any
+      if (problem?.correctAnswer) {
+        const wrongResult = problem.correctAnswer + 999
+        await wrapper.vm.handleInteractiveComplete(wrongResult)
+        await wrapper.vm.$nextTick()
+        // Score should NOT increase
+        expect(wrapper.vm.game.score.value).toBe(0)
+        expect(wrapper.vm.game.correctAnswers.value).toBe(0)
+        expect(wrapper.vm.game.answered.value).toBe(false)
+      }
+    })
+
+    it('handleInteractiveComplete с несуществующим problem не падает', () => {
+      // Set currentQuestion beyond problems array so currentColumnProblem is null
+      wrapper.vm.game.currentQuestion.value = 999
+      // Should not throw — handleInteractiveComplete returns early if no problem
+      expect(() => wrapper.vm.handleInteractiveComplete(42)).not.toThrow()
+    })
+  })
+
+  // ─── restartTraining fully resets ──────────────────────────
+  describe('restartTraining complete reset', () => {
+    it('после restartTraining правильный ответ работает для нового примера', async () => {
+      const problem = wrapper.vm.currentColumnProblem as any
+      if (problem?.correctAnswer) {
+        // Answer first question
+        await wrapper.vm.handleInteractiveComplete(problem.correctAnswer)
+        await wrapper.vm.$nextTick()
+        expect(wrapper.vm.game.score.value).toBeGreaterThan(0)
+
+        // Restart
+        await wrapper.vm.restartTraining()
+        await wrapper.vm.$nextTick()
+
+        // Score reset
+        expect(wrapper.vm.game.score.value).toBe(0)
+        expect(wrapper.vm.game.currentQuestion.value).toBe(0)
+        expect(wrapper.vm.game.correctAnswers.value).toBe(0)
+        expect(wrapper.vm.game.answered.value).toBe(false)
+
+        // New problem exists and is solvable
+        const newProblem = wrapper.vm.currentColumnProblem as any
+        expect(newProblem).not.toBeNull()
+        if (newProblem) {
+          await wrapper.vm.handleInteractiveComplete(newProblem.correctAnswer)
+          await wrapper.vm.$nextTick()
+          expect(wrapper.vm.game.score.value).toBeGreaterThan(0)
+        }
+      }
+    })
+  })
 })

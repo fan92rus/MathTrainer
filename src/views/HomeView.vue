@@ -30,7 +30,7 @@
         <div class="games-container">
           <div
             v-if="availableExercises.firstGradeDecomposition.available"
-            class="game-card game-card--counting""
+            class="game-card game-card--first-grade-decomposition"
           >
             <div class="game-content">
               <div class="game-icon">🔢</div>

@@ -227,4 +227,154 @@ describe('EquationsWholePartDiagnosticView - GREEN тесты', () => {
       expect(wrapper.vm.progressPercent).toBe(50); // 5/10 * 100
     });
   });
-});
+
+  describe('Полный flow диагностики', () => {
+    beforeEach(() => {
+      vi.useFakeTimers();
+    });
+
+    afterEach(() => {
+      vi.useRealTimers();
+    });
+
+    it('последовательность 10 правильных ответов завершает диагностику с passed=true', async () => {
+      const equationDisplay = wrapper.findComponent({ name: 'EquationDisplay' });
+
+      // Answer all 10 questions correctly
+      for (let i = 0; i < 10; i++) {
+        await equationDisplay.vm.$emit('complete', { isCorrect: true });
+        await wrapper.vm.$nextTick();
+        expect(wrapper.vm.correctCount).toBe(i + 1);
+        expect(wrapper.vm.answered).toBe(true);
+
+        // Advance timer to trigger nextProblem
+        vi.advanceTimersByTime(1100);
+        await wrapper.vm.$nextTick();
+      }
+
+      // After 10 questions, diagnostics should be finished
+      expect(wrapper.vm.showResults).toBe(true);
+      expect(wrapper.vm.passed).toBe(true);
+    });
+
+    it('последовательность из 3 правильных и 7 неправильных → passed=false', async () => {
+      const equationDisplay = wrapper.findComponent({ name: 'EquationDisplay' });
+
+      // 3 correct, then 7 incorrect
+      for (let i = 0; i < 3; i++) {
+        await equationDisplay.vm.$emit('complete', { isCorrect: true });
+        vi.advanceTimersByTime(1100);
+        await wrapper.vm.$nextTick();
+      }
+      for (let i = 0; i < 7; i++) {
+        await equationDisplay.vm.$emit('complete', { isCorrect: false });
+        vi.advanceTimersByTime(1100);
+        await wrapper.vm.$nextTick();
+      }
+
+      expect(wrapper.vm.showResults).toBe(true);
+      expect(wrapper.vm.correctCount).toBe(3);
+      expect(wrapper.vm.passed).toBe(false);
+    });
+
+    it('неправильный ответ не увеличивает correctCount', async () => {
+      const equationDisplay = wrapper.findComponent({ name: 'EquationDisplay' });
+
+      await equationDisplay.vm.$emit('complete', { isCorrect: false });
+      await wrapper.vm.$nextTick();
+
+      expect(wrapper.vm.correctCount).toBe(0);
+      expect(wrapper.vm.answered).toBe(true);
+    });
+
+    it('рестарт из результатов пересоздаёт задачи и сбрасывает счёт', async () => {
+      // Finish diagnostics with some results
+      wrapper.vm.correctCount = 5;
+      wrapper.vm.currentIndex = 9;
+      wrapper.vm.showResults = true;
+
+      const oldProblems = wrapper.vm.problems;
+
+      await wrapper.vm.restartDiagnostic();
+      await wrapper.vm.$nextTick();
+
+      expect(wrapper.vm.correctCount).toBe(0);
+      expect(wrapper.vm.currentIndex).toBe(0);
+      expect(wrapper.vm.showResults).toBe(false);
+      expect(wrapper.vm.answered).toBe(false);
+      expect(wrapper.vm.problems.length).toBe(10);
+      // Problems should be regenerated (different reference)
+      expect(wrapper.vm.problems).not.toBe(oldProblems);
+    });
+
+    it('answered сбрасывается при переходе к следующему вопросу', async () => {
+      const equationDisplay = wrapper.findComponent({ name: 'EquationDisplay' });
+
+      await equationDisplay.vm.$emit('complete', { isCorrect: true });
+      await wrapper.vm.$nextTick();
+      expect(wrapper.vm.answered).toBe(true);
+
+      vi.advanceTimersByTime(1100);
+      await wrapper.vm.$nextTick();
+      // After nextProblem, answered should be false (unless it's the last question)
+      if (wrapper.vm.currentIndex < 9) {
+        expect(wrapper.vm.answered).toBe(false);
+      }
+    });
+
+    it('goBack без ответов не показывает confirm', async () => {
+      // No questions answered yet
+      wrapper.vm.currentIndex = 0;
+      wrapper.vm.answered = false;
+
+      await wrapper.vm.goBack();
+      // Should navigate directly without confirm
+      expect(mockPush).toHaveBeenCalledWith('/');
+    });
+
+    it('goBack с ответами вызывает confirm и отменяет при false', async () => {
+      mockPush.mockClear();
+      global.confirm = vi.fn(() => false);
+
+      wrapper.vm.currentIndex = 5;
+      wrapper.vm.answered = false;
+
+      await wrapper.vm.goBack();
+      expect(global.confirm).toHaveBeenCalledWith('Прогресс будет потерян. Выйти?');
+      // Should NOT navigate since confirm returned false
+      expect(mockPush).not.toHaveBeenCalled();
+    });
+
+    it('при passed=true goToTraining вызывается при клике на кнопку', async () => {
+      wrapper.vm.correctCount = 7;
+      wrapper.vm.showResults = true;
+      await wrapper.vm.$nextTick();
+
+      const trainingBtn = wrapper.find('.btn-primary');
+      expect(trainingBtn.exists()).toBe(true);
+      await trainingBtn.trigger('click');
+      expect(mockPush).toHaveBeenCalledWith('/equations-whole-part');
+    });
+
+    it('при passed=false goToLearning вызывается при клике на кнопку', async () => {
+      wrapper.vm.correctCount = 2;
+      wrapper.vm.showResults = true;
+      await wrapper.vm.$nextTick();
+
+      const learningBtn = wrapper.find('.btn-secondary');
+      expect(learningBtn.exists()).toBe(true);
+      await learningBtn.trigger('click');
+      expect(mockPush).toHaveBeenCalledWith('/equations-whole-part/learning');
+    });
+
+    it('progressPercent на последнем вопросе (индекс 9) = 90%', () => {
+      wrapper.vm.currentIndex = 9;
+      expect(wrapper.vm.progressPercent).toBe(90);
+    });
+
+    it('progressPercent на первом вопросе (индекс 0) = 0%', () => {
+      wrapper.vm.currentIndex = 0;
+      expect(wrapper.vm.progressPercent).toBe(0);
+    });
+  });
+})
