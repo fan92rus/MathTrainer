@@ -31,11 +31,11 @@ export interface ExerciseAvailabilityConfig {
 export const EXERCISE_AVAILABILITY: Record<string, ExerciseAvailabilityConfig> = {
   counting: {
     available: (grade: GradeLevel, quarter: number) =>
-      grade === 1 || (grade === 2 && quarter <= 2),
+      grade === 1 || grade === 2,
     title: 'Тренажер счета',
     description: 'Решай примеры на сложение и вычитание',
     grades: [1, 2],
-    quarters: [1, 2],
+    quarters: [1, 2, 3, 4],
   },
   firstGradeDecomposition: {
     available: (grade: GradeLevel, quarter: number) =>

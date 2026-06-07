@@ -72,19 +72,19 @@ describe('getCurrentQuarter', () => {
     expect(getCurrentQuarter()).toBe(4);
   });
 
-  test('июнь (месяц 6) -> 1 четверть', () => {
+  test('июнь (месяц 6) -> 4 четверть (лето = завершённый год)', () => {
     mockDate(6);
-    expect(getCurrentQuarter()).toBe(1);
+    expect(getCurrentQuarter()).toBe(4);
   });
 
-  test('июль (месяц 7) -> 1 четверть', () => {
+  test('июль (месяц 7) -> 4 четверть', () => {
     mockDate(7);
-    expect(getCurrentQuarter()).toBe(1);
+    expect(getCurrentQuarter()).toBe(4);
   });
 
-  test('август (месяц 8) -> 1 четверть', () => {
+  test('август (месяц 8) -> 4 четверть', () => {
     mockDate(8);
-    expect(getCurrentQuarter()).toBe(1);
+    expect(getCurrentQuarter()).toBe(4);
   });
 });
 
@@ -181,12 +181,12 @@ describe('getAvailableExercises', () => {
       expect(g2q2.counting.available).toBe(true);
     });
 
-    test('2 класс, 3+ четверть -> недоступен', () => {
+    test('2 класс, 3+ четверть -> доступен (счет до 100)', () => {
       const g2q3 = getAvailableExercises(2, 3);
       const g2q4 = getAvailableExercises(2, 4);
 
-      expect(g2q3.counting.available).toBe(false);
-      expect(g2q4.counting.available).toBe(false);
+      expect(g2q3.counting.available).toBe(true);
+      expect(g2q4.counting.available).toBe(true);
     });
 
     test('3+ класс -> недоступен', () => {
