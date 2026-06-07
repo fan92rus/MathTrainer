@@ -76,7 +76,13 @@ export function useNumberLineHop(range: NumberLineRange) {
         }
         jumpPhase.value = 'landing'
         markerPosition.value = to
-        jumpArcs.value.push({ from, to, id: ++arcIdCounter })
+        const arcId = ++arcIdCounter
+        jumpArcs.value.push({ from, to, id: arcId })
+        // Auto-clear arc after 600ms
+        const clearTimer = setTimeout(() => {
+          jumpArcs.value = jumpArcs.value.filter(a => a.id !== arcId)
+        }, 600)
+        pendingTimers.push(clearTimer)
       }, 150 + durationMs)
       pendingTimers.push(t2)
 
