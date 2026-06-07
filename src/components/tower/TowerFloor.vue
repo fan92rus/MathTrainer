@@ -58,20 +58,20 @@ const floorEmoji = computed(() => FLOOR_FACES[props.floor.level % FLOOR_FACES.le
 .tower-floor {
   display: flex;
   align-items: center;
-  gap: 6px;
-  padding: 8px 14px;
-  border-radius: 8px;
-  font-size: 14px;
-  min-height: 40px;
+  gap: 5px;
+  padding: 5px 10px;
+  border-radius: 6px;
+  font-size: 13px;
+  min-height: 32px;
   position: relative;
   transition: all 0.3s ease;
   font-family: 'Nunito', sans-serif;
 
   /* 3D depth via outer shadow + light bevel border */
   box-shadow:
-    0 2px 4px rgba(0, 0, 0, 0.1),
-    0 0 0 1px rgba(0, 0, 0, 0.04);
-  border-left: 3px solid rgba(255, 255, 255, 0.55);
+    0 1px 3px rgba(0, 0, 0, 0.1),
+    0 0 0 1px rgba(0, 0, 0, 0.03);
+  border-left: 2px solid rgba(255, 255, 255, 0.55);
   border-top: 1px solid rgba(255, 255, 255, 0.35);
   border-right: 1px solid rgba(0, 0, 0, 0.06);
   border-bottom: 2px solid rgba(0, 0, 0, 0.10);
@@ -171,17 +171,17 @@ const floorEmoji = computed(() => FLOOR_FACES[props.floor.level % FLOOR_FACES.le
 /* ---- Mobile ---- */
 @media (max-width: 480px) {
   .tower-floor {
-    padding: 5px 10px;
-    font-size: 12px;
-    min-height: 34px;
-    gap: 4px;
+    padding: 4px 8px;
+    font-size: 11px;
+    min-height: 26px;
+    gap: 3px;
   }
   .tower-floor__emoji {
-    font-size: 15px;
-    min-width: 18px;
+    font-size: 13px;
+    min-width: 16px;
   }
   .tower-floor__expression {
-    font-size: 12px;
+    font-size: 11px;
   }
 }
 </style>

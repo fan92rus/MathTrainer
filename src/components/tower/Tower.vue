@@ -41,7 +41,7 @@ const props = defineProps<{
 
 const stackRef = ref<HTMLElement | null>(null)
 
-/** Reverse floors so newest is on top (visual bottom→top growth) */
+/** Reverse floors: level 1 at bottom, highest at top */
 const reversedFloors = computed(() => [...props.floors].reverse())
 const totalFloors = computed(() => props.floors.length)
 
@@ -99,14 +99,19 @@ watch(
   flex: 1;
   overflow-y: auto;
   overflow-x: hidden;
-  max-height: 300px;
-  scrollbar-width: thin;
+  max-height: 60vh;
+  /* Hide scrollbar — children don't need it, auto-scroll handles visibility */
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+.tower-stack::-webkit-scrollbar {
+  display: none;
 }
 
 .tower-stack__inner {
   display: flex;
-  flex-direction: column-reverse;
-  gap: 3px;
+  flex-direction: column;
+  gap: 2px;
 }
 
 .tower__complete {
@@ -128,9 +133,9 @@ watch(
   font-size: 20px;
 }
 
-/* Floor enter animation */
+/* Floor enter animation — drops from above with bounce */
 .tower-floor-enter-active {
-  animation: floor-appear 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+  animation: floor-drop 0.45s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
 .tower-floor-leave-active {
@@ -139,7 +144,7 @@ watch(
 
 .tower-floor-enter-from {
   opacity: 0;
-  transform: translateY(20px) scaleY(0.8);
+  transform: translateY(-30px);
 }
 
 .tower-floor-leave-to {
@@ -147,11 +152,12 @@ watch(
   transform: translateX(-20px);
 }
 
-@keyframes floor-appear {
-  0%   { opacity: 0; transform: translateY(20px) scaleY(0.8); }
-  60%  { opacity: 1; transform: translateY(-4px) scaleY(1.02); }
-  80%  { transform: translateY(2px) scaleY(0.99); }
-  100% { transform: translateY(0) scaleY(1); }
+@keyframes floor-drop {
+  0%   { opacity: 0; transform: translateY(-30px); }
+  50%  { opacity: 1; transform: translateY(4px); }
+  70%  { transform: translateY(-2px); }
+  85%  { transform: translateY(1px); }
+  100% { transform: translateY(0); }
 }
 
 @keyframes complete-glow {
@@ -166,7 +172,7 @@ watch(
     max-width: 200px;
   }
   .tower-stack {
-    max-height: 240px;
+    max-height: 40vh;
   }
 }
 
@@ -177,7 +183,7 @@ watch(
     padding: 6px;
   }
   .tower-stack {
-    max-height: 200px;
+    max-height: 35vh;
   }
   .tower__header {
     font-size: 12px;
