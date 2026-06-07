@@ -13,8 +13,8 @@
         stroke-width="2"
       />
 
-      <!-- Tick marks -->
-      <g v-for="(num, i) in tickNumbers" :key="'tick-' + i">
+      <!-- Tick marks (filtered for large ranges) -->
+      <g v-for="(num, i) in visibleTicks" :key="'tick-' + i">
         <!-- Minor tick (shorter, thinner) for unlabeled numbers -->
         <line
           :x1="tickXByNum(num)" :y1="axisY - (shouldShowLabel(num) ? tickH : minorTickH)"
@@ -130,6 +130,30 @@ const svgViewHeight = 100
  *  30px minimum ensures "100" (~22px at font 10) doesn't overlap.
  */
 const MIN_LABEL_GAP = 34
+
+/** Visible tick marks — filtered for large ranges to avoid visual clutter.
+ *  ≤ 20 numbers: show all
+ *  > 20: show multiples of 5 + important numbers
+ */
+const visibleTicks = computed(() => {
+  const nums = props.tickNumbers
+  if (nums.length <= 20) return nums
+
+  const span = nums[nums.length - 1]! - nums[0]!
+  const tickStep = span > 40 ? 5 : span > 20 ? 2 : 1
+
+  // Important numbers that must always have a tick
+  const important = new Set<number>()
+  if (props.targetPosition !== null) important.add(props.targetPosition)
+  const markerRounded = Math.round(props.markerPosition)
+  if (nums.includes(markerRounded)) important.add(markerRounded)
+  for (const arc of props.jumpArcs) {
+    if (nums.includes(arc.from)) important.add(arc.from)
+    if (nums.includes(arc.to)) important.add(arc.to)
+  }
+
+  return nums.filter(n => n % tickStep === 0 || important.has(n))
+})
 
 function updateWidth() {
   if (containerRef.value) {
